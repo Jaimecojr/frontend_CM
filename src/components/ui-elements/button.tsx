@@ -21,7 +21,7 @@ const buttonVariants = cva(
         full: "rounded-full",
       },
       size: {
-        default: "py-3.5 px-10 py-3.5 lg:px-8 xl:px-10",
+        default: "py-2.5 px-5 py-2.5 lg:px-8 xl:px-10",
         small: "py-[11px] px-6",
       },
     },
@@ -33,14 +33,14 @@ const buttonVariants = cva(
   },
 );
 
-type ButtonProps = HTMLAttributes<HTMLButtonElement> &
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
   VariantProps<typeof buttonVariants> & {
-    label: string;
+    children: React.ReactNode;
     icon?: React.ReactNode;
   };
 
 export function Button({
-  label,
+  children,
   icon,
   variant,
   shape,
@@ -54,7 +54,7 @@ export function Button({
       {...props}
     >
       {icon && <span>{icon}</span>}
-      {label}
+      {children}
     </button>
   );
 }

@@ -1,0 +1,240 @@
+# Contacto Médico - Frontend (Next.js)
+
+Este archivo contiene el contexto y convenciones clave del proyecto Frontend para agentes de IA. Por favor, lee esto antes de crear nuevos componentes o modificar lógica existente.
+
+## Stack Técnico
+- **Framework:** Next.js 14+ (App Router)
+- **Lenguaje:** TypeScript
+- **Estilos:** TailwindCSS
+- **Componentes UI:** Componentes personalizados base ubicados en `@/components/ui-elements/`.
+- **Tablas:** Componente global en `@/components/data-table/DataTable`.
+
+## Arquitectura de Módulos del Panel Admin
+Los módulos internos y protegidos están en la ruta `/4dnn1n/`. Cada módulo sigue esta estructura de archivos:
+- `page.tsx`: Renderiza la vista principal con la tabla de listado.
+- `fetch.ts`: Centraliza las funciones de llamadas a la API (obtener, crear, editar, eliminar).
+- `_components/columns.tsx`: Definición de las columnas de la tabla (usando React Table / DataTable).
+- `_components/XxxForm.tsx`: Componente de formulario compartido para creación y edición.
+- `new/page.tsx`: Vista de creación de un nuevo registro.
+- `[id]/page.tsx`: Vista de detalle (solo lectura) de un registro existente, usando `ShowcaseSection`.
+- `[id]/edit/page.tsx`: Vista de edición de un registro existente.
+
+## Arquitectura Web Pública
+Las rutas públicas de la página de aterrizaje e informativas se encuentran en la ruta `/web/`.
+- `src/app/web/layout.tsx`: Layout específico para la web que incluye el Navbar, el Footer y la importación de fuentes (ej. Material Symbols).
+- `src/app/web/page.tsx`: Página principal que ensambla las secciones mediante componentes modulares.
+- **Componentes Modulares:** Se ubican en `src/components/web/` (ej. `HeroSection.tsx`, `Navbar.tsx`, `Footer.tsx`). Deben usar colores quemados o variables CSS específicas del manual de marca en el HTML (ej. `bg-[#E8192C]`), de forma independiente a la paleta administrativa.
+- **Servicios Públicos:** Las integraciones con APIs sin autenticación (como consultas rápidas de estado para el afiliado) deben residir en `src/services/` (ej. `affiliateService.ts`).
+- **Fetch público vs. autenticado:** Las páginas del sitio web (`/web`) usan `publicFetch` (sin credenciales), que llama a los endpoints `/api/public/*` del backend. **Nunca usar `apiFetch`** (que envía cookies de Sanctum) en páginas públicas — rompería para usuarios no autenticados. El patrón base es:
+  ```ts
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  async function publicFetch<T>(path: string): Promise<T> {
+    const res = await fetch(`${API_URL}${path}`, { headers: { Accept: "application/json" } });
+    if (!res.ok) throw new Error(`Error ${res.status}`);
+    return res.json();
+  }
+  ```
+- **Navbar activo:** `Navbar.tsx` es un Client Component (`"use client"`) que usa `usePathname()` para resaltar el link de la ruta actual. Al agregar nuevas rutas públicas, añadir la condición correspondiente en el className de su `<Link>`.
+
+## Manejo de Tablas y Datos (Hooks)
+
+### 1. Tablas Pequeñas (`useClientTable`)
+Se usa para catálogos con pocos registros (asesores, convenios, franquicias).
+- Carga todos los datos en la carga inicial; la búsqueda y los filtros ocurren de manera instantánea en memoria (cliente).
+- Al `<DataTable>` se le deben pasar props especiales para manejar filtros locales: `getSearchText` y `getStateValue`.
+
+### 2. Tablas Grandes (`useServerTable`)
+Se usa para módulos pesados con miles de registros (ej. afiliados).
+- Delega la paginación, filtros y búsquedas directamente al backend (API).
+- Se hace destructuring de `tableProps` retornadas por el hook hacia el `<DataTable>`.
+- **Regla Crítica del DataTable:** Al pasar opciones en `stateFilterOptions`, **NUNCA** incluyas manualmente una opción "Todos" o "all". El componente interno `DataTableToolbar` la agrega automáticamente.
+
+## Convenciones de Estado de Registros
+- **Afiliados:** Usa la propiedad `stade` (1 = Activo, 2 = Inactivo).
+- **Asesores, Franquicias, Médicos:** Usa la propiedad `state` (1 = Activo, 2 = Inactivo).
+- **Convenios, Especialidades:** Usa la propiedad `state` (1 = Activo, 0 = Inactivo).
+
+## Componentes de Formulario Reutilizables
+
+### `SearchableSelect` — Select con búsqueda integrada
+**Ubicación:** `@/components/FormElements/SearchableSelect`
+
+Reemplaza todos los `<select>` nativos en los formularios del panel admin. Permite al usuario escribir para filtrar las opciones y seleccionar con click. Se adapta automáticamente al modo vista (`disabled`).
+
+**Cuándo usarlo:** siempre que un campo de formulario sea un select dinámico (cargado desde API) o estático con más de ~3 opciones.
+
+**API del componente:**
+```tsx
+<SearchableSelect
+  options={items.map((i) => ({ value: i.id, label: i.name }))}
+  value={form.field_id}
+  onChange={(v) => setForm((p) => ({ ...p, field_id: v }))}
+  disabled={isView}                       // modo solo lectura
+  placeholder="Seleccionar…"             // texto cuando no hay selección
+  disabledPlaceholder={initial?.rel?.name || ""} // label cuando el valor viene de relación anidada del API
+  className="mt-1"
+/>
+```
+
+**Prop `disabledPlaceholder`:** úsala cuando el label del valor actual no está en `options` sino en un objeto anidado del API (ej. `initial.city.name`, `initial.specialty.name`). Evita mostrar el campo vacío en modo vista.
+
+**Selects dependientes (ej. Departamento → Ciudad):**
+- Al campo dependiente (Ciudad) pásale `disabled={isView || !departmentId}`.
+- Usa `placeholder` dinámico para guiar al usuario: `placeholder={departmentId ? "Seleccionar…" : "Selecciona un departamento"}`.
+
+**Ejemplo completo con dependencia:**
+```tsx
+<SearchableSelect
+  className="mt-1"
+  disabled={isView}
+  options={departments.map((d) => ({ value: d.id, label: d.name }))}
+  value={departmentId}
+  onChange={(v) => setDepartmentId(v ? Number(v) : "")}
+/>
+
+<SearchableSelect
+  className="mt-1"
+  disabled={isView || !departmentId}
+  options={cities.map((c) => ({ value: c.id, label: c.name }))}
+  value={form.city_id}
+  onChange={(v) => setForm((p) => ({ ...p, city_id: v }))}
+  placeholder={departmentId ? "Seleccionar…" : "Selecciona un departamento"}
+  disabledPlaceholder={initial?.city?.name || ""}
+/>
+```
+
+**Nota:** El campo **Asesor** en `AffiliateForm` tiene su propio combobox personalizado con lógica adicional (validación de selección forzada) y **no** usa `SearchableSelect`.
+
+## LoadingOverlay — Pantalla de carga del panel admin
+
+**Componente:** `@/components/LoadingOverlay`
+
+Overlay de pantalla completa con logo animado y puntos de carga. Solo para el panel `/4dnn1n`, nunca para la web pública.
+
+**Decisiones de implementación importantes:**
+- Usa `createPortal(…, document.body)` porque el `<main>` del auth-layout tiene `class="isolate"`, lo que crea un stacking context que atraparía el `z-index` e impediría cubrir el header. El portal bypasea este problema renderizando fuera del árbol DOM.
+- Usa `useState(mounted)` + `useEffect` para compatibilidad SSR (portals son solo cliente).
+- El texto del `message` va **sin puntos finales** — el componente agrega tres puntos animados automáticamente.
+- Theme-aware: fondo blanco en light mode, `#020d1a` en dark mode. Logo usa `<LogoIcon>` de `@/components/logo`.
+
+**Uso:**
+```tsx
+import { LoadingOverlay } from "@/components/LoadingOverlay";
+// En el JSX (primer hijo del fragmento):
+<LoadingOverlay isLoading={loading} message="Cargando" />
+```
+
+**Dónde se usa:**
+- `auth-layout.tsx`: `message="Validando sesión"` y `message="Cerrando sesión"`
+- `Auth/SigninWithPassword.tsx`: `message="Iniciando sesión"` — el `loading` NO se resetea en éxito para que el overlay persista durante la navegación; solo se resetea en el `catch`.
+- Módulos con `useServerTable` (afiliados, médicos): `isLoading={tableProps.loading}`
+- Módulos con `useClientTable` (asesores, convenios, franquicias): `isLoading={loading}`
+
+**Dashboard (`/4dnn1n/home`) — NO usar overlay:**
+El dashboard mezcla streaming SSR (Suspense) con client components con `useEffect`. Ningún overlay puede esperar a que todos terminen sin bloquear la arquitectura. Cada widget tiene su propio skeleton — ese es el patrón correcto. No crear `loading.tsx` en esa carpeta.
+
+## Patrones y Buenas Prácticas
+1. **Optimistic UI:** Para acciones como el cambio rápido de estado (toggle activo/inactivo) desde la tabla, aplica un patrón de "Optimistic UI":
+   - Actualiza el estado local (`setData`) inmediatamente.
+   - Envía la petición a la API.
+   - Si la API falla, revierte el estado a su valor anterior y muestra una alerta (`alert.error()`).
+2. **Desmontaje de Componentes:** En los `useEffect` que realizan llamadas asíncronas, usa un flag `cancelled` para evitar intentar actualizar estados de React si el componente ya se desmontó.
+3. **Notificaciones y UI:** Usa el helper `@/lib/alert` y `@/lib/getApiErrorMessage` para mostrar resultados de acciones al usuario.
+4. **Idioma:** Todo el texto de la interfaz, placeholders, tooltips y comentarios de código deben estar en **español**.
+
+## Validaciones de Formulario (Campos Comunes)
+Al crear o modificar un formulario con los siguientes campos, aplica siempre estas reglas:
+
+### Teléfono(s) (`phone`)
+- Permite dígitos, espacios y guiones (`-`) para soportar múltiples números en un solo campo.
+- Función helper: `function formatPhone(v: string) { return v.replace(/[^\d\s\-]/g, ""); }`
+- Aplicar en `onChange`: `setForm(p => ({ ...p, phone: formatPhone(e.target.value) }))`
+- Placeholder sugerido: `"Ej: 6017654321 - 6017654322"`
+
+### Celular (`movil`)
+- Solo dígitos, exactamente 10 caracteres.
+- Función helper: `onlyDigits` + `.slice(0, 10)` + `maxLength={10}` + `inputMode="numeric"`.
+- Mostrar error en rojo debajo del campo si está diligenciado y `form.movil.length !== 10`.
+- Bloquear el botón Guardar (`canSubmit`) si el campo tiene contenido y no cumple los 10 dígitos.
+- Placeholder sugerido: `"Ej: 3001234567"`
+
+### Valor / Valor Convenio (`amount`, `value_agreement`)
+- Solo dígitos (`onlyDigits`), valor mínimo **10.000**.
+- Mostrar error en rojo debajo del campo si el valor ingresado es menor a 10000.
+- Bloquear el botón Guardar (`canSubmit`) mientras no se cumpla el mínimo.
+- Placeholder sugerido: `"Ej: 150000"`
+
+### Patrón visual de error
+```tsx
+<input className={`mt-1 w-full rounded-lg border px-3 py-2 ${error ? "border-red-500 focus:outline-red-500" : ""}`} />
+{error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+```
+
+## Dashboard — Widgets con datos reales de la API
+
+### Regla crítica: Client Components para datos autenticados
+Los componentes del dashboard (`src/app/4dnn1n/home/_components/`) que consumen la API real **deben ser Client Components** (`"use client"`). El motivo es que la autenticación usa cookies de Sanctum que solo existen en el browser — un Server Component async no tiene acceso a esas cookies.
+
+**Patrón correcto para un widget del dashboard:**
+```tsx
+"use client";
+import { useEffect, useState } from "react";
+import { getExpiringToday } from "../../affiliates/fetch";
+
+export function MiWidget() {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getMisDatos().then(setData).finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <Skeleton />;
+  return <div>...</div>;
+}
+```
+
+Los datos del `home/fetch.ts` (overviewData, chatsData) son **estáticos/fake** y no usan la API real — no aplica esta restricción para ellos.
+
+### Widget: Contratos que vencen hoy
+- **Archivo:** `src/app/4dnn1n/home/_components/expiring-today-card.tsx`
+- **Fuente de datos:** `GET /api/affiliates/expiring-today` vía `getExpiringToday()` en `affiliates/fetch.ts`
+- Muestra afiliados con `validity_end = hoy` y `stade = 1` (activos que vencen hoy).
+- Incluye link directo al perfil del afiliado para gestión rápida.
+
+## Lógica de Estado de Afiliados (stade)
+
+El campo `stade` del afiliado **no debe modificarse arbitrariamente** al editar. Las reglas son:
+
+| Acción | `stade` en payload |
+|---|---|
+| Crear afiliado nuevo | `1` (siempre — hardcodeado en `AffiliateForm`) |
+| Editar sin renovar | no se incluye → el backend preserva el valor actual |
+| Editar con renovación | `1` → se agrega en `handleUpdate` del edit page |
+| Toggle manual desde la tabla | el valor opuesto al actual — **solo super admin (`type === 1`)** |
+| Cron nocturno del backend | `2` → inactiva automáticamente los vencidos |
+
+En `AffiliateForm.tsx`, el `stade: 1` usa `...(isCreate && { stade: 1 })` para aplicarse solo en modo creación.
+En `[id]/edit/page.tsx`, `payload.stade = 1` se agrega explícitamente solo cuando `renovationData` existe.
+
+### Regla de acceso para el toggle manual de stade
+El botón/acción de activar o inactivar un afiliado manualmente desde la tabla **solo debe mostrarse al super admin (`user?.type === 1`)**. Los asesores y otros roles no deben poder cambiar el estado directamente — el flujo correcto es siempre a través de una renovación. Esto evita cambios accidentales o indebidos en el estado de los afiliados.
+
+## Permisos y Control de Acceso (RBAC)
+Para proteger las vistas y acciones según el rol del usuario, sigue este patrón estandarizado en las páginas principales (`page.tsx`) y subpáginas (`new`, `[id]`, `[id]/edit`):
+
+1. **Tablas (Ocultar botones y acciones):**
+   Evalúa `const hasAccess = user?.type === 1 || user?.type === 2;` y úsalo para renderizar condicionalmente los botones del toolbar (`CreateToolbarButton`) y pasar el booleano al constructor de columnas para ocultar la columna de acciones.
+2. **Subpáginas (Protección de Ruta):**
+   Utiliza el siguiente bloque de código al inicio del componente para evitar renderizados indeseados o parpadeos de UI:
+   ```tsx
+   const { user, loading: authLoading } = useAuth();
+   if (authLoading) return null;
+   if (user?.type !== 1 && user?.type !== 2) {
+     return (
+       <div className="flex h-64 items-center justify-center p-6 text-red-500 font-medium">
+         No tienes permisos suficientes para acceder a esta vista.
+       </div>
+     );
+   }
+   ```

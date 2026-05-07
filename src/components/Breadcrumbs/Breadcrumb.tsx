@@ -1,24 +1,66 @@
 import Link from "next/link";
 
+type Crumb = {
+  label: string;
+  href?: string;
+};
+
 interface BreadcrumbProps {
-  pageName: string;
+  pageName?: string; // fallback simple
+  items?: Crumb[];   // multinivel
+  showTitle?: boolean; // ✅ nuevo
+  className?: string;
 }
 
-const Breadcrumb = ({ pageName }: BreadcrumbProps) => {
-  return (
-    <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <h2 className="text-[26px] font-bold leading-[30px] text-dark dark:text-white">
-        {pageName}
-      </h2>
+const Breadcrumb = ({
+  pageName,
+  items,
+  showTitle = false, // ✅ por defecto NO muestra el h2
+  className = "",
+}: BreadcrumbProps) => {
+  const defaultItems: Crumb[] = [
+    { label: "Dashboard", href: "/4dnn1n/home" },
+    { label: pageName ?? "" },
+  ].filter((i) => i.label);
 
-      <nav>
+  const crumbs = items?.length ? items : defaultItems;
+  const lastLabel = crumbs[crumbs.length - 1]?.label;
+
+  return (
+    <div
+      className={`mb-6 flex items-center justify-end ${className}`}
+    >
+      {/* ✅ Solo mostramos título si lo piden */}
+      {showTitle && (
+        <h2 className="mr-auto text-[26px] font-bold leading-[30px] text-dark dark:text-white">
+          {lastLabel}
+        </h2>
+      )}
+
+      <nav aria-label="Breadcrumb">
         <ol className="flex items-center gap-2">
-          <li>
-            <Link className="font-medium" href="/">
-              Dashboard /
-            </Link>
-          </li>
-          <li className="font-medium text-primary">{pageName}</li>
+          {crumbs.map((crumb, index) => {
+            const isLast = index === crumbs.length - 1;
+
+            return (
+              <li
+                key={`${crumb.label}-${index}`}
+                className="flex items-center gap-2"
+              >
+                {crumb.href && !isLast ? (
+                  <Link className="font-medium hover:text-primary" href={crumb.href}>
+                    {crumb.label}
+                  </Link>
+                ) : (
+                  <span className={`font-medium ${isLast ? "text-primary" : ""}`}>
+                    {crumb.label}
+                  </span>
+                )}
+
+                {!isLast && <span>/</span>}
+              </li>
+            );
+          })}
         </ol>
       </nav>
     </div>

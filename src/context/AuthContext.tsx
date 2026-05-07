@@ -50,8 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 3️⃣ Borrar usuario local
       setUser(null);
 
-      // 4️⃣ Redirección limpia
-      router.replace("/auth/sign-in");
+      // 4️⃣ Redirección limpia (full reload para limpiar estados)
+      window.location.href = "/auth/sign-in";
     }
   };
 

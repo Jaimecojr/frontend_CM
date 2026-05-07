@@ -10,31 +10,24 @@ import { LoadingOverlay } from "@/components/LoadingOverlay";
 export default function AuthLayoutClient({ children }: { children: React.ReactNode }) {
   const { user, loading, isLoggingOut } = useRequireAuth();
 
-  // 🔥 si está cerrando sesión → overlay global
-  if (isLoggingOut) {
-    return <LoadingOverlay message="Cerrando sesión..." />;
-  }
+  if (isLoggingOut) return <LoadingOverlay message="Cerrando sesión" />;
 
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center text-xl font-semibold">
-        Validando sesión...
-      </div>
-    );
-  }
+  if (loading) return <LoadingOverlay message="Validando sesión" />;
 
-  if (!user) {
-    return null; // useRequireAuth hace redirect
-  }
+  if (!user) return null;
 
   return (
     <Providers>
       <NextTopLoader color="#5750F1" showSpinner={false} />
+
       <div className="flex min-h-screen">
         <Sidebar />
-        <div className="w-full bg-gray-2 dark:bg-[#020d1a]">
+
+        {/* 👇 CLAVE: flex-1 + min-w-0 + flex-col */}
+        <div className="flex min-w-0 flex-1 flex-col bg-gray-2 dark:bg-[#020d1a]">
           <Header />
-          <main className="isolate mx-auto w-full max-w-screen-2xl overflow-hidden p-4 md:p-6 2xl:p-10">
+
+          <main className="isolate mx-auto w-full max-w-screen-2xl overflow-x-auto p-4 md:p-6 2xl:p-10">
             {children}
           </main>
         </div>

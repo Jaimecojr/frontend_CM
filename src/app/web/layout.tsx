@@ -1,15 +1,17 @@
+import React from "react";
+import { Navbar } from "@/components/web/Navbar";
+import { Footer } from "@/components/web/Footer";
+
 export default function WebLayout({ children }: { children: React.ReactNode }) {
   return (
-    <>
-      <header className="p-4 bg-blue-600 text-white">
-        <h1 className="text-xl font-bold">Contacto Médico</h1>
-      </header>
-
-      <main>{children}</main>
-
-      <footer className="p-4 bg-gray-100 text-center text-sm text-gray-500">
-        © {new Date().getFullYear()} Contacto Médico. Todos los derechos reservados.
-      </footer>
-    </>
+    <div className="bg-white font-sans text-[#0b1c30] min-h-screen flex flex-col">
+      <link
+        href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet"
+      />
+      <Navbar />
+      <div className="flex-grow">{children}</div>
+      <Footer />
+    </div>
   );
 }
