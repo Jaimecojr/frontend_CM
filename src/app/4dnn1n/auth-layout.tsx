@@ -10,9 +10,9 @@ import { LoadingOverlay } from "@/components/LoadingOverlay";
 export default function AuthLayoutClient({ children }: { children: React.ReactNode }) {
   const { user, loading, isLoggingOut } = useRequireAuth();
 
-  if (isLoggingOut) return <LoadingOverlay message="Cerrando sesión" />;
+  if (isLoggingOut) return <LoadingOverlay />;
 
-  if (loading) return <LoadingOverlay message="Validando sesión" />;
+  if (loading) return <LoadingOverlay />;
 
   if (!user) return null;
 

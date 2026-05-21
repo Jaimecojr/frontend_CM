@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { getAffiliate, type ApiAffiliate } from "../fetch";
 import { Button } from "@/components/ui-elements/button";
@@ -14,6 +14,7 @@ import { alert } from "@/lib/alert";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAuth } from "@/context/AuthContext";
+import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 export default function ViewAffiliatePage() {
   usePageTitle("Ver Afiliado");
@@ -50,13 +51,7 @@ export default function ViewAffiliatePage() {
     };
   }, [affiliateId]);
 
-  if (authLoading || loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (authLoading || loading) return <FormPageSkeleton fields={14} />;
 
   // Permiso tipo 1 o 2
   if (user?.type !== 1 && user?.type !== 2) {

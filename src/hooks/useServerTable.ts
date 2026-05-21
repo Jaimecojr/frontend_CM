@@ -56,6 +56,14 @@ export function useServerTable<T>(fetchFn: FetchFn<T>, options: Options = {}) {
   };
 
   const extraParamsStr = JSON.stringify(options.extraParams || {});
+  const prevExtraParamsRef = useRef(extraParamsStr);
+
+  // Resetear página y activar skeleton cuando cambian los filtros extra
+  if (prevExtraParamsRef.current !== extraParamsStr) {
+    prevExtraParamsRef.current = extraParamsStr;
+    if (page !== 1) setPage(1);
+    if (!isHardLoad) setIsHardLoad(true);
+  }
 
   useEffect(() => {
     let cancelled = false;

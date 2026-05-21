@@ -10,6 +10,7 @@ import { getAgreement, type ApiAgreement } from "../fetch";
 import { Button } from "@/components/ui-elements/button";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 export default function ViewAgreementPage() {
   usePageTitle("Ver Convenio");
@@ -25,7 +26,7 @@ export default function ViewAgreementPage() {
     })();
   }, [id]);
 
-  if (!agreement) return <div className="p-6">Cargando...</div>;
+  if (!agreement) return <FormPageSkeleton fields={6} />;
 
   return (
     <>

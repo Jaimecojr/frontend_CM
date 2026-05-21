@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import { Button } from "@/components/ui-elements/button";
 import DoctorForm from "../_components/DoctorForm";
@@ -12,6 +12,7 @@ import { alert } from "@/lib/alert";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAuth } from "@/context/AuthContext";
+import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 export default function ViewDoctorPage() {
   usePageTitle("Ver Médico");
@@ -42,13 +43,7 @@ export default function ViewDoctorPage() {
     };
   }, [id]);
 
-  if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (loading) return <FormPageSkeleton fields={10} />;
 
   if (!initialData) {
     return (

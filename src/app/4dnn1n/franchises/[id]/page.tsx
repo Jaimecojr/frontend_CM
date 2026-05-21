@@ -10,6 +10,7 @@ import { ArrowLeft } from "lucide-react";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 export default function ViewFranchisePage() {
   usePageTitle("Ver Franquicia");
@@ -25,7 +26,7 @@ export default function ViewFranchisePage() {
     })();
   }, [id]);
 
-  if (!user) return <div className="p-6">Cargando...</div>;
+  if (!user) return <FormPageSkeleton fields={10} />;
 
   return (
     <>

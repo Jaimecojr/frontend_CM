@@ -9,12 +9,11 @@ import {
   DropdownContent,
 } from "@/components/ui/dropdown";
 import Link from "next/link";
-import { LogOutIcon, SettingsIcon, UserIcon } from "./icons";
-import { LoadingOverlay } from "@/components/LoadingOverlay";
+import { LogOutIcon, SettingsIcon } from "./icons";
+import { ThemeToggleSwitch } from "../theme-toggle";
 
 export function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
   const { user, loading, logoutUser } = useAuth();
 
   // Placeholder mientras carga
@@ -30,7 +29,6 @@ export function UserInfo() {
 
   return (
     <>
-      {loggingOut && <LoadingOverlay message="Cerrando sesión..." />}
       <Dropdown isOpen={isOpen} setIsOpen={setIsOpen}>
         <DropdownTrigger>
           <figure className="flex cursor-pointer items-center gap-3">
@@ -65,19 +63,18 @@ export function UserInfo() {
 
           <hr className="border-gray-200 dark:border-dark-3" />
 
+          {/* TEMA */}
+          <div className="flex items-center justify-between px-5 py-3">
+            <span className="text-sm text-[#4B5563] dark:text-dark-6">Modo oscuro</span>
+            <ThemeToggleSwitch />
+          </div>
+
+          <hr className="border-gray-200 dark:border-dark-3" />
+
           {/* LINKS */}
           <div className="space-y-1 p-2 text-sm text-[#4B5563] dark:text-dark-6">
             <Link
-              href="/profile"
-              className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-gray-100 dark:hover:bg-dark-3"
-              onClick={() => setIsOpen(false)}
-            >
-              <UserIcon className="h-5 w-5" />
-              Ver Perfil
-            </Link>
-
-            <Link
-              href="/pages/settings"
+              href="/4dnn1n/account"
               className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-gray-100 dark:hover:bg-dark-3"
               onClick={() => setIsOpen(false)}
             >

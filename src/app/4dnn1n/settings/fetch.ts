@@ -6,6 +6,7 @@ export type ApiSetting = {
   wa_phone_number_id: string;
   wa_bearer_token: string;
   wa_template_name: string;
+  wa_appointment_template_name: string | null;
 };
 
 type ApiResponse<T> = { message: string; data: T };

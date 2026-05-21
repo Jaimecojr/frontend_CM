@@ -1,4 +1,5 @@
 import { apiFetch, csrf } from "@/lib/api";
+import { memCache, TTL_GEO, TTL_CATALOG } from "@/lib/memCache";
 
 export type CounselorTypeContra =
   | "Término Fijo"
@@ -36,8 +37,10 @@ export type City = { id: number; name: string; department_id: number };
 type ApiResponse<T> = { message: string; data: T };
 
 export async function getCounselors(): Promise<ApiCounselor[]> {
-  const res = await apiFetch<ApiResponse<ApiCounselor[]>>("/api/counselors");
-  return res.data ?? [];
+  return memCache.get("counselors:all", TTL_CATALOG, async () => {
+    const res = await apiFetch<ApiResponse<ApiCounselor[]>>("/api/counselors");
+    return res.data ?? [];
+  });
 }
 
 export async function getCounselor(id: number): Promise<ApiCounselor> {
@@ -46,15 +49,19 @@ export async function getCounselor(id: number): Promise<ApiCounselor> {
 }
 
 export async function getDepartments(): Promise<Department[]> {
-  const res = await apiFetch<ApiResponse<Department[]>>(`/api/departments`);
-  return res.data ?? [];
+  return memCache.get("departments", TTL_GEO, async () => {
+    const res = await apiFetch<ApiResponse<Department[]>>(`/api/departments`);
+    return res.data ?? [];
+  });
 }
 
 export async function getCitiesByDepartment(departmentId: number): Promise<City[]> {
-  const res = await apiFetch<ApiResponse<City[]>>(
-    `/api/departments/${departmentId}/cities`,
-  );
-  return res.data ?? [];
+  return memCache.get(`cities:${departmentId}`, TTL_GEO, async () => {
+    const res = await apiFetch<ApiResponse<City[]>>(
+      `/api/departments/${departmentId}/cities`,
+    );
+    return res.data ?? [];
+  });
 }
 
 export type CreateCounselorPayload = {
@@ -81,10 +88,12 @@ export type CreateCounselorPayload = {
 
 export async function createCounselor(payload: CreateCounselorPayload) {
   await csrf();
-  return apiFetch<ApiResponse<ApiCounselor>>("/api/counselors", {
+  const result = await apiFetch<ApiResponse<ApiCounselor>>("/api/counselors", {
     method: "POST",
     body: JSON.stringify(payload),
   });
+  memCache.invalidatePrefix("counselors:");
+  return result;
 }
 
 export type UpdateCounselorPayload = Partial<Omit<CreateCounselorPayload, "password">> & {
@@ -93,19 +102,22 @@ export type UpdateCounselorPayload = Partial<Omit<CreateCounselorPayload, "passw
 
 export async function updateCounselor(id: number, payload: UpdateCounselorPayload) {
   await csrf();
-  return apiFetch<ApiResponse<ApiCounselor>>(`/api/counselors/${id}`, {
+  const result = await apiFetch<ApiResponse<ApiCounselor>>(`/api/counselors/${id}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
+  memCache.invalidatePrefix("counselors:");
+  return result;
 }
 
-//Actualizar estado vendedor
 export async function updateCounselorState(id: number, state: 1 | 2) {
   await csrf();
-  return apiFetch<ApiResponse<ApiCounselor>>(`/api/counselors/${id}`, {
+  const result = await apiFetch<ApiResponse<ApiCounselor>>(`/api/counselors/${id}`, {
     method: "PATCH",
     body: JSON.stringify({ state }),
   });
+  memCache.invalidatePrefix("counselors:");
+  return result;
 }
 
 //Comprobar cedula
@@ -126,8 +138,8 @@ export type FranchiseOption = {
 };
 
 export async function getActiveFranchises(): Promise<FranchiseOption[]> {
-  const res = await apiFetch<{ message: string; data: FranchiseOption[] }>(
-    "/api/users/active"
-  );
-  return res.data ?? [];
+  return memCache.get("franchises:active", TTL_CATALOG, async () => {
+    const res = await apiFetch<{ message: string; data: FranchiseOption[] }>("/api/users/active");
+    return res.data ?? [];
+  });
 }

@@ -13,6 +13,7 @@ import { alert } from "@/lib/alert";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
+import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 export default function EditCounselorPage() {
   usePageTitle("Editar Asesor");
@@ -29,7 +30,7 @@ export default function EditCounselorPage() {
     })();
   }, [id]);
 
-  if (!counselor) return <div className="p-6">Cargando...</div>;
+  if (!counselor) return <FormPageSkeleton fields={10} />;
 
   return (
     <>

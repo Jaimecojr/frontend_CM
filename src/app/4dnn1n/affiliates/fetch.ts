@@ -1,4 +1,5 @@
 import { apiFetch, csrf } from "@/lib/api";
+import { memCache, TTL_GEO, TTL_CATALOG, TTL_LIST } from "@/lib/memCache";
 
 export type ApiBeneficiary = {
   id?: number;
@@ -79,10 +80,13 @@ export async function getAffiliates(params?: {
   if (params?.page) qs.set("page", String(params.page));
   if (params?.per_page) qs.set("per_page", String(params.per_page));
   const query = qs.toString() ? `?${qs.toString()}` : "";
-  const res = await apiFetch<{ message: string; data: ApiAffiliate[]; meta: AffiliateMeta }>(
-    `/api/affiliates${query}`,
-  );
-  return { data: res.data ?? [], meta: res.meta };
+  const key = `affiliates:list:${query}`;
+  return memCache.get(key, TTL_LIST, async () => {
+    const res = await apiFetch<{ message: string; data: ApiAffiliate[]; meta: AffiliateMeta }>(
+      `/api/affiliates${query}`,
+    );
+    return { data: res.data ?? [], meta: res.meta };
+  });
 }
 
 export async function getAffiliate(id: number): Promise<ApiAffiliate> {
@@ -94,45 +98,52 @@ export async function getAffiliate(id: number): Promise<ApiAffiliate> {
 
 export async function updateAffiliateState(id: number, stade: 1 | 2) {
   await csrf();
-  return apiFetch<ApiResponse<ApiAffiliate>>(`/api/affiliates/${id}`, {
+  const result = apiFetch<ApiResponse<ApiAffiliate>>(`/api/affiliates/${id}`, {
     method: "PATCH",
     body: JSON.stringify({ stade }),
   });
+  memCache.invalidatePrefix("affiliates:list:");
+  return result;
 }
 
 // Helpers para combos
 export async function getDepartments(): Promise<Department[]> {
-  const res = await apiFetch<ApiResponse<Department[]>>(`/api/departments`);
-  return res.data ?? [];
+  return memCache.get("departments", TTL_GEO, async () => {
+    const res = await apiFetch<ApiResponse<Department[]>>(`/api/departments`);
+    return res.data ?? [];
+  });
 }
 
 export async function getCitiesByDepartment(
   departmentId: number,
 ): Promise<City[]> {
-  const res = await apiFetch<ApiResponse<City[]>>(
-    `/api/departments/${departmentId}/cities`,
-  );
-  return res.data ?? [];
+  return memCache.get(`cities:${departmentId}`, TTL_GEO, async () => {
+    const res = await apiFetch<ApiResponse<City[]>>(
+      `/api/departments/${departmentId}/cities`,
+    );
+    return res.data ?? [];
+  });
 }
 
 export async function getActiveFranchises(): Promise<FranchiseOption[]> {
-  const res =
-    await apiFetch<ApiResponse<FranchiseOption[]>>("/api/users/active");
-  return res.data ?? [];
+  return memCache.get("franchises:active", TTL_CATALOG, async () => {
+    const res = await apiFetch<ApiResponse<FranchiseOption[]>>("/api/users/active");
+    return res.data ?? [];
+  });
 }
 
 export async function getActiveCounselors(): Promise<CounselorOption[]> {
-  const res = await apiFetch<ApiResponse<CounselorOption[]>>(
-    "/api/counselors/active",
-  );
-  return res.data ?? [];
+  return memCache.get("counselors:active", TTL_CATALOG, async () => {
+    const res = await apiFetch<ApiResponse<CounselorOption[]>>("/api/counselors/active");
+    return res.data ?? [];
+  });
 }
 
 export async function getActiveAgreements(): Promise<AgreementOption[]> {
-  const res = await apiFetch<ApiResponse<AgreementOption[]>>(
-    "/api/agreements/active",
-  );
-  return res.data ?? [];
+  return memCache.get("agreements:active", TTL_CATALOG, async () => {
+    const res = await apiFetch<ApiResponse<AgreementOption[]>>("/api/agreements/active");
+    return res.data ?? [];
+  });
 }
 
 // Validar cédula
@@ -163,10 +174,12 @@ export type CreateAffiliatePayload = Omit<
 
 export async function createAffiliate(payload: CreateAffiliatePayload) {
   await csrf();
-  return apiFetch<ApiResponse<ApiAffiliate>>("/api/affiliates", {
+  const result = apiFetch<ApiResponse<ApiAffiliate>>("/api/affiliates", {
     method: "POST",
     body: JSON.stringify(payload),
   });
+  memCache.invalidatePrefix("affiliates:list:");
+  return result;
 }
 
 export async function updateAffiliate(
@@ -174,10 +187,12 @@ export async function updateAffiliate(
   payload: Partial<CreateAffiliatePayload>,
 ) {
   await csrf();
-  return apiFetch<ApiResponse<ApiAffiliate>>(`/api/affiliates/${id}`, {
+  const result = apiFetch<ApiResponse<ApiAffiliate>>(`/api/affiliates/${id}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
+  memCache.invalidatePrefix("affiliates:list:");
+  return result;
 }
 
 // Renovación

@@ -13,6 +13,7 @@ import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { useAuth } from "@/context/AuthContext";
+import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 export default function EditFranchisePage() {
   usePageTitle("Editar Franquicia");
@@ -39,7 +40,7 @@ export default function EditFranchisePage() {
     );
   }
 
-  if (!user) return <div className="p-6">Cargando...</div>;
+  if (!user) return <FormPageSkeleton fields={10} />;
 
   return (
     <>

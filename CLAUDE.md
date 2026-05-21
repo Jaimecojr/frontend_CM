@@ -36,6 +36,91 @@ Las rutas públicas de la página de aterrizaje e informativas se encuentran en 
   ```
 - **Navbar activo:** `Navbar.tsx` es un Client Component (`"use client"`) que usa `usePathname()` para resaltar el link de la ruta actual. Al agregar nuevas rutas públicas, añadir la condición correspondiente en el className de su `<Link>`.
 
+## Sistema de Caché en Memoria (`memCache`)
+
+**Archivo:** `src/lib/memCache.ts`
+
+Caché en memoria con TTL implementado como un `Map` singleton de módulo. Todas las importaciones desde cualquier archivo comparten la **misma tienda**, por lo que si `affiliates/fetch.ts` y `counselors/fetch.ts` ambos llaman a `getDepartments()`, la segunda llamada siempre hit el caché sin importar cuál archivo lo llamó primero.
+
+### TTLs disponibles
+
+| Constante | Valor | Para qué datos |
+|---|---|---|
+| `TTL_GEO` | 30 min | Departamentos y ciudades — nunca cambian en el sistema |
+| `TTL_CATALOG` | 5 min | Catálogos operativos: especialidades, convenios, asesores, franquicias |
+| `TTL_LIST` | 2 min | Listas paginadas: afiliados, médicos, citas |
+
+Cuando el TTL expira, la próxima llamada hace fetch al servidor de forma transparente y renueva la entrada. No hay error ni efecto negativo para el usuario.
+
+### Regla obligatoria: todo fetch de catálogo o lista usa `memCache`
+
+**Catálogos (TTL_CATALOG o TTL_GEO):**
+```ts
+import { memCache, TTL_CATALOG, TTL_GEO } from "@/lib/memCache";
+
+export async function getDepartments(): Promise<Department[]> {
+  return memCache.get("departments", TTL_GEO, async () => {
+    const res = await apiFetch<ApiResponse<Department[]>>(`/api/departments`);
+    return res.data ?? [];
+  });
+}
+```
+
+**Listas paginadas (TTL_LIST) — la clave incluye todos los parámetros:**
+```ts
+import { memCache, TTL_LIST } from "@/lib/memCache";
+
+export async function getAffiliates(params?: { stade?: string; search?: string; page?: number }): Promise<AffiliatesResponse> {
+  const qs = new URLSearchParams();
+  // ... construir qs con params ...
+  const query = qs.toString() ? `?${qs.toString()}` : "";
+  return memCache.get(`affiliates:list:${query}`, TTL_LIST, async () => {
+    const res = await apiFetch<...>(`/api/affiliates${query}`);
+    return { data: res.data ?? [], meta: res.meta };
+  });
+}
+```
+
+### Regla obligatoria: toda mutación invalida el caché afectado
+
+Después de cualquier operación que modifica datos (crear, actualizar, eliminar, cambiar estado), llamar `memCache.invalidatePrefix(prefix)` **antes del `return`**:
+
+```ts
+export async function createAffiliate(payload: CreateAffiliatePayload) {
+  await csrf();
+  const result = apiFetch<ApiResponse<ApiAffiliate>>("/api/affiliates", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  memCache.invalidatePrefix("affiliates:list:"); // invalida todas las páginas/filtros
+  return result;
+}
+```
+
+### Convención de nombres de claves
+
+| Prefijo | Datos | Invalidar con |
+|---|---|---|
+| `departments` | lista de departamentos | (nunca — TTL_GEO es suficiente) |
+| `cities:{id}` | ciudades por departamento | (nunca — TTL_GEO es suficiente) |
+| `affiliates:list:` | lista paginada de afiliados | `invalidatePrefix("affiliates:list:")` |
+| `counselors:all` | todos los asesores | `invalidatePrefix("counselors:")` |
+| `counselors:active` | asesores activos (selector) | `invalidatePrefix("counselors:")` |
+| `agreements:all` | todos los convenios | `invalidatePrefix("agreements:")` |
+| `agreements:active` | convenios activos (selector) | `invalidatePrefix("agreements:")` |
+| `franchises:active` | franquicias activas (selector) | (TTL_CATALOG es suficiente — no hay módulo de edición) |
+| `specialties:all` | todas las especialidades | `invalidatePrefix("specialties:")` |
+| `specialties:active` | especialidades activas (selector) | `invalidatePrefix("specialties:")` |
+| `doctors:list:` | lista paginada de médicos | `invalidatePrefix("doctors:list:")` |
+| `doctors:specialty:{id}` | médicos por especialidad (selector de citas) | `invalidatePrefix("doctors:specialty:")` |
+| `appointments:list:` | lista paginada de citas | `invalidatePrefix("appointments:list:")` |
+
+### Al crear un nuevo módulo
+
+1. **Catálogo pequeño (sin paginación):** cachear con `TTL_CATALOG` en `getXxx()` y `invalidatePrefix("xxx:")` en create/update/delete.
+2. **Módulo grande (paginado):** cachear con `TTL_LIST` usando `xxx:list:${query}` como clave e `invalidatePrefix("xxx:list:")` en create/update/delete.
+3. **Selectores que usa este módulo en su formulario** (departamentos, ciudades, etc.): ya están cacheados vía el singleton compartido — no hay que hacer nada extra si se importan de un fetch.ts existente.
+
 ## Manejo de Tablas y Datos (Hooks)
 
 ### 1. Tablas Pequeñas (`useClientTable`)
@@ -132,6 +217,35 @@ import { LoadingOverlay } from "@/components/LoadingOverlay";
 
 **Dashboard (`/4dnn1n/home`) — NO usar overlay:**
 El dashboard mezcla streaming SSR (Suspense) con client components con `useEffect`. Ningún overlay puede esperar a que todos terminen sin bloquear la arquitectura. Cada widget tiene su propio skeleton — ese es el patrón correcto. No crear `loading.tsx` en esa carpeta.
+
+## Módulo de Citas (`appointments`)
+
+### Restricciones de editar/eliminar
+Las acciones de editar y eliminar requieren que se cumplan **dos condiciones simultáneas**:
+1. El usuario tiene acceso (`hasAccess = user?.type === 1 || user?.type === 2`)
+2. La cita aún no ha pasado (`!isPast`)
+
+```tsx
+const apptDate = new Date(c.date + "T00:00:00");  // T00:00:00 evita desfase de timezone
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+const isPast = apptDate < today;
+```
+
+El `+ "T00:00:00"` es obligatorio: sin él, `new Date("2025-05-14")` se interpreta como medianoche UTC y puede quedar un día atrás en zonas horarias negativas (ej. Colombia, UTC-5).
+
+### Notificación WhatsApp al crear/editar
+El endpoint de crear y editar citas retorna una clave `whatsapp` adicional en el JSON: `{ enviado: true }` o `{ enviado: false, detalle: "..." }`. El frontend puede mostrar este resultado como feedback extra, pero la operación principal (guardado de la cita) siempre fue exitosa si el status HTTP es 200/201.
+
+### Ciudad en formulario (read-only)
+En los formularios de cita (crear y editar), la ciudad **no es un selector editable** — se muestra como texto de solo lectura derivado del médico seleccionado. El `city_id` se pasa en el payload tomándolo del médico, no del usuario.
+
+### `useServerTable` con `extraParams` dinámicos
+Cuando se usan `extraParams` para filtros adicionales (período, fecha), el hook resuelve automáticamente:
+- Resetea la página a 1 cuando cambia `extraParams`
+- Activa el skeleton de carga (mismo que en la carga inicial)
+
+No hace falta ningún manejo manual desde el padre para estos casos.
 
 ## Patrones y Buenas Prácticas
 1. **Optimistic UI:** Para acciones como el cambio rápido de estado (toggle activo/inactivo) desde la tabla, aplica un patrón de "Optimistic UI":

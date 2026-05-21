@@ -13,6 +13,7 @@ import { alert } from "@/lib/alert";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAuth } from "@/context/AuthContext";
+import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 export default function EditAgreementPage() {
   usePageTitle("Editar Convenio");
@@ -38,7 +39,7 @@ export default function EditAgreementPage() {
 
   if (!user || user.type !== 1) return null;
 
-  if (!agreement) return <div className="p-6">Cargando...</div>;
+  if (!agreement) return <FormPageSkeleton fields={6} />;
 
   return (
     <>

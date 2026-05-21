@@ -33,6 +33,7 @@ export default function SettingForm({ initial, onSubmit }: Props) {
     wa_phone_number_id: initial.wa_phone_number_id ?? "",
     wa_bearer_token: initial.wa_bearer_token ?? "",
     wa_template_name: initial.wa_template_name ?? "",
+    wa_appointment_template_name: initial.wa_appointment_template_name ?? "",
   });
 
   const canSubmit = useMemo(
@@ -109,15 +110,29 @@ export default function SettingForm({ initial, onSubmit }: Props) {
         </div>
 
         <div>
-          <Label required>Nombre del Template</Label>
+          <Label required>Template Carnet</Label>
           <input
             value={form.wa_template_name}
             onChange={(e) =>
               setForm((p) => ({ ...p, wa_template_name: e.target.value }))
             }
-            placeholder="Ej: saludo_bienvenida"
+            placeholder="Ej: carnet_contacto_medico"
             className="mt-1 w-full rounded-lg border border-stroke px-3 py-2 dark:border-dark-3 dark:bg-dark-2"
           />
+          <p className="mt-1 text-xs text-gray-500">Plantilla para envío de carnets por WhatsApp</p>
+        </div>
+
+        <div>
+          <Label>Template Confirmación de Cita</Label>
+          <input
+            value={form.wa_appointment_template_name}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, wa_appointment_template_name: e.target.value }))
+            }
+            placeholder="Ej: confirmacion_cita"
+            className="mt-1 w-full rounded-lg border border-stroke px-3 py-2 dark:border-dark-3 dark:bg-dark-2"
+          />
+          <p className="mt-1 text-xs text-gray-500">Plantilla para notificar citas médicas al paciente</p>
         </div>
       </div>
 

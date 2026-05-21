@@ -32,7 +32,7 @@ export const NAV_DATA = [
       {
         title: "Citas",
         icon: CalendarDays,
-        url: "",
+        url: "/4dnn1n/appointments",
         items: [],
       },
       {

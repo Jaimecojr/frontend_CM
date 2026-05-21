@@ -72,7 +72,7 @@ export default function SigninWithPassword() {
 
   return (
     <>
-    <LoadingOverlay isLoading={loading} message="Iniciando sesión" />
+    <LoadingOverlay isLoading={loading} />
     <form onSubmit={handleSubmit}>
       <InputGroup
         type="text"

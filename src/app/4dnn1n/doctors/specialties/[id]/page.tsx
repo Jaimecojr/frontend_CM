@@ -45,8 +45,22 @@ export default function SpecialtyViewPage() {
 
   if (!specialty) {
     return (
-      <div className="flex h-40 items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-t-transparent"></div>
+      <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
+        <div className="flex items-center justify-between gap-4 border-b border-stroke px-4 py-4 dark:border-dark-3 sm:px-6 xl:px-7.5">
+          <div className="space-y-2">
+            <div className="h-5 w-52 animate-pulse rounded bg-gray-200 dark:bg-dark-3" />
+            <div className="h-4 w-44 animate-pulse rounded bg-gray-200 dark:bg-dark-3" />
+          </div>
+          <div className="h-9 w-24 animate-pulse rounded-lg bg-gray-200 dark:bg-dark-3" />
+        </div>
+        <div className="p-4 sm:p-6 xl:p-7.5">
+          <div className="space-y-3">
+            <div className="h-10 w-full animate-pulse rounded-lg bg-gray-200 dark:bg-dark-3" />
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-12 w-full animate-pulse rounded-lg bg-gray-200 dark:bg-dark-3" />
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
