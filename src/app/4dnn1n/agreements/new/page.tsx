@@ -53,13 +53,12 @@ export default function NewAgreementPage() {
                 text: "Se guardará la información en el sistema.",
                 confirmButtonText: "Sí, crear",
                 cancelButtonText: "Cancelar",
+                onConfirm: () => createAgreement(payload),
               });
-
-              if (!ok) return;
-
-              await createAgreement(payload);
-              await alert.success("Creado", "Convenio creado exitosamente");
-              router.push("/4dnn1n/agreements");
+              if (ok) {
+                await alert.success("Creado", "Convenio creado exitosamente");
+                router.push("/4dnn1n/agreements");
+              }
             } catch (err) {
               await alert.error("Error", getApiErrorMessage(err));
             }

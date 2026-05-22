@@ -54,13 +54,12 @@ export default function NewUserPage() {
                 text: "Se guardará la información y quedará activa para su uso.",
                 confirmButtonText: "Sí, crear",
                 cancelButtonText: "Cancelar",
+                onConfirm: () => createUser(payload),
               });
-
-              if (!ok) return;
-
-              await createUser(payload);
-              await alert.success("Creado", "Franquicia creada exitosamente");
-              router.push("/4dnn1n/franchises");
+              if (ok) {
+                await alert.success("Creado", "Franquicia creada exitosamente");
+                router.push("/4dnn1n/franchises");
+              }
             } catch (err) {
               await alert.error("Error", getApiErrorMessage(err));
             }

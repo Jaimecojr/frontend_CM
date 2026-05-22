@@ -39,6 +39,7 @@ export function useServerTable<T>(fetchFn: FetchFn<T>, options: Options = {}) {
   const [page, setPage] = useState(1);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isInitialLoadRef = useRef(true);
 
   const handleSearchChange = (v: string) => {
     setSearch(v);
@@ -77,7 +78,7 @@ export function useServerTable<T>(fetchFn: FetchFn<T>, options: Options = {}) {
       })
       .catch(() => {}) // el caller puede manejar el error si quiere
       .finally(() => {
-        if (!cancelled) { setLoading(false); setIsHardLoad(false); }
+        if (!cancelled) { isInitialLoadRef.current = false; setLoading(false); setIsHardLoad(false); }
       });
 
     return () => { cancelled = true; };
@@ -109,5 +110,6 @@ export function useServerTable<T>(fetchFn: FetchFn<T>, options: Options = {}) {
     loading,
     stadeFilter,
     tableProps,
+    isInitialLoad: isInitialLoadRef.current,
   };
 }

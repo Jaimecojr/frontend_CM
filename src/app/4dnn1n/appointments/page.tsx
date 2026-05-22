@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
 import { DataTable } from "@/components/data-table/DataTable";
 import { CreateToolbarButton } from "@/components/data-table/CreateToolbarButton";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
@@ -27,7 +28,7 @@ export default function AppointmentsPage() {
   const [filterDate, setFilterDate] = useState("");
   const [filterPeriod, setFilterPeriod] = useState("pending");
 
-  const { setData, setMeta, tableProps } = useServerTable<ApiAppointment>(
+  const { setData, setMeta, tableProps, isInitialLoad } = useServerTable<ApiAppointment>(
     getAppointments,
     {
       defaultStade: "all",
@@ -39,21 +40,20 @@ export default function AppointmentsPage() {
   );
 
   const onDelete = async (c: ApiAppointment) => {
-    const ok = await alert.confirm({
-      title: "¿Eliminar cita?",
-      text: `Se eliminará la cita de ${c.name}. Esta acción no se puede deshacer.`,
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar",
-      icon: "warning",
-    });
-
-    if (!ok) return;
-
     try {
-      await deleteAppointment(c.id);
-      setData((prev) => prev.filter((x) => x.id !== c.id));
-      setMeta((m) => ({ ...m, total: m.total - 1 }));
-      await alert.success("Eliminada", "La cita fue eliminada correctamente.");
+      const ok = await alert.confirm({
+        title: "¿Eliminar cita?",
+        text: `Se eliminará la cita de ${c.name}. Esta acción no se puede deshacer.`,
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+        icon: "warning",
+        onConfirm: () => deleteAppointment(c.id),
+      });
+      if (ok) {
+        setData((prev) => prev.filter((x) => x.id !== c.id));
+        setMeta((m) => ({ ...m, total: m.total - 1 }));
+        await alert.success("Eliminada", "La cita fue eliminada correctamente.");
+      }
     } catch (err) {
       await alert.error("Error", getApiErrorMessage(err));
     }
@@ -83,12 +83,11 @@ export default function AppointmentsPage() {
       </select>
 
       <div className="relative shrink-0 flex items-center gap-1">
-        <input
-          type="date"
-          title="Filtrar por fecha exacta"
+        <DatePickerWithToday
           value={filterDate}
-          onChange={(e) => setFilterDate(e.target.value)}
-          className="h-9 w-full sm:w-auto rounded-lg border-[1.5px] border-stroke bg-transparent px-3 text-sm text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
+          onChange={setFilterDate}
+          placeholder="Filtrar por fecha"
+          className="h-9 w-full sm:w-auto border-[1.5px] border-stroke bg-transparent outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:focus:border-primary"
         />
         {filterDate && (
           <button
@@ -106,7 +105,7 @@ export default function AppointmentsPage() {
 
   return (
     <>
-      <LoadingOverlay isLoading={tableProps.loading} />
+      <LoadingOverlay isLoading={tableProps.loading && isInitialLoad} />
 
       <DataTable
         title="Lista de Citas"

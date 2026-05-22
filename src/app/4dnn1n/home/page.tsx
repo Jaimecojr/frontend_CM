@@ -1,58 +1,22 @@
-import { PaymentsOverview } from "@/components/Charts/payments-overview";
-import { UsedDevices } from "@/components/Charts/used-devices";
-import { WeeksProfit } from "@/components/Charts/weeks-profit";
-import { TopChannels } from "@/components/Tables/top-channels";
-import { TopChannelsSkeleton } from "@/components/Tables/top-channels/skeleton";
-import { createTimeFrameExtractor } from "@/utils/timeframe-extractor";
-import { Suspense } from "react";
-import { ChatsCard } from "./_components/chats-card";
-import { ExpiringTodayCard } from "./_components/expiring-today-card";
-import { OverviewCardsGroup } from "./_components/overview-cards";
-import { OverviewCardsSkeleton } from "./_components/overview-cards/skeleton";
-import { RegionLabels } from "./_components/region-labels";
+import { ExpiringTodayCard } from './_components/expiring-today-card';
+import { TodayAppointmentsCard } from './_components/today-appointments-card';
+import { StatsCards } from './_components/stats-cards';
+import { ChartsSection } from './_components/charts-section';
 
-type PropsType = {
-  searchParams: Promise<{ selected_time_frame?: string }>;
-};
-
-export default async function Home({ searchParams }: PropsType) {
-  const { selected_time_frame } = await searchParams;
-  const extractTimeFrame = createTimeFrameExtractor(selected_time_frame);
-
+export default function DashboardPage() {
   return (
-    <>
-      <ExpiringTodayCard />
-
-      <Suspense fallback={<OverviewCardsSkeleton />}>
-        <OverviewCardsGroup />
-      </Suspense>
-
-      <div className="mt-4 grid grid-cols-12 gap-4 md:mt-6 md:gap-6 2xl:mt-9 2xl:gap-7.5">
-        <PaymentsOverview
-          className="col-span-12 xl:col-span-7"
-          key={extractTimeFrame("payments_overview")}
-          timeFrame={extractTimeFrame("payments_overview")?.split(":")[1]}
-        />
-        <WeeksProfit
-          key={extractTimeFrame("weeks_profit")}
-          timeFrame={extractTimeFrame("weeks_profit")?.split(":")[1]}
-          className="col-span-12 xl:col-span-5"
-        />
-        <UsedDevices
-          className="col-span-12 xl:col-span-5"
-          key={extractTimeFrame("used_devices")}
-          timeFrame={extractTimeFrame("used_devices")?.split(":")[1]}
-        />
-        <RegionLabels />
-        <div className="col-span-12 grid xl:col-span-8">
-          <Suspense fallback={<TopChannelsSkeleton />}>
-            <TopChannels />
-          </Suspense>
-        </div>
-        <Suspense fallback={null}>
-          <ChatsCard />
-        </Suspense>
+    <div className="flex flex-col gap-6 p-4 md:p-6">
+      {/* Fila 1: Contratos que vencen hoy + Citas del día */}
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <ExpiringTodayCard />
+        <TodayAppointmentsCard />
       </div>
-    </>
+
+      {/* Fila 2: Métricas globales — se oculta automáticamente si no es type=1 */}
+      <StatsCards />
+
+      {/* Filas 3 y 4: Gráficas generales + por franquicia */}
+      <ChartsSection />
+    </div>
   );
 }

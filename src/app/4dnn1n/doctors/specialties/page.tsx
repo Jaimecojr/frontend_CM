@@ -29,25 +29,23 @@ export default function SpecialtiesPage() {
   const onToggleState = async (item: ApiSpecialty) => {
     const isActive = Number(item.state) === 1;
     const nextState: 0 | 1 = isActive ? 0 : 1;
-    
-    const ok = await alert.confirm({
-      title: isActive ? "¿Inactivar especialidad?" : "¿Activar especialidad?",
-      text: isActive 
-        ? "No aparecerá en los selectores al crear un médico." 
-        : "Estará disponible nuevamente.",
-      confirmButtonText: "Sí, continuar",
-    });
-
-    if (!ok) return;
-
-    // Optimistic UI
-    setData((prev) => prev.map((x) => (x.id === item.id ? { ...x, state: nextState } : x)));
 
     try {
-      await updateSpecialtyState(item.id, nextState);
-      await alert.success("Actualizado", `La especialidad ha sido ${isActive ? "inactivada" : "activada"}.`);
+      const ok = await alert.confirm({
+        title: isActive ? "¿Inactivar especialidad?" : "¿Activar especialidad?",
+        text: isActive
+          ? "No aparecerá en los selectores al crear un médico."
+          : "Estará disponible nuevamente.",
+        confirmButtonText: "Sí, continuar",
+        onConfirm: async () => {
+          setData((prev) => prev.map((x) => (x.id === item.id ? { ...x, state: nextState } : x)));
+          await updateSpecialtyState(item.id, nextState);
+        },
+      });
+      if (ok) {
+        await alert.success("Actualizado", `La especialidad ha sido ${isActive ? "inactivada" : "activada"}.`);
+      }
     } catch (err) {
-      // Revertir
       setData((prev) => prev.map((x) => (x.id === item.id ? { ...x, state: item.state } : x)));
       await alert.error("Error", getApiErrorMessage(err));
     }

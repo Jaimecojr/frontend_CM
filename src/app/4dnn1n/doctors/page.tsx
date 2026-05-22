@@ -62,7 +62,7 @@ export default function DoctorsPage() {
     else setFilterSpecialtyId("");
   };
 
-  const { data, setData, setMeta, stadeFilter, tableProps } = useServerTable<ApiDoctor>(
+  const { data, setData, setMeta, stadeFilter, tableProps, isInitialLoad } = useServerTable<ApiDoctor>(
     getDoctors,
     { 
       defaultStade: "1",
@@ -77,29 +77,27 @@ export default function DoctorsPage() {
   const onToggleState = async (item: ApiDoctor) => {
     const isActive = Number(item.state) === 1;
     const nextState: 1 | 2 = isActive ? 2 : 1;
-    
-    const ok = await alert.confirm({
-      title: isActive ? "¿Inactivar médico?" : "¿Activar médico?",
-      text: isActive 
-        ? "El médico no aparecerá activo en el sistema." 
-        : "El médico volverá a estar disponible.",
-      confirmButtonText: "Sí, continuar",
-    });
-
-    if (!ok) return;
-
-    // Optimistic UI
-    setData((prev) => prev.map((x) => (x.id === item.id ? { ...x, state: nextState } : x)));
 
     try {
-      await updateDoctorState(item.id, nextState);
-      await alert.success("Actualizado", `El médico ha sido ${isActive ? "inactivado" : "activado"}.`);
-      if (stadeFilter !== "all") {
-        setData((prev) => prev.filter((x) => x.id !== item.id));
-        setMeta((m) => ({ ...m, total: m.total - 1 }));
+      const ok = await alert.confirm({
+        title: isActive ? "¿Inactivar médico?" : "¿Activar médico?",
+        text: isActive
+          ? "El médico no aparecerá activo en el sistema."
+          : "El médico volverá a estar disponible.",
+        confirmButtonText: "Sí, continuar",
+        onConfirm: async () => {
+          setData((prev) => prev.map((x) => (x.id === item.id ? { ...x, state: nextState } : x)));
+          await updateDoctorState(item.id, nextState);
+        },
+      });
+      if (ok) {
+        await alert.success("Actualizado", `El médico ha sido ${isActive ? "inactivado" : "activado"}.`);
+        if (stadeFilter !== "all") {
+          setData((prev) => prev.filter((x) => x.id !== item.id));
+          setMeta((m) => ({ ...m, total: m.total - 1 }));
+        }
       }
     } catch (err) {
-      // Revertir
       setData((prev) => prev.map((x) => (x.id === item.id ? { ...x, state: item.state } : x)));
       await alert.error("Error", getApiErrorMessage(err));
     }
@@ -157,7 +155,7 @@ export default function DoctorsPage() {
 
   return (
     <>
-      <LoadingOverlay isLoading={tableProps.loading} />
+      <LoadingOverlay isLoading={tableProps.loading && isInitialLoad} />
 
       <div className="mb-4 flex justify-end">
         {hasAccess && (

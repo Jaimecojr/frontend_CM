@@ -69,16 +69,12 @@ export default function EditFranchisePage() {
                 text: "Se actualizará la franquicia con la nueva información.",
                 confirmButtonText: "Sí, guardar",
                 cancelButtonText: "Cancelar",
+                onConfirm: () => updateFranchise(id, payload),
               });
-
-              if (!ok) return;
-
-              await updateFranchise(id, payload);
-              await alert.success(
-                "Actualizado",
-                "Franquicia editada exitosamente",
-              );
-              router.push("/4dnn1n/franchises");
+              if (ok) {
+                await alert.success("Actualizado", "Franquicia editada exitosamente");
+                router.push("/4dnn1n/franchises");
+              }
             } catch (err) {
               await alert.error("Error", getApiErrorMessage(err));
             }

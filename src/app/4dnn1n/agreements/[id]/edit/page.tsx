@@ -68,13 +68,12 @@ export default function EditAgreementPage() {
                 text: "Se actualizará el convenio con la nueva información.",
                 confirmButtonText: "Sí, guardar",
                 cancelButtonText: "Cancelar",
+                onConfirm: () => updateAgreement(id, payload),
               });
-
-              if (!ok) return;
-
-              await updateAgreement(id, payload);
-              await alert.success("Actualizado", "Convenio editado exitosamente");
-              router.push("/4dnn1n/agreements");
+              if (ok) {
+                await alert.success("Actualizado", "Convenio editado exitosamente");
+                router.push("/4dnn1n/agreements");
+              }
             } catch (err) {
               await alert.error("Error", getApiErrorMessage(err));
             }

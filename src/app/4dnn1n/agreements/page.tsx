@@ -30,20 +30,20 @@ export default function AgreementsPage() {
     const isActive = Number(agreement.state) === 1;
     const nextState: 1 | 0 = isActive ? 0 : 1;
 
-    const ok = await alert.confirm({
-      title: isActive ? "¿Inactivar convenio?" : "¿Activar convenio?",
-      text: isActive ? "El convenio quedará inactivo." : "El convenio quedará activo nuevamente.",
-      confirmButtonText: isActive ? "Sí, inactivar" : "Sí, activar",
-      cancelButtonText: "Cancelar",
-    });
-
-    if (!ok) return;
-
-    setData((prev) => prev.map((x) => (x.id === agreement.id ? { ...x, state: nextState } : x)));
-
     try {
-      await updateAgreementState(agreement, nextState);
-      await alert.success("Actualizado", isActive ? "Convenio inactivado." : "Convenio activado.");
+      const ok = await alert.confirm({
+        title: isActive ? "¿Inactivar convenio?" : "¿Activar convenio?",
+        text: isActive ? "El convenio quedará inactivo." : "El convenio quedará activo nuevamente.",
+        confirmButtonText: isActive ? "Sí, inactivar" : "Sí, activar",
+        cancelButtonText: "Cancelar",
+        onConfirm: async () => {
+          setData((prev) => prev.map((x) => (x.id === agreement.id ? { ...x, state: nextState } : x)));
+          await updateAgreementState(agreement, nextState);
+        },
+      });
+      if (ok) {
+        await alert.success("Actualizado", isActive ? "Convenio inactivado." : "Convenio activado.");
+      }
     } catch (err) {
       setData((prev) => prev.map((x) => (x.id === agreement.id ? { ...x, state: agreement.state } : x)));
       await alert.error("Error", getApiErrorMessage(err));

@@ -59,13 +59,12 @@ export default function EditCounselorPage() {
                 text: "Se actualizará el asesor con la nueva información.",
                 confirmButtonText: "Sí, guardar",
                 cancelButtonText: "Cancelar",
+                onConfirm: () => updateCounselor(id, payload),
               });
-
-              if (!ok) return;
-
-              await updateCounselor(id, payload);
-              await alert.success("Actualizado", "Asesor editado exitosamente");
-              router.push("/4dnn1n/counselors");
+              if (ok) {
+                await alert.success("Actualizado", "Asesor editado exitosamente");
+                router.push("/4dnn1n/counselors");
+              }
             } catch (err) {
               await alert.error("Error", getApiErrorMessage(err));
             }

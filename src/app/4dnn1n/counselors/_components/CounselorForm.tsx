@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Save, Eraser } from "lucide-react";
+import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
 import { SearchableSelect } from "@/components/FormElements/SearchableSelect";
 import type {
   ApiCounselor,
@@ -408,15 +409,13 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
 
         <div>
           <Label>Fecha de ingreso</Label>
-          <input
-            type="date"
-            value={form.date_admission}
-            disabled={isView}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, date_admission: e.target.value }))
-            }
-            className="mt-1 w-full rounded-lg border px-3 py-2"
-          />
+          <div className="mt-1">
+            <DatePickerWithToday
+              value={form.date_admission}
+              disabled={isView}
+              onChange={(date) => setForm((p) => ({ ...p, date_admission: date }))}
+            />
+          </div>
         </div>
 
         <div>

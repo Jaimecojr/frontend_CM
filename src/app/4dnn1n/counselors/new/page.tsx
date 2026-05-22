@@ -43,13 +43,12 @@ export default function NewCounselorPage() {
                 text: "Se guardará la información y quedará activo para su uso.",
                 confirmButtonText: "Sí, crear",
                 cancelButtonText: "Cancelar",
+                onConfirm: () => createCounselor(payload),
               });
-
-              if (!ok) return;
-
-              await createCounselor(payload);
-              await alert.success("Creado", "Asesor creado exitosamente");
-              router.push("/4dnn1n/counselors");
+              if (ok) {
+                await alert.success("Creado", "Asesor creado exitosamente");
+                router.push("/4dnn1n/counselors");
+              }
             } catch (err) {
               await alert.error("Error", getApiErrorMessage(err));
             }

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Save, User, Users } from "lucide-react";
+import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
 import { SearchableSelect } from "@/components/FormElements/SearchableSelect";
 import { Button } from "@/components/ui-elements/button";
 import {
@@ -223,12 +224,12 @@ export default function AppointmentEditForm({ initial, onSubmit }: Props) {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <Label required>Fecha</Label>
-            <input
-              type="date"
-              value={form.date}
-              onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))}
-              className="mt-1 w-full rounded-lg border border-stroke px-3 py-2 text-sm dark:border-dark-3 dark:bg-dark-2 dark:text-white"
-            />
+            <div className="mt-1">
+              <DatePickerWithToday
+                value={form.date}
+                onChange={(date) => setForm((p) => ({ ...p, date }))}
+              />
+            </div>
           </div>
 
           <div>

@@ -35,13 +35,12 @@ export default function NewAffiliatePage() {
         text: "Se guardará la información del afiliado y sus beneficiarios.",
         confirmButtonText: "Sí, crear",
         cancelButtonText: "Cancelar",
+        onConfirm: () => createAffiliate(payload),
       });
-
-      if (!ok) return;
-
-      await createAffiliate(payload);
-      await alert.success("Creado", "Afiliado registrado correctamente.");
-      router.push("/4dnn1n/affiliates");
+      if (ok) {
+        await alert.success("Creado", "Afiliado registrado correctamente.");
+        router.push("/4dnn1n/affiliates");
+      }
     } catch (error) {
       await alert.error("Error", getApiErrorMessage(error));
     }

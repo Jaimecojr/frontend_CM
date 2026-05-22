@@ -49,17 +49,17 @@ export function AffiliateNotes({ affiliateId, affiliateName = "Afiliado" }: Prop
   }, [affiliateId]);
 
   const handleDelete = async (note: ApiAffiliateNote) => {
-    const ok = await alert.confirm({
-      title: "¿Eliminar nota?",
-      text: "Esta acción no se puede deshacer.",
-      confirmButtonText: "Sí, eliminar",
-      cancelButtonText: "Cancelar",
-    });
-    if (!ok) return;
-
     try {
-      await deleteAffiliateNote(affiliateId, note.id);
-      setNotes((prev) => prev.filter((n) => n.id !== note.id));
+      const ok = await alert.confirm({
+        title: "¿Eliminar nota?",
+        text: "Esta acción no se puede deshacer.",
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+        onConfirm: () => deleteAffiliateNote(affiliateId, note.id),
+      });
+      if (ok) {
+        setNotes((prev) => prev.filter((n) => n.id !== note.id));
+      }
     } catch (err) {
       await alert.error("Error", getApiErrorMessage(err));
     }

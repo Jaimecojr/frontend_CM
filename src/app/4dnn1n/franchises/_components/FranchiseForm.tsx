@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Save, Eraser } from "lucide-react";
+import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
 import type { ApiFranchise, City, Department } from "../fetch";
 import { getCitiesByDepartment, getDepartments } from "../fetch";
 import { Button } from "@/components/ui-elements/button";
@@ -325,15 +326,13 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
         {/* Fecha creación */}
         <div>
           <Label>Fecha de creación</Label>
-          <input
-            type="date"
-            value={form.date_afi}
-            disabled={isView}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, date_afi: e.target.value }))
-            }
-            className="mt-1 w-full rounded-lg border px-3 py-2"
-          />
+          <div className="mt-1">
+            <DatePickerWithToday
+              value={form.date_afi}
+              disabled={isView}
+              onChange={(date) => setForm((p) => ({ ...p, date_afi: date }))}
+            />
+          </div>
         </div>
 
 

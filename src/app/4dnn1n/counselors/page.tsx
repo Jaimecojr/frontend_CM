@@ -24,22 +24,22 @@ export default function CounselorsPage() {
     const isActive = Number(c.state) === 1;
     const nextState: 1 | 2 = isActive ? 2 : 1;
 
-    const ok = await alert.confirm({
-      title: isActive ? "¿Inactivar asesor?" : "¿Activar asesor?",
-      text: isActive
-        ? "El asesor quedará inactivo y no podrá usarse hasta reactivarlo."
-        : "El asesor quedará activo y podrá usarse nuevamente.",
-      confirmButtonText: isActive ? "Sí, inactivar" : "Sí, activar",
-      cancelButtonText: "Cancelar",
-    });
-
-    if (!ok) return;
-
-    setData((prev) => prev.map((x) => (x.id === c.id ? { ...x, state: nextState } : x)));
-
     try {
-      await updateCounselorState(c.id, nextState);
-      await alert.success("Actualizado", isActive ? "Asesor inactivado." : "Asesor activado.");
+      const ok = await alert.confirm({
+        title: isActive ? "¿Inactivar asesor?" : "¿Activar asesor?",
+        text: isActive
+          ? "El asesor quedará inactivo y no podrá usarse hasta reactivarlo."
+          : "El asesor quedará activo y podrá usarse nuevamente.",
+        confirmButtonText: isActive ? "Sí, inactivar" : "Sí, activar",
+        cancelButtonText: "Cancelar",
+        onConfirm: async () => {
+          setData((prev) => prev.map((x) => (x.id === c.id ? { ...x, state: nextState } : x)));
+          await updateCounselorState(c.id, nextState);
+        },
+      });
+      if (ok) {
+        await alert.success("Actualizado", isActive ? "Asesor inactivado." : "Asesor activado.");
+      }
     } catch (err) {
       setData((prev) => prev.map((x) => (x.id === c.id ? { ...x, state: c.state } : x)));
       await alert.error("Error", getApiErrorMessage(err));

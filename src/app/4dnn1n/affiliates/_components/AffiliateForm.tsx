@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Save, Eraser, Plus, Trash2 } from "lucide-react";
+import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
 import { SearchableSelect } from "@/components/FormElements/SearchableSelect";
 import type {
   ApiAffiliate,
@@ -473,13 +474,13 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
         {/* Fecha de Nacimiento */}
         <div>
           <Label>Fecha de Nacimiento</Label>
-          <input
-            type="date"
-            value={form.bithdate}
-            disabled={isView}
-            onChange={(e) => setForm({ ...form, bithdate: e.target.value })}
-            className="mt-1 w-full rounded-lg border px-3 py-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:dark:bg-dark-2"
-          />
+          <div className="mt-1">
+            <DatePickerWithToday
+              value={form.bithdate}
+              disabled={isView}
+              onChange={(date) => setForm({ ...form, bithdate: date })}
+            />
+          </div>
         </div>
 
         {/* Telefonos */}
@@ -648,48 +649,83 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
         <div className="md:col-span-2 lg:col-span-2">
           {isEdit || isView ? (
              <div className="mt-2">
-               <Label>Vigencia:</Label>
-               <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                  Desde {form.validity} Hasta {form.validity_end}
+               <Label>Vigencia</Label>
+               <div className="mt-1 flex w-full flex-col items-start gap-3 rounded-lg border bg-gray-50 px-3 py-2 sm:flex-row sm:items-center dark:bg-dark-3">
+                 <span className="text-sm italic text-gray-600 dark:text-gray-400">Fecha Inicial:</span>
+                 <input
+                   type="date"
+                   value={form.validity}
+                   disabled
+                   readOnly
+                   className="rounded-md border border-transparent bg-transparent px-2 py-1 text-sm font-medium text-gray-800 cursor-not-allowed dark:text-gray-200"
+                 />
+                 <span className="hidden sm:inline text-gray-400">-</span>
+                 <span className="text-sm italic text-gray-600 dark:text-gray-400">Fecha Final:</span>
+                 <input
+                   type="date"
+                   value={form.validity_end}
+                   disabled
+                   readOnly
+                   className="rounded-md border border-transparent bg-transparent px-2 py-1 text-sm font-medium text-gray-800 cursor-not-allowed dark:text-gray-200"
+                 />
                </div>
 
                {isEdit && (
                  <div className="mt-4">
                    <div className="flex items-center gap-4 mb-2">
                      <Label>Renovar:</Label>
-                     <label className="flex items-center gap-1 text-sm cursor-pointer">
+                     <label className="flex items-center gap-2 text-sm cursor-pointer">
                        <input type="radio" value="si" checked={wantsRenovation === "si"} onChange={(e) => setWantsRenovation(e.target.value)} /> Sí
                      </label>
-                     <label className="flex items-center gap-1 text-sm cursor-pointer">
+                     <label className="flex items-center gap-2 text-sm cursor-pointer">
                        <input type="radio" value="no" checked={wantsRenovation === "no"} onChange={(e) => setWantsRenovation(e.target.value)} /> No
                      </label>
                    </div>
-                   
-                   {wantsRenovation === "si" && (
-                     <div className="mt-2 text-sm">
-                        <Label>Renovación:</Label>
-                        <div className="mt-2 ml-4 flex flex-col gap-3">
-                          <div className="flex flex-wrap items-center gap-3">
-                             <span className="text-sm font-medium">Inicio:</span>
-                             <label className="flex items-center gap-1 cursor-pointer">
-                               <input type="radio" value="vencimiento" checked={renovationType === "vencimiento"} onChange={(e) => setRenovationType(e.target.value)} /> Fecha de vencimiento
-                             </label>
-                             <label className="flex items-center gap-1 cursor-pointer">
-                               <input type="radio" value="hoy" checked={renovationType === "hoy"} onChange={(e) => setRenovationType(e.target.value)} /> Hoy
-                             </label>
-                          </div>
 
-                          <div className="flex items-center gap-2">
-                             <input type="date" value={renovationDateIni} onChange={(e) => setRenovationDateIni(e.target.value)} className="rounded border px-2 py-1 text-sm dark:bg-dark-3 dark:border-dark-4 w-[160px]"/>
-                             <span>-</span>
-                             <input type="date" value={addOneYear(renovationDateIni)} disabled className="rounded border px-2 py-1 text-sm cursor-not-allowed text-gray-600 dark:bg-dark-3 dark:border-dark-4 max-w-[160px]"/>
-                          </div>
-                          
-                          <div className="flex items-center gap-2 mt-1">
-                             <span className="text-sm w-[40px] font-medium">Valor:</span>
-                             <input type="text" value={Number(renovationValue).toLocaleString("es-CO")} readOnly className="rounded border px-2 py-1 text-sm cursor-not-allowed text-gray-600 dark:bg-dark-3 dark:border-dark-4 w-[160px]"/>
-                          </div>
-                        </div>
+                   {wantsRenovation === "si" && (
+                     <div className="mt-2">
+                       <Label>Nueva vigencia</Label>
+                       <div className="mt-1 flex w-full flex-col gap-3 rounded-lg border bg-gray-50 px-3 py-3 dark:bg-dark-3">
+                         <div className="flex flex-wrap items-center gap-3">
+                           <span className="text-sm italic text-gray-600 dark:text-gray-400">Inicio desde:</span>
+                           <label className="flex items-center gap-2 text-sm cursor-pointer">
+                             <input type="radio" value="vencimiento" checked={renovationType === "vencimiento"} onChange={(e) => setRenovationType(e.target.value)} />
+                             Fecha de vencimiento
+                           </label>
+                           <label className="flex items-center gap-2 text-sm cursor-pointer">
+                             <input type="radio" value="hoy" checked={renovationType === "hoy"} onChange={(e) => setRenovationType(e.target.value)} />
+                             Hoy
+                           </label>
+                         </div>
+
+                         <div className="flex w-full flex-col items-start gap-3 sm:flex-row sm:items-center">
+                           <span className="text-sm italic text-gray-600 dark:text-gray-400">Fecha Inicial:</span>
+                           <DatePickerWithToday
+                             value={renovationDateIni}
+                             onChange={setRenovationDateIni}
+                             className="rounded-md border bg-white px-2 py-1 text-sm dark:border-dark-4 dark:bg-dark-2"
+                           />
+                           <span className="hidden sm:inline text-gray-400">-</span>
+                           <span className="text-sm italic text-gray-600 dark:text-gray-400">Fecha Final:</span>
+                           <input
+                             type="date"
+                             value={addOneYear(renovationDateIni)}
+                             disabled
+                             readOnly
+                             className="rounded-md border border-transparent bg-transparent px-2 py-1 text-sm font-medium text-gray-800 cursor-not-allowed dark:text-gray-200"
+                           />
+                         </div>
+
+                         <div className="flex items-center gap-3">
+                           <span className="text-sm italic text-gray-600 dark:text-gray-400">Valor:</span>
+                           <input
+                             type="text"
+                             value={Number(renovationValue).toLocaleString("es-CO")}
+                             readOnly
+                             className="rounded-md border border-transparent bg-transparent px-2 py-1 text-sm font-medium text-gray-800 cursor-not-allowed dark:text-gray-200"
+                           />
+                         </div>
+                       </div>
                      </div>
                    )}
                  </div>
@@ -700,17 +736,11 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
               <Label required={true}>Vigencia</Label>
               <div className="mt-1 flex w-full flex-col items-start gap-3 rounded-lg border bg-gray-50 px-3 py-2 sm:flex-row sm:items-center dark:bg-dark-3">
                 <span className="text-sm italic text-gray-600 dark:text-gray-400">Fecha Inicial:</span>
-                <input
-                  type="date"
+                <DatePickerWithToday
                   value={form.validity}
-                  onChange={(e) => {
-                    const start = e.target.value;
-                    setForm({
-                      ...form,
-                      validity: start,
-                      validity_end: addOneYear(start),
-                    });
-                  }}
+                  onChange={(date) =>
+                    setForm({ ...form, validity: date, validity_end: addOneYear(date) })
+                  }
                   className="rounded-md border bg-white px-2 py-1 text-sm dark:border-dark-4 dark:bg-dark-2"
                 />
 
@@ -731,13 +761,13 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
 
         <div>
           <Label required={!isView}>Fecha Venta</Label>
-          <input
-            type="date"
-            value={form.sale_date}
-            disabled={isView}
-            onChange={(e) => setForm({ ...form, sale_date: e.target.value })}
-            className="mt-1 w-full rounded-lg border px-3 py-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:dark:bg-dark-2"
-          />
+          <div className="mt-1">
+            <DatePickerWithToday
+              value={form.sale_date}
+              disabled={isView}
+              onChange={(date) => setForm({ ...form, sale_date: date })}
+            />
+          </div>
         </div>
 
         {/* Saldos y Comisiones */}

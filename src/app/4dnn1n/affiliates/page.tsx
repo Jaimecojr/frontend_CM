@@ -25,7 +25,7 @@ export default function AffiliatesPage() {
   const hasAccess = user?.type === 1 || user?.type === 2;
   const canToggle = user?.type === 1;
 
-  const { data, setData, setMeta, stadeFilter, tableProps } = useServerTable<ApiAffiliate>(
+  const { data, setData, setMeta, stadeFilter, tableProps, isInitialLoad } = useServerTable<ApiAffiliate>(
     getAffiliates,
     { defaultStade: "1" },
   );
@@ -37,23 +37,23 @@ export default function AffiliatesPage() {
     const isActive = Number(c.stade) === 1;
     const nextStade: 1 | 2 = isActive ? 2 : 1;
 
-    const ok = await alert.confirm({
-      title: isActive ? "¿Inactivar afiliado?" : "¿Activar afiliado?",
-      text: isActive ? "El afiliado quedará inactivo." : "El afiliado quedará activo.",
-      confirmButtonText: isActive ? "Sí, inactivar" : "Sí, activar",
-      cancelButtonText: "Cancelar",
-    });
-
-    if (!ok) return;
-
-    setData((prev) => prev.map((x) => (x.id === c.id ? { ...x, stade: nextStade } : x)));
-
     try {
-      await updateAffiliateState(c.id, nextStade);
-      await alert.success("Actualizado", isActive ? "Afiliado inactivado." : "Afiliado activado.");
-      if (stadeFilter !== "all") {
-        setData((prev) => prev.filter((x) => x.id !== c.id));
-        setMeta((m) => ({ ...m, total: m.total - 1 }));
+      const ok = await alert.confirm({
+        title: isActive ? "¿Inactivar afiliado?" : "¿Activar afiliado?",
+        text: isActive ? "El afiliado quedará inactivo." : "El afiliado quedará activo.",
+        confirmButtonText: isActive ? "Sí, inactivar" : "Sí, activar",
+        cancelButtonText: "Cancelar",
+        onConfirm: async () => {
+          setData((prev) => prev.map((x) => (x.id === c.id ? { ...x, stade: nextStade } : x)));
+          await updateAffiliateState(c.id, nextStade);
+        },
+      });
+      if (ok) {
+        await alert.success("Actualizado", isActive ? "Afiliado inactivado." : "Afiliado activado.");
+        if (stadeFilter !== "all") {
+          setData((prev) => prev.filter((x) => x.id !== c.id));
+          setMeta((m) => ({ ...m, total: m.total - 1 }));
+        }
       }
     } catch (err) {
       setData((prev) => prev.map((x) => (x.id === c.id ? { ...x, stade: c.stade } : x)));
@@ -62,20 +62,19 @@ export default function AffiliatesPage() {
   };
 
   const onSendCarnet = async (c: ApiAffiliate) => {
-    const ok = await alert.confirm({
-      title: "¿Enviar carnet?",
-      text: `Se enviará el carnet de ${c.name} ${c.lastname} por WhatsApp al número ${c.movil}.`,
-      confirmButtonText: "Sí, enviar",
-      cancelButtonText: "Cancelar",
-      icon: "question",
-    });
-
-    if (!ok) return;
-
     try {
-      await sendCarnet(c.id);
-      setData((prev) => prev.map((x) => (x.id === c.id ? { ...x, carnet: "si" as const } : x)));
-      await alert.success("Carnet enviado", "El carnet fue enviado exitosamente por WhatsApp.");
+      const ok = await alert.confirm({
+        title: "¿Enviar carnet?",
+        text: `Se enviará el carnet de ${c.name} ${c.lastname} por WhatsApp al número ${c.movil}.`,
+        confirmButtonText: "Sí, enviar",
+        cancelButtonText: "Cancelar",
+        icon: "question",
+        onConfirm: () => sendCarnet(c.id),
+      });
+      if (ok) {
+        setData((prev) => prev.map((x) => (x.id === c.id ? { ...x, carnet: "si" as const } : x)));
+        await alert.success("Carnet enviado", "El carnet fue enviado exitosamente por WhatsApp.");
+      }
     } catch (err) {
       await alert.error("Envío fallido", getApiErrorMessage(err));
     }
@@ -95,7 +94,7 @@ export default function AffiliatesPage() {
 
   return (
     <>
-      <LoadingOverlay isLoading={tableProps.loading} />
+      <LoadingOverlay isLoading={tableProps.loading && isInitialLoad} />
 
       <DataTable
         title="Lista de Usuarios"

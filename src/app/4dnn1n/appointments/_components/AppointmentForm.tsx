@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
 import { Search, Save, Eraser, CheckCircle2, User, Users } from "lucide-react";
 import { SearchableSelect } from "@/components/FormElements/SearchableSelect";
 import { Button } from "@/components/ui-elements/button";
@@ -344,12 +345,12 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
             {/* Fecha */}
             <div>
               <Label required>Fecha</Label>
-              <input
-                type="date"
-                value={form.date}
-                onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-stroke px-3 py-2 text-sm dark:border-dark-3 dark:bg-dark-2 dark:text-white"
-              />
+              <div className="mt-1">
+                <DatePickerWithToday
+                  value={form.date}
+                  onChange={(date) => setForm((p) => ({ ...p, date }))}
+                />
+              </div>
             </div>
 
             {/* Hora */}

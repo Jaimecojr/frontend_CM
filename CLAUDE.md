@@ -134,6 +134,19 @@ Se usa para módulos pesados con miles de registros (ej. afiliados).
 - Se hace destructuring de `tableProps` retornadas por el hook hacia el `<DataTable>`.
 - **Regla Crítica del DataTable:** Al pasar opciones en `stateFilterOptions`, **NUNCA** incluyas manualmente una opción "Todos" o "all". El componente interno `DataTableToolbar` la agrega automáticamente.
 
+#### `isInitialLoad` — overlay solo en la carga inicial
+El hook expone `isInitialLoad: boolean` (empieza en `true`, pasa a `false` tras el primer fetch). Úsalo para que el `LoadingOverlay` de pantalla completa solo aparezca al entrar al módulo, no en cada cambio de filtro. Para cambios de filtro es suficiente el skeleton de la tabla.
+
+```tsx
+const { tableProps, isInitialLoad } = useServerTable(fetchFn, options);
+
+// Correcto: overlay solo en la carga inicial
+<LoadingOverlay isLoading={tableProps.loading && isInitialLoad} />
+
+// Incorrecto: overlay en CADA cambio de filtro (genera UX intrusiva)
+<LoadingOverlay isLoading={tableProps.loading} />
+```
+
 ## Convenciones de Estado de Registros
 - **Afiliados:** Usa la propiedad `stade` (1 = Activo, 2 = Inactivo).
 - **Asesores, Franquicias, Médicos:** Usa la propiedad `state` (1 = Activo, 2 = Inactivo).
@@ -190,6 +203,37 @@ Reemplaza todos los `<select>` nativos en los formularios del panel admin. Permi
 
 **Nota:** El campo **Asesor** en `AffiliateForm` tiene su propio combobox personalizado con lógica adicional (validación de selección forzada) y **no** usa `SearchableSelect`.
 
+### `DatePickerWithToday` — Selector de fecha con botón "Hoy"
+**Ubicación:** `@/components/FormElements/DatePicker/DatePickerWithToday`
+
+Reemplaza **todos** los `<input type="date">` editables del sistema. Usa flatpickr con locale español e inyecta un botón "Hoy" dentro del calendario para seleccionar la fecha actual con un clic.
+
+**Cuándo usarlo:** siempre que un formulario (panel admin o web pública) tenga un campo de fecha editable. Los únicos `<input type="date">` que pueden permanecer nativos son los que están siempre `disabled` y son calculados automáticamente (ej. fecha final de vigencia, fecha final de renovación).
+
+**API del componente:**
+```tsx
+<DatePickerWithToday
+  value={form.date}              // string "YYYY-MM-DD" o ""
+  onChange={(date) => setForm((p) => ({ ...p, date }))}  // recibe "YYYY-MM-DD"
+  disabled={isView}              // opcional — modo solo lectura (no abre el calendario)
+  placeholder="dd/mm/aaaa"       // opcional
+  className=""                   // opcional — clases adicionales para tamaño o bordes
+/>
+```
+
+- El valor interno siempre viaja como `YYYY-MM-DD` (compatible con la API).
+- La visualización al usuario es `dd/mm/YYYY` en español (locale `es`).
+- Cuando `disabled=true`, renderiza un input de solo lectura con la fecha formateada en `dd/mm/YYYY`.
+- Cuando el valor se limpia desde el padre (`value=""`), el calendario se limpia automáticamente.
+
+**Módulos donde ya está aplicado:**
+- Citas: fecha de la cita (crear y editar)
+- Afiliados: fecha de nacimiento, fecha inicial de vigencia, fecha de inicio de renovación, fecha venta
+- Asesores: fecha de ingreso
+- Franquicias: fecha de creación
+- Lista de citas: filtro por fecha exacta
+- Registro público (`/web/afiliarse`): fecha de nacimiento
+
 ## LoadingOverlay — Pantalla de carga del panel admin
 
 **Componente:** `@/components/LoadingOverlay`
@@ -212,7 +256,7 @@ import { LoadingOverlay } from "@/components/LoadingOverlay";
 **Dónde se usa:**
 - `auth-layout.tsx`: `message="Validando sesión"` y `message="Cerrando sesión"`
 - `Auth/SigninWithPassword.tsx`: `message="Iniciando sesión"` — el `loading` NO se resetea en éxito para que el overlay persista durante la navegación; solo se resetea en el `catch`.
-- Módulos con `useServerTable` (afiliados, médicos): `isLoading={tableProps.loading}`
+- Módulos con `useServerTable` (afiliados, médicos, citas): `isLoading={tableProps.loading && isInitialLoad}`
 - Módulos con `useClientTable` (asesores, convenios, franquicias): `isLoading={loading}`
 
 **Dashboard (`/4dnn1n/home`) — NO usar overlay:**
@@ -310,11 +354,103 @@ export function MiWidget() {
 
 Los datos del `home/fetch.ts` (overviewData, chatsData) son **estáticos/fake** y no usan la API real — no aplica esta restricción para ellos.
 
+### Design tokens del panel — obligatorios en todos los widgets
+Todos los componentes del dashboard deben usar los mismos tokens que el resto del panel. Usar `rounded-xl border bg-card` o similares es incorrecto — los estilos no van a concordar.
+
+| Elemento | Clases |
+|---|---|
+| Card container | `rounded-[10px] bg-white px-7.5 py-6 shadow-1 dark:bg-gray-dark dark:shadow-card` |
+| Card container (sin padding especial) | `rounded-[10px] bg-white p-6 shadow-1 dark:bg-gray-dark dark:shadow-card` |
+| Título de card | `text-xl font-bold text-dark dark:text-white` |
+| Texto primario | `text-dark dark:text-white` |
+| Texto secundario | `text-dark-5 dark:text-dark-6` |
+| Fila de lista | `border-b border-stroke py-3.5 dark:border-dark-3 last:border-b-0` |
+| Botón icono hover | `rounded-full p-1.5 hover:bg-gray-2 dark:hover:bg-dark-2` |
+
+### ApexCharts — integración con el panel
+ApexCharts requiere configuración específica para no romper el modo oscuro ni el fondo del card:
+
+```tsx
+// SIEMPRE incluir background: 'transparent' en el objeto chart
+const options: ApexOptions = {
+  chart: {
+    toolbar: { show: false },
+    fontFamily: 'inherit',
+    background: 'transparent',  // obligatorio — sin esto el chart tiene fondo blanco
+  },
+  // Para que el chart llene los bordes del card, usar márgenes negativos:
+};
+
+// Envolver en div con margen negativo para que el chart toque los bordes
+<div className="-ml-3.5">
+  <ReactApexChart ... />
+</div>
+// o para charts que necesitan ajuste derecho también:
+<div className="-ml-4 -mr-5">
+  <ReactApexChart ... />
+</div>
+```
+
+**SSR:** ApexCharts usa `window` — importar siempre con dynamic:
+```tsx
+const ReactApexChart = dynamic(() => import('react-apexcharts'), { ssr: false });
+```
+
+### Auto-scroll en listas del dashboard
+Para listas largas (> 5 items) usar scroll automático top→bottom con pausa en hover/touch:
+```tsx
+const containerRef = useRef<HTMLDivElement>(null);
+const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+const startScroll = () => {
+  const el = containerRef.current;
+  if (!el || items.length <= 5) return;
+  intervalRef.current = setInterval(() => {
+    el.scrollTop += 1;
+    if (el.scrollTop + el.clientHeight >= el.scrollHeight) el.scrollTop = 0;
+  }, 40);
+};
+const stopScroll = () => {
+  if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null; }
+};
+
+// En el div contenedor:
+<div ref={containerRef} className="overflow-y-auto max-h-[280px]"
+  onMouseEnter={stopScroll} onMouseLeave={startScroll}
+  onTouchStart={stopScroll} onTouchEnd={startScroll}>
+```
+
 ### Widget: Contratos que vencen hoy
 - **Archivo:** `src/app/4dnn1n/home/_components/expiring-today-card.tsx`
 - **Fuente de datos:** `GET /api/affiliates/expiring-today` vía `getExpiringToday()` en `affiliates/fetch.ts`
 - Muestra afiliados con `validity_end = hoy` y `stade = 1` (activos que vencen hoy).
-- Incluye link directo al perfil del afiliado para gestión rápida.
+- Muestra `movil` y `phone` (filtrados con `.filter(Boolean).join(' · ')`).
+- Botón de renovación (`RefreshCw`) → `/4dnn1n/affiliates/{id}/edit`.
+- Auto-scroll cuando hay más de 5 registros.
+- Skeleton: `ExpiringTodayCardSkeleton`.
+
+### Widget: Citas pendientes del día
+- **Archivo:** `src/app/4dnn1n/home/_components/today-appointments-card.tsx`
+- **Fuente de datos:** `GET /api/appointments/today` vía `getTodayAppointments()` en `home/fetch.ts`
+- Muestra nombre del paciente, hora y nombre del médico.
+- Botón `Eye` → `/4dnn1n/appointments/{id}`.
+- Auto-scroll cuando hay más de 5 registros.
+- Skeleton: `TodayAppointmentsCardSkeleton`.
+
+### Widget: Métricas globales (solo super admin)
+- **Archivo:** `src/app/4dnn1n/home/_components/stats-cards.tsx`
+- **Fuente de datos:** `GET /api/dashboard/stats` vía `getDashboardStats()` en `home/fetch.ts`
+- Solo se renderiza si `user?.type === 1` (retorna `null` para otros roles).
+- Grid 3 columnas: afiliados activos (verde), inactivos (naranja), citas este mes (azul).
+- Skeleton: `StatsCardsSkeleton`.
+
+### Widget: Gráficas mensuales
+- **Archivo:** `src/app/4dnn1n/home/_components/charts-section.tsx`
+- **Fuente de datos:** `GET /api/dashboard/charts?year=YYYY` vía `getDashboardCharts(year)` en `home/fetch.ts`
+- 4 gráficas: citas por mes (barra), afiliados nuevos por mes (área), citas por franquicia (líneas), afiliados por franquicia (barras agrupadas).
+- Las 2 gráficas de franquicia solo se renderizan si `user?.type === 1`.
+- Selector de año compartido para todas las gráficas.
+- `setLoading(false)` siempre en `.finally()` para no dejar el spinner colgado en caso de error.
 
 ## Lógica de Estado de Afiliados (stade)
 

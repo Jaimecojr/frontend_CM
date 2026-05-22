@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
 import ReCAPTCHA from "react-google-recaptcha";
 import type { Department, City } from "@/app/4dnn1n/counselors/fetch";
 
@@ -283,11 +284,9 @@ export default function AfiliacioPage() {
                 </Field>
 
                 <Field label="Fecha de nacimiento" required error={errors.birthDate}>
-                  <input
-                    id="birthDate"
-                    type="date"
+                  <DatePickerWithToday
                     value={birthDate}
-                    onChange={(e) => setBirthDate(e.target.value)}
+                    onChange={setBirthDate}
                     className={inputClass(errors.birthDate)}
                   />
                 </Field>

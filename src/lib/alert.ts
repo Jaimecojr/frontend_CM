@@ -32,17 +32,41 @@ export const alert = {
     icon?: SweetAlertIcon;
     confirmButtonText?: string;
     cancelButtonText?: string;
+    /** Si se provee, se ejecuta tras confirmar mostrando un spinner de carga. */
+    onConfirm?: () => Promise<unknown>;
   }) => {
-    const res = await Swal.fire(
-      withBase({
-        icon: params?.icon ?? "question",
-        title: params?.title ?? "¿Confirmas?",
-        text: params?.text,
-        showCancelButton: true,
-        confirmButtonText: params?.confirmButtonText ?? "Sí",
-        cancelButtonText: params?.cancelButtonText ?? "No",
-      })
-    );
+    const opts = withBase({
+      icon: params?.icon ?? "question",
+      title: params?.title ?? "¿Confirmas?",
+      text: params?.text,
+      showCancelButton: true,
+      confirmButtonText: params?.confirmButtonText ?? "Sí",
+      cancelButtonText: params?.cancelButtonText ?? "No",
+    });
+
+    if (!params?.onConfirm) {
+      const res = await Swal.fire(opts);
+      return res.isConfirmed;
+    }
+
+    // Con carga: mantiene el modal abierto con spinner mientras corre onConfirm
+    let storedError: unknown;
+
+    const res = await Swal.fire({
+      ...opts,
+      showLoaderOnConfirm: true,
+      allowOutsideClick: () => !Swal.isLoading(),
+      preConfirm: async () => {
+        try {
+          return await params.onConfirm!();
+        } catch (err) {
+          storedError = err;
+          Swal.close();
+        }
+      },
+    });
+
+    if (storedError !== undefined) throw storedError;
     return res.isConfirmed;
   },
 };

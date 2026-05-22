@@ -83,34 +83,31 @@ export default function EditAffiliatePage() {
         text: "Se guardarán permanentemente las modificaciones.",
         confirmButtonText: "Sí, actualizar",
         cancelButtonText: "Cancelar",
+        onConfirm: async () => {
+          const renovationData = payload.renovation;
+          delete payload.renovation;
+          delete payload.validity;
+
+          if (renovationData) {
+            payload.validity_end = renovationData.date_end;
+            payload.sale_date = renovationData.date_payment;
+            payload.value_sale = renovationData.value;
+            payload.stade = 1;
+          }
+
+          await updateAffiliate(affiliateId, payload);
+
+          if (renovationData) {
+            await import("../../fetch").then((m) =>
+              m.createRenovation({ ...renovationData, affiliate_id: affiliateId }),
+            );
+          }
+        },
       });
-
-      if (!ok) return;
-
-      const renovationData = payload.renovation;
-      delete payload.renovation;
-
-      delete payload.validity; // Nunca se sobreescribe la vigencia inicial para mantener histórico
-
-      if (renovationData) {
-        // Al renovar, actualizamos la nueva vigencia final y la fecha de la última venta
-        payload.validity_end = renovationData.date_end;
-        payload.sale_date = renovationData.date_payment;
-        payload.value_sale = renovationData.value;
-        payload.stade = 1; // reactivar si estaba inactivo por vencimiento
+      if (ok) {
+        await alert.success("Actualizado", "Se ha guardado correctamente.");
+        router.push("/4dnn1n/affiliates");
       }
-
-      await updateAffiliate(affiliateId, payload);
-      
-      if (renovationData) {
-        await import("../../fetch").then(m => m.createRenovation({
-           ...renovationData,
-           affiliate_id: affiliateId
-        }));
-      }
-
-      await alert.success("Actualizado", "Se ha guardado correctamente.");
-      router.push("/4dnn1n/affiliates");
     } catch (error) {
       await alert.error("Error", getApiErrorMessage(error));
     }

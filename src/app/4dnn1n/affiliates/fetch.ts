@@ -213,7 +213,7 @@ export async function createRenovation(payload: CreateRenovationPayload) {
 }
 
 // Afiliados que vencen hoy (para el dashboard)
-export type ExpiringAffiliate = Pick<ApiAffiliate, 'id' | 'name' | 'lastname' | 'id_card' | 'validity_end'> & {
+export type ExpiringAffiliate = Pick<ApiAffiliate, 'id' | 'name' | 'lastname' | 'id_card' | 'validity_end' | 'movil' | 'phone'> & {
   counselor?: { id: number; name: string; lastname: string } | null;
   agreement?: { id: number; name: string } | null;
 };
@@ -224,10 +224,12 @@ export type ExpiringTodayResponse = {
 };
 
 export async function getExpiringToday(): Promise<ExpiringTodayResponse> {
-  const res = await apiFetch<{ message: string; data: ExpiringAffiliate[]; date: string }>(
-    '/api/affiliates/expiring-today',
-  );
-  return { data: res.data ?? [], date: res.date };
+  return memCache.get('affiliates:expiring-today', TTL_LIST, async () => {
+    const res = await apiFetch<{ message: string; data: ExpiringAffiliate[]; date: string }>(
+      '/api/affiliates/expiring-today',
+    );
+    return { data: res.data ?? [], date: res.date };
+  });
 }
 
 // ─── Notas de afiliado ────────────────────────────────────────────────────────

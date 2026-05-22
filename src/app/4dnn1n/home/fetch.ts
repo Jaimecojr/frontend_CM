@@ -1,3 +1,5 @@
+import { memCache, TTL_LIST, TTL_CATALOG } from "@/lib/memCache";
+
 export async function getOverviewData() {
   // Fake delay
   await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -149,4 +151,62 @@ export function getXsrfToken() {
   if (typeof document === "undefined") return null;
   const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
   return m ? decodeURIComponent(m[1]) : null;
+}
+
+// ─── Tipos Dashboard ─────────────────────────────────────────────────────────
+
+export type TodayAppointment = {
+  id: number;
+  name: string;
+  hour: string;
+  doctor: { id: number; name: string; lastname: string };
+};
+
+export type TodayAppointmentsResponse = {
+  data: TodayAppointment[];
+  date: string;
+};
+
+export type DashboardStats = {
+  affiliates: {
+    active: number;
+    inactive: number;
+    inactive_by_expiry: number;
+  };
+  appointments: {
+    this_month: number;
+  };
+};
+
+export type DashboardCharts = {
+  appointments_by_month: number[];
+  affiliates_by_month: number[];
+  by_franchise?: {
+    users: { id: number; name: string }[];
+    appointments_by_franchise: number[][];
+    affiliates_by_franchise: number[][];
+  };
+};
+
+// ─── Fetch functions ─────────────────────────────────────────────────────────
+
+export async function getTodayAppointments(): Promise<TodayAppointmentsResponse> {
+  return memCache.get('appointments:today', TTL_LIST, async () => {
+    const res = (await apiFetch('/api/appointments/today')) as { message: string; data: TodayAppointment[]; date: string };
+    return { data: res.data ?? [], date: res.date };
+  });
+}
+
+export async function getDashboardStats(): Promise<DashboardStats> {
+  return memCache.get('dashboard:stats', TTL_CATALOG, async () => {
+    const res = (await apiFetch('/api/dashboard/stats')) as { message: string; data: DashboardStats };
+    return res.data;
+  });
+}
+
+export async function getDashboardCharts(year: number): Promise<DashboardCharts> {
+  return memCache.get(`dashboard:charts:${year}`, TTL_CATALOG, async () => {
+    const res = (await apiFetch(`/api/dashboard/charts?year=${year}`)) as { message: string; data: DashboardCharts };
+    return res.data;
+  });
 }
