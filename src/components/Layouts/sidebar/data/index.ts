@@ -56,13 +56,13 @@ export const NAV_DATA = [
       {
         title: "Contactos",
         icon: Phone,
-        url: "",
+        url: "/4dnn1n/contacts",
         items: [],
       },
       {
         title: "Afiliaciones",
         icon: FileText,
-        url: "",
+        url: "/4dnn1n/membership-forms",
         items: [],
       },
       {

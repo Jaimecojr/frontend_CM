@@ -56,8 +56,8 @@ export function Navbar() {
             </li>
             <li>
               <Link
-                href="#"
-                className="text-[#64748B] hover:text-[#1A1A2E] border-b-2 border-transparent hover:border-[#1DBFCE] pb-0.5 transition-all duration-200"
+                href="/web/contactenos"
+                className={pathname === "/web/contactenos" ? "text-[#E8192C] border-b-2 border-[#E8192C] pb-0.5" : "text-[#64748B] hover:text-[#1A1A2E] border-b-2 border-transparent hover:border-[#1DBFCE] pb-0.5 transition-all duration-200"}
               >
                 Contáctenos
               </Link>

@@ -7,7 +7,6 @@ import { csrf, getXsrfToken } from "@/lib/api";
 import LegalModal from "@/components/web/LegalModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
-// La clave de prueba de Google siempre pasa validación en desarrollo
 const RECAPTCHA_KEY =
   process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI";
 
@@ -31,34 +30,31 @@ async function getCitiesByDepartment(departmentId: number): Promise<City[]> {
   return res.data ?? [];
 }
 
-interface BeneficiaryField {
-  full_name: string;
-}
-
 type SubmitState = "idle" | "loading" | "success" | "error";
 
-export default function AfiliacioPage() {
+const ASUNTOS = [
+  "Información sobre planes",
+  "Soporte técnico",
+  "Quejas y reclamos",
+  "Solicitud de información",
+  "Otro",
+];
+
+export default function ContactenosPage() {
   /* ── Catálogos ── */
   const [departments, setDepartments] = useState<Department[]>([]);
   const [cities, setCities] = useState<City[]>([]);
 
-  /* ── Campos del titular ── */
+  /* ── Campos del formulario ── */
   const [name, setName] = useState("");
-  const [lastname, setLastname] = useState("");
-  const [cedula, setCedula] = useState("");
   const [movil, setMovil] = useState("");
   const [email, setEmail] = useState("");
-  const [birthDate, setBirthDate] = useState("");
-  const [address, setAddress] = useState("");
+  const [asunto, setAsunto] = useState("");
   const [deptId, setDeptId] = useState<number | "">("");
   const [cityId, setCityId] = useState<number | "">("");
-
-  /* ── Beneficiarios ── */
-  const [beneficiaryCount, setBeneficiaryCount] = useState(0);
-  const [beneficiaries, setBeneficiaries] = useState<BeneficiaryField[]>([]);
+  const [mensaje, setMensaje] = useState("");
 
   /* ── Otros ── */
-  const [advisorName, setAdvisorName] = useState("");
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(null);
@@ -85,45 +81,31 @@ export default function AfiliacioPage() {
     getCitiesByDepartment(Number(deptId)).then(setCities).catch(console.error);
   }, [deptId]);
 
-  /* ── Manejo de beneficiarios ── */
-  const handleBeneficiaryCountChange = (count: number) => {
-    setBeneficiaryCount(count);
-    setBeneficiaries((prev) => {
-      if (count > prev.length) {
-        return [
-          ...prev,
-          ...Array.from({ length: count - prev.length }, () => ({ full_name: "" })),
-        ];
-      }
-      return prev.slice(0, count);
-    });
-  };
-
-  const updateBeneficiary = (index: number, field: keyof BeneficiaryField, value: string) => {
-    setBeneficiaries((prev) =>
-      prev.map((b, i) => (i === index ? { ...b, [field]: value } : b))
-    );
-  };
-
   /* ── Validación ── */
   const validate = () => {
     const e: Record<string, string> = {};
-    if (!name.trim()) e.name = "El nombre es requerido.";
-    if (!lastname.trim()) e.lastname = "Los apellidos son requeridos.";
-    if (!/^\d+$/.test(cedula)) e.document = "La cédula debe contener solo números.";
+    if (!name.trim()) e.name = "El nombre completo es requerido.";
     if (!/^\d{10}$/.test(movil)) e.movil = "El celular debe tener exactamente 10 dígitos.";
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = "Ingresa un correo válido.";
-    if (!birthDate) e.birthDate = "La fecha de nacimiento es requerida.";
-    if (!address.trim()) e.address = "La dirección es requerida.";
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      e.email = "Ingresa un correo válido.";
+    if (!asunto) e.asunto = "Selecciona un asunto.";
     if (!deptId) e.deptId = "Selecciona un departamento.";
     if (!cityId) e.cityId = "Selecciona una ciudad.";
-    beneficiaries.forEach((b, i) => {
-      if (!b.full_name.trim()) e[`ben_${i}`] = "El nombre del beneficiario es requerido.";
-    });
+    if (!mensaje.trim()) e.mensaje = "El mensaje es requerido.";
+    else if (mensaje.trim().length < 10) e.mensaje = "El mensaje debe tener al menos 10 caracteres.";
     if (!captchaToken) e.captcha = "Por favor completa el reCAPTCHA.";
     if (!privacyAccepted) e.privacy = "Debes aceptar la Política de Privacidad.";
     if (!termsAccepted) e.terms = "Debes aceptar los Términos y Condiciones.";
     return e;
+  };
+
+  /* ── Resetear formulario ── */
+  const resetForm = () => {
+    setName(""); setMovil(""); setEmail("");
+    setAsunto(""); setDeptId(""); setCityId(""); setMensaje("");
+    setPrivacyAccepted(false); setTermsAccepted(false);
+    setCaptchaToken(null);
+    recaptchaRef.current?.reset();
   };
 
   /* ── Envío ── */
@@ -133,14 +115,16 @@ export default function AfiliacioPage() {
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       const firstKey = Object.keys(validationErrors)[0];
-      window.document.getElementById(firstKey)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      window.document
+        .getElementById(firstKey)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
     setErrors({});
     setSubmitState("loading");
     try {
       await csrf();
-      const res = await fetch(`${API_URL}/api/public/affiliate-request`, {
+      const res = await fetch(`${API_URL}/api/public/contact`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -150,26 +134,24 @@ export default function AfiliacioPage() {
         },
         body: JSON.stringify({
           name,
-          lastname,
-          document: cedula,
           movil,
           email,
-          birth_date: birthDate,
-          address,
+          asunto,
           department_id: deptId,
           city_id: cityId,
-          beneficiaries,
-          advisor_name: advisorName,
+          mensaje,
           recaptcha_token: captchaToken,
         }),
       });
       const data = await res.json();
       if (res.ok && data.success !== false) {
         setSubmitState("success");
-        setResponseMsg(data.message || "¡Tu solicitud fue enviada con éxito! Pronto te contactaremos.");
+        setResponseMsg(
+          data.message || "¡Tu mensaje fue enviado con éxito! Pronto nos pondremos en contacto contigo."
+        );
       } else {
         setSubmitState("error");
-        setResponseMsg(data.message || "Ocurrió un error al enviar la solicitud. Intenta nuevamente.");
+        setResponseMsg(data.message || "Ocurrió un error al enviar el mensaje. Intenta nuevamente.");
         recaptchaRef.current?.reset();
         setCaptchaToken(null);
       }
@@ -189,29 +171,28 @@ export default function AfiliacioPage() {
           <div className="max-w-[640px] mx-auto px-6 text-center">
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-12">
               <div className="w-16 h-16 bg-[#1DBFCE]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="material-symbols-outlined text-[#1DBFCE]" style={{ fontSize: "32px" }}>
-                  check_circle
+                <span
+                  className="material-symbols-outlined text-[#1DBFCE]"
+                  style={{ fontSize: "32px" }}
+                >
+                  mark_email_read
                 </span>
               </div>
               <h2
                 className="text-2xl font-bold text-[#1A1A2E] mb-3"
                 style={{ fontFamily: "'Lora', Georgia, serif" }}
               >
-                ¡Solicitud Enviada!
+                ¡Mensaje Enviado!
               </h2>
               <p className="text-[#64748B] leading-relaxed">{responseMsg}</p>
               <button
                 onClick={() => {
                   setSubmitState("idle");
-                  setName(""); setLastname(""); setCedula(""); setMovil("");
-                  setEmail(""); setBirthDate(""); setAddress(""); setDeptId("");
-                  setCityId(""); setBeneficiaryCount(0); setBeneficiaries([]);
-                  setAdvisorName(""); setPrivacyAccepted(false); setTermsAccepted(false);
-                  setCaptchaToken(null);
+                  resetForm();
                 }}
                 className="mt-8 px-8 py-3 bg-[#E8192C] text-white rounded-xl font-semibold text-sm hover:bg-[#c41422] transition-all"
               >
-                Enviar otra solicitud
+                Enviar otro mensaje
               </button>
             </div>
           </div>
@@ -227,46 +208,25 @@ export default function AfiliacioPage() {
       <section className="py-12 bg-[#f8f9ff]">
         <div className="max-w-[860px] mx-auto px-6 md:px-12">
           <form onSubmit={handleSubmit} noValidate>
-            {/* ── Datos del titular ── */}
+            {/* ── Datos de contacto ── */}
             <FormCard
               icon="person"
-              title="Datos del Titular"
-              description="Información personal del afiliado principal."
+              title="Datos de Contacto"
+              description="Cuéntanos quién eres para poder responderte."
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <Field label="Nombre del titular" required error={errors.name}>
-                  <input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Ej. Juan Carlos"
-                    className={inputClass(errors.name)}
-                  />
-                </Field>
-
-                <Field label="Apellidos del titular" required error={errors.lastname}>
-                  <input
-                    id="lastname"
-                    type="text"
-                    value={lastname}
-                    onChange={(e) => setLastname(e.target.value)}
-                    placeholder="Ej. Gómez Pérez"
-                    className={inputClass(errors.lastname)}
-                  />
-                </Field>
-
-                <Field label="Cédula del titular" required error={errors.document} hint="Solo números">
-                  <input
-                    id="document"
-                    type="text"
-                    inputMode="numeric"
-                    value={cedula}
-                    onChange={(e) => setCedula(e.target.value.replace(/\D/g, ""))}
-                    placeholder="Ej. 1094000000"
-                    className={inputClass(errors.document)}
-                  />
-                </Field>
+                <div className="sm:col-span-2">
+                  <Field label="Nombre completo" required error={errors.name}>
+                    <input
+                      id="name"
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Ej. Juan Carlos Gómez Pérez"
+                      className={inputClass(errors.name)}
+                    />
+                  </Field>
+                </div>
 
                 <Field label="Teléfono Celular" required error={errors.movil} hint="10 dígitos">
                   <input
@@ -291,27 +251,21 @@ export default function AfiliacioPage() {
                   />
                 </Field>
 
-                <Field label="Fecha de nacimiento" required error={errors.birthDate}>
-                  <input
-                    id="birthDate"
-                    type="date"
-                    value={birthDate}
-                    onChange={(e) => setBirthDate(e.target.value)}
-                    max={new Date().toISOString().split("T")[0]}
-                    className={inputClass(errors.birthDate)}
-                  />
-                </Field>
-
                 <div className="sm:col-span-2">
-                  <Field label="Dirección" required error={errors.address}>
-                    <input
-                      id="address"
-                      type="text"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      placeholder="Ej. Calle 10 # 5-23, Barrio Centro"
-                      className={inputClass(errors.address)}
-                    />
+                  <Field label="Asunto" required error={errors.asunto}>
+                    <select
+                      id="asunto"
+                      value={asunto}
+                      onChange={(e) => setAsunto(e.target.value)}
+                      className={selectClass(errors.asunto)}
+                    >
+                      <option value="">Selecciona un asunto</option>
+                      {ASUNTOS.map((a) => (
+                        <option key={a} value={a}>
+                          {a}
+                        </option>
+                      ))}
+                    </select>
                   </Field>
                 </div>
 
@@ -324,7 +278,9 @@ export default function AfiliacioPage() {
                   >
                     <option value="">Selecciona un departamento</option>
                     {departments.map((d) => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
                     ))}
                   </select>
                 </Field>
@@ -341,80 +297,48 @@ export default function AfiliacioPage() {
                       {!deptId ? "Primero selecciona un departamento" : "Selecciona una ciudad"}
                     </option>
                     {cities.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
                     ))}
                   </select>
                 </Field>
               </div>
             </FormCard>
 
-            {/* ── Beneficiarios ── */}
+            {/* ── Mensaje ── */}
             <FormCard
-              icon="group_add"
-              title="Beneficiarios"
-              description="Personas que se beneficiarán del plan médico junto al titular."
+              icon="chat"
+              title="Tu Mensaje"
+              description="Escríbenos en detalle, intentamos responder en menos de 24 horas."
             >
-              <Field label="Cantidad de beneficiarios" error={undefined}>
-                <select
-                  value={beneficiaryCount}
-                  onChange={(e) => handleBeneficiaryCountChange(Number(e.target.value))}
-                  className={selectClass(undefined)}
-                >
-                  {[0, 1, 2, 3, 4, 5, 6, 7].map((n) => (
-                    <option key={n} value={n}>
-                      {n === 0 ? "Sin beneficiarios" : `${n} beneficiario${n > 1 ? "s" : ""}`}
-                    </option>
-                  ))}
-                </select>
+              <Field label="Mensaje" required error={errors.mensaje}>
+                <textarea
+                  id="mensaje"
+                  value={mensaje}
+                  onChange={(e) => setMensaje(e.target.value)}
+                  placeholder="Escribe aquí tu consulta, comentario o solicitud..."
+                  rows={6}
+                  className={`${inputClass(errors.mensaje)} resize-none`}
+                />
+                <p className="text-[11px] text-slate-400 mt-1 text-right">
+                  {mensaje.length} caracteres
+                </p>
               </Field>
-
-              {beneficiaries.length > 0 && (
-                <div className="mt-5 space-y-4">
-                  {beneficiaries.map((b, i) => (
-                    <div key={i} className="bg-[#f8f9ff] border border-slate-100 rounded-xl p-4">
-                      <p className="text-xs font-bold uppercase tracking-widest text-[#1DBFCE] mb-3">
-                        Beneficiario {i + 1}
-                      </p>
-                      <Field
-                        label="Nombres y Apellidos del Beneficiario"
-                        required
-                        error={errors[`ben_${i}`]}
-                      >
-                        <input
-                          id={`ben_${i}`}
-                          type="text"
-                          value={b.full_name}
-                          onChange={(e) => updateBeneficiary(i, "full_name", e.target.value)}
-                          placeholder="Ej. María Fernanda López"
-                          className={inputClass(errors[`ben_${i}`])}
-                        />
-                      </Field>
-                    </div>
-                  ))}
-                </div>
-              )}
             </FormCard>
 
-            {/* ── Asesor + reCAPTCHA + checkboxes ── */}
+            {/* ── Verificación y aceptaciones ── */}
             <FormCard
               icon="verified_user"
-              title="Información Adicional"
-              description="Datos del asesor que te acompañó y verificación de seguridad."
+              title="Verificación"
+              description="Confirma que eres humano y acepta nuestras políticas."
             >
               <div className="space-y-5">
-                <Field label="Nombre del asesor" error={undefined} hint="Opcional">
-                  <input
-                    type="text"
-                    value={advisorName}
-                    onChange={(e) => setAdvisorName(e.target.value)}
-                    placeholder="Nombre del asesor que te asesoró"
-                    className={inputClass(undefined)}
-                  />
-                </Field>
-
                 {/* reCAPTCHA */}
                 <div>
-                  <p className="block text-sm font-medium text-[#64748B] mb-2">Verificación de seguridad</p>
+                  <p className="block text-sm font-medium text-[#64748B] mb-2">
+                    Verificación de seguridad
+                  </p>
                   <ReCAPTCHA
                     ref={recaptchaRef}
                     sitekey={RECAPTCHA_KEY}
@@ -442,7 +366,10 @@ export default function AfiliacioPage() {
                           ${errors.privacy ? "border-[#E8192C]" : ""}`}
                       >
                         {privacyAccepted && (
-                          <span className="material-symbols-outlined text-white" style={{ fontSize: "13px" }}>
+                          <span
+                            className="material-symbols-outlined text-white"
+                            style={{ fontSize: "13px" }}
+                          >
                             check
                           </span>
                         )}
@@ -481,7 +408,10 @@ export default function AfiliacioPage() {
                           ${errors.terms ? "border-[#E8192C]" : ""}`}
                       >
                         {termsAccepted && (
-                          <span className="material-symbols-outlined text-white" style={{ fontSize: "13px" }}>
+                          <span
+                            className="material-symbols-outlined text-white"
+                            style={{ fontSize: "13px" }}
+                          >
                             check
                           </span>
                         )}
@@ -496,7 +426,7 @@ export default function AfiliacioPage() {
                       >
                         Términos y Condiciones
                       </button>{" "}
-                      del servicio de afiliación.
+                      del servicio.
                     </span>
                   </label>
                   {errors.terms && (
@@ -507,7 +437,10 @@ export default function AfiliacioPage() {
                 {/* Error de envío */}
                 {submitState === "error" && (
                   <div className="p-4 rounded-xl text-sm font-medium bg-[#ffdad6] text-[#93000a] border border-[#ffb3ae] flex items-start gap-2">
-                    <span className="material-symbols-outlined shrink-0 mt-0.5" style={{ fontSize: "16px" }}>
+                    <span
+                      className="material-symbols-outlined shrink-0 mt-0.5"
+                      style={{ fontSize: "16px" }}
+                    >
                       error
                     </span>
                     {responseMsg}
@@ -522,18 +455,33 @@ export default function AfiliacioPage() {
                 >
                   {submitState === "loading" ? (
                     <>
-                      <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                      <svg
+                        className="animate-spin h-4 w-4 text-white"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v8H4z"
+                        />
                       </svg>
-                      Enviando solicitud...
+                      Enviando mensaje...
                     </>
                   ) : (
                     <>
                       <span className="material-symbols-outlined" style={{ fontSize: "18px" }}>
                         send
                       </span>
-                      Enviar solicitud
+                      Enviar mensaje
                     </>
                   )}
                 </button>
@@ -542,9 +490,9 @@ export default function AfiliacioPage() {
           </form>
         </div>
       </section>
-      {legalModal && (
-        <LegalModal type={legalModal} onClose={() => setLegalModal(null)} />
-      )}
+        {legalModal && (
+          <LegalModal type={legalModal} onClose={() => setLegalModal(null)} />
+        )}
     </main>
   );
 }
@@ -565,7 +513,7 @@ function HeroSection() {
         <div className="flex items-center justify-center gap-3 mb-4">
           <div className="h-px w-8 bg-[#E8192C]" />
           <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#E8192C]">
-            Formulario de Afiliación
+            Contáctenos
           </span>
           <div className="h-px w-8 bg-[#E8192C]" />
         </div>
@@ -573,12 +521,12 @@ function HeroSection() {
           className="text-4xl md:text-5xl font-bold text-white leading-tight mb-4"
           style={{ fontFamily: "'Lora', Georgia, serif" }}
         >
-          Afíliate{" "}
-          <span className="text-[#1DBFCE] italic">ahora</span>
+          ¿Cómo podemos{" "}
+          <span className="text-[#1DBFCE] italic">ayudarte?</span>
         </h1>
         <p className="text-slate-400 text-[16px] max-w-xl mx-auto leading-relaxed">
-          Completa el formulario y uno de nuestros asesores se pondrá en contacto contigo
-          para finalizar tu proceso de afiliación.
+          Completa el formulario y nuestro equipo se pondrá en contacto contigo
+          a la brevedad posible.
         </p>
       </div>
     </section>

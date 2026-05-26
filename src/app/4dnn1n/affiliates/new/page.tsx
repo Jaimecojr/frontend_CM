@@ -1,10 +1,16 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-import { createAffiliate, type CreateAffiliatePayload } from "../fetch";
+import {
+  createAffiliate,
+  markMembershipFormConverted,
+  type CreateAffiliatePayload,
+  type ApiAffiliate,
+} from "../fetch";
 import { Button } from "@/components/ui-elements/button";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import AffiliateForm from "../_components/AffiliateForm";
@@ -12,14 +18,57 @@ import { alert } from "@/lib/alert";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAuth } from "@/context/AuthContext";
+import { apiFetch } from "@/lib/api";
+
+type MembershipFormData = {
+  id: number;
+  name: string;
+  lastname: string;
+  id_card: string;
+  phone: string;
+  email: string;
+  bithdate?: string | null;
+  address: string;
+  city_id: number;
+  city?: { id: number; name: string; department_id?: number } | null;
+  membership_form_beneficiaries?: { name: string }[];
+};
 
 export default function NewAffiliatePage() {
   usePageTitle("Crear Afiliado");
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromId = searchParams.get("from");
   const { user, loading } = useAuth();
 
-  if (loading) return null;
-  // Permiso tipo 1 o 2
+  const [prefill, setPrefill] = useState<Partial<ApiAffiliate> | undefined>(undefined);
+  const [loadingPrefill, setLoadingPrefill] = useState(!!fromId);
+
+  useEffect(() => {
+    if (!fromId) return;
+    apiFetch<{ data: MembershipFormData }>(`/api/membership-forms/${fromId}`)
+      .then(({ data }) => {
+        setPrefill({
+          name:      data.name,
+          lastname:  data.lastname,
+          id_card:   data.id_card,
+          movil:     data.phone,
+          email:     data.email,
+          bithdate:  data.bithdate ?? undefined,
+          address:   data.address,
+          city_id:   data.city_id,
+          city:      data.city ?? undefined,
+          beneficiaries: data.membership_form_beneficiaries?.map((b) => ({ name: b.name })) ?? [],
+        });
+      })
+      .catch(() => {
+        // Si falla la pre-carga, continuar con el formulario vacío
+      })
+      .finally(() => setLoadingPrefill(false));
+  }, [fromId]);
+
+  if (loading || loadingPrefill) return null;
+
   if (user?.type !== 1 && user?.type !== 2) {
     return (
       <div className="flex h-64 items-center justify-center p-6 text-red-500 font-medium">
@@ -27,6 +76,8 @@ export default function NewAffiliatePage() {
       </div>
     );
   }
+
+  const backHref = fromId ? "/4dnn1n/membership-forms" : "/4dnn1n/affiliates";
 
   const handleCreate = async (payload: CreateAffiliatePayload) => {
     try {
@@ -38,8 +89,11 @@ export default function NewAffiliatePage() {
         onConfirm: () => createAffiliate(payload),
       });
       if (ok) {
+        if (fromId) {
+          await markMembershipFormConverted(Number(fromId)).catch(() => {});
+        }
         await alert.success("Creado", "Afiliado registrado correctamente.");
-        router.push("/4dnn1n/affiliates");
+        router.push(fromId ? "/4dnn1n/membership-forms" : "/4dnn1n/affiliates");
       }
     } catch (error) {
       await alert.error("Error", getApiErrorMessage(error));
@@ -52,7 +106,7 @@ export default function NewAffiliatePage() {
         title="Crear Afiliado / Usuario"
         description="Completa la información"
         actions={
-          <Link href="/4dnn1n/affiliates">
+          <Link href={backHref}>
             <Button
               type="button"
               className="inline-flex items-center gap-2 rounded-lg border border-stroke px-4 py-2 font-medium text-dark hover:shadow-1 dark:border-dark-3 dark:text-white"
@@ -63,7 +117,7 @@ export default function NewAffiliatePage() {
           </Link>
         }
       >
-        <AffiliateForm mode="create" onSubmit={handleCreate} />
+        <AffiliateForm mode="create" initial={prefill} onSubmit={handleCreate} />
       </ShowcaseSection>
     </>
   );

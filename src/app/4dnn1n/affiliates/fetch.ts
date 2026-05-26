@@ -269,3 +269,9 @@ export async function sendCarnet(id: number): Promise<{ message: string; data?: 
     { method: "POST" },
   );
 }
+
+export async function markMembershipFormConverted(id: number): Promise<void> {
+  await csrf();
+  await apiFetch(`/api/membership-forms/${id}/convert`, { method: "PATCH" });
+  memCache.invalidatePrefix("membership-forms:list:");
+}

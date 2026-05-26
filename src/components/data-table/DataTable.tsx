@@ -64,6 +64,7 @@ type DataTableProps<TData, TValue> = {
   loading?: boolean;
   toolbarActions?: React.ReactNode;
   extraFilters?: React.ReactNode;
+  hideSearch?: boolean;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -110,6 +111,7 @@ export function DataTable<TData, TValue>({
   onPageChange,
   loading = false,
   extraFilters,
+  hideSearch = false,
 }: DataTableProps<TData, TValue>) {
   const isControlledSearch = externalSearch !== undefined;
   const isControlledState  = controlledStateFilter !== undefined;
@@ -221,6 +223,7 @@ export function DataTable<TData, TValue>({
           stateFilterOptions={stateFilterOptions}
           isSearching={isSearchingNow || loading}
           extraFilters={extraFilters}
+          hideSearch={hideSearch}
         />
       </div>
 

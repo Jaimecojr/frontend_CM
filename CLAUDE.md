@@ -114,6 +114,8 @@ export async function createAffiliate(payload: CreateAffiliatePayload) {
 | `doctors:list:` | lista paginada de médicos | `invalidatePrefix("doctors:list:")` |
 | `doctors:specialty:{id}` | médicos por especialidad (selector de citas) | `invalidatePrefix("doctors:specialty:")` |
 | `appointments:list:` | lista paginada de citas | `invalidatePrefix("appointments:list:")` |
+| `membership-forms:list:` | solicitudes de afiliación pendientes | `invalidatePrefix("membership-forms:list:")` |
+| `contacts:list:` | mensajes de contacto paginados | `invalidatePrefix("contacts:list:")` |
 
 ### Al crear un nuevo módulo
 
@@ -133,6 +135,7 @@ Se usa para módulos pesados con miles de registros (ej. afiliados).
 - Delega la paginación, filtros y búsquedas directamente al backend (API).
 - Se hace destructuring de `tableProps` retornadas por el hook hacia el `<DataTable>`.
 - **Regla Crítica del DataTable:** Al pasar opciones en `stateFilterOptions`, **NUNCA** incluyas manualmente una opción "Todos" o "all". El componente interno `DataTableToolbar` la agrega automáticamente.
+- **Ocultar buscador:** El `DataTable` acepta el prop `hideSearch` (boolean, por defecto `false`). Úsalo en módulos donde la búsqueda no aplica (ej. solicitudes de afiliación). Ejemplo: `<DataTable hideSearch ... />`.
 
 #### `isInitialLoad` — overlay solo en la carga inicial
 El hook expone `isInitialLoad: boolean` (empieza en `true`, pasa a `false` tras el primer fetch). Úsalo para que el `LoadingOverlay` de pantalla completa solo aparezca al entrar al módulo, no en cada cambio de filtro. Para cambios de filtro es suficiente el skeleton de la tabla.
@@ -151,6 +154,7 @@ const { tableProps, isInitialLoad } = useServerTable(fetchFn, options);
 - **Afiliados:** Usa la propiedad `stade` (1 = Activo, 2 = Inactivo).
 - **Asesores, Franquicias, Médicos:** Usa la propiedad `state` (1 = Activo, 2 = Inactivo).
 - **Convenios, Especialidades:** Usa la propiedad `state` (1 = Activo, 0 = Inactivo).
+- **Solicitudes de afiliación (`membership_forms`):** Usa la propiedad `state` (0 = Pendiente, 1 = Convertido). El panel admin solo muestra las pendientes (`state = 0`); al crear el afiliado se llama `markMembershipFormConverted()` que pasa a `state = 1` y la saca de la lista.
 
 ## Componentes de Formulario Reutilizables
 
@@ -469,6 +473,60 @@ En `[id]/edit/page.tsx`, `payload.stade = 1` se agrega explícitamente solo cuan
 
 ### Regla de acceso para el toggle manual de stade
 El botón/acción de activar o inactivar un afiliado manualmente desde la tabla **solo debe mostrarse al super admin (`user?.type === 1`)**. Los asesores y otros roles no deben poder cambiar el estado directamente — el flujo correcto es siempre a través de una renovación. Esto evita cambios accidentales o indebidos en el estado de los afiliados.
+
+## Formularios Públicos — CSRF con Sanctum
+
+Los formularios de la web pública que hacen `POST` a `/api/public/*` necesitan un token CSRF porque `bootstrap/app.php` usa `$middleware->statefulApi()` (Sanctum), que aplica protección CSRF a peticiones de dominios configurados como estacionarios.
+
+**Patrón obligatorio para cualquier `POST` público:**
+```ts
+import { csrf, getXsrfToken } from "@/lib/api";
+
+await csrf(); // obtiene la cookie XSRF-TOKEN
+const res = await fetch(`${API_URL}/api/public/endpoint`, {
+  method: "POST",
+  credentials: "include",           // envía la cookie
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+    "X-XSRF-TOKEN": getXsrfToken() ?? "",  // header que Laravel valida
+  },
+  body: JSON.stringify(payload),
+});
+```
+
+**Módulos donde ya está aplicado:** `/web/afiliarse` (`affiliate-request`) y `/web/contactenos` (`contact`).
+
+**NO usar este patrón en `publicFetch`** (GET puro) — las peticiones GET no requieren CSRF.
+
+## LegalModal — Modal de documentos legales web
+
+**Archivo:** `src/components/web/LegalModal.tsx`
+
+Modal de pantalla completa para mostrar la Política de Privacidad y los Términos y Condiciones del sitio web público. Usa `createPortal` para renderizar sobre todo el contenido.
+
+**Props:**
+```tsx
+<LegalModal type="privacy" onClose={() => setLegalModal(null)} />
+<LegalModal type="terms"   onClose={() => setLegalModal(null)} />
+```
+
+- `type: 'privacy' | 'terms'` — determina el contenido y el título.
+- `onClose` — cierra el modal. También se activa con la tecla `Escape` y haciendo clic en el backdrop.
+- Bloquea el scroll del body mientras está abierto (`document.body.style.overflow = 'hidden'`).
+- Usa `createPortal(…, document.body)` igual que `LoadingOverlay` para evitar problemas de stacking context.
+- Los textos tienen placeholders `[RAZÓN SOCIAL]`, `[NIT]`, `[CIUDAD]` y `[CORREO DATOS]` que el cliente debe reemplazar con datos reales antes de producción.
+
+**Módulos donde está integrado:** `/web/afiliarse` y `/web/contactenos` — ambos muestran los dos modales con checkboxes de aceptación obligatoria.
+
+## Módulo Mensajes de Contacto (`contacts`)
+
+- **Ruta del panel:** `/4dnn1n/contacts`
+- **Archivos:** `src/app/4dnn1n/contacts/` — `fetch.ts`, `page.tsx`, `_components/columns.tsx`, `[id]/page.tsx`
+- Sin filtro de estado (`enableStateFilter={false}`) y sin buscador (`hideSearch`) — la tabla solo lista y pagina.
+- El detalle (`[id]/page.tsx`) muestra todos los campos en tarjetas de solo lectura con `ShowcaseSection`. Tiene botón "Eliminar mensaje" con `alert.confirm` y redirige a la lista tras eliminar.
+- Hard delete físico — no hay soft-delete ni campo de estado en este módulo.
+- Caché: `contacts:list:${query}` con `TTL_LIST`; se invalida con `invalidatePrefix("contacts:list:")` en `deleteContact`.
 
 ## Permisos y Control de Acceso (RBAC)
 Para proteger las vistas y acciones según el rol del usuario, sigue este patrón estandarizado en las páginas principales (`page.tsx`) y subpáginas (`new`, `[id]`, `[id]/edit`):
