@@ -35,6 +35,7 @@ Las rutas públicas de la página de aterrizaje e informativas se encuentran en 
   }
   ```
 - **Navbar activo:** `Navbar.tsx` es un Client Component (`"use client"`) que usa `usePathname()` para resaltar el link de la ruta actual. Al agregar nuevas rutas públicas, añadir la condición correspondiente en el className de su `<Link>`.
+- **Cache en Server Components públicos:** Los componentes de la web pública que hacen `fetch` a `/api/public/*` usan `cache: "no-store"` en desarrollo para evitar datos obsoletos. **Para producción, reemplazar por `next: { revalidate: 3600 }`** — así la sección se refresca cada hora sin hacer un fetch en cada visita. Afecta a `AlliesSection.tsx` y `DoctorsSection.tsx` (y cualquier otro componente público async que agregues).
 
 ## Sistema de Caché en Memoria (`memCache`)
 
@@ -116,6 +117,8 @@ export async function createAffiliate(payload: CreateAffiliatePayload) {
 | `appointments:list:` | lista paginada de citas | `invalidatePrefix("appointments:list:")` |
 | `membership-forms:list:` | solicitudes de afiliación pendientes | `invalidatePrefix("membership-forms:list:")` |
 | `contacts:list:` | mensajes de contacto paginados | `invalidatePrefix("contacts:list:")` |
+| `content-allies:all` | aliados estratégicos (panel admin) | `invalidatePrefix("content-allies:")` |
+| `content-specialists:all` | especialistas de la salud (panel admin) | `invalidatePrefix("content-specialists:")` |
 
 ### Al crear un nuevo módulo
 

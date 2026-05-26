@@ -96,7 +96,22 @@ pm2 save
 - Registrar el dominio `contactomedico.net` en la consola de reCAPTCHA.
 - Usar la **Site Key** en `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`.
 
-### 4. Dominio
+### 4. Cache de secciones públicas
+
+Los componentes `AlliesSection.tsx` y `DoctorsSection.tsx` usan `cache: "no-store"` en desarrollo. Antes del build de producción, cambiar por `next: { revalidate: 3600 }` en ambos archivos:
+
+- `src/components/web/AlliesSection.tsx` — `fetch` dentro de `getAllies()`
+- `src/components/web/DoctorsSection.tsx` — `fetch` dentro de `getSpecialists()`
+
+```ts
+// Antes (desarrollo)
+cache: "no-store",
+
+// Después (producción)
+next: { revalidate: 3600 },
+```
+
+### 5. Dominio
 
 El proceso Next.js corre por defecto en el puerto **3000**. El administrador del servidor debe apuntar el dominio `contactomedico.net` a ese puerto mediante el proxy inverso que tenga configurado (Nginx, Apache, panel de hosting, etc.).
 

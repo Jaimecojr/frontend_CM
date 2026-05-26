@@ -80,7 +80,7 @@ export const NAV_DATA = [
       {
         title: "Administración de contenido",
         icon: LayoutDashboard,
-        url: "",
+        url: "/4dnn1n/content",
         items: [],
       },
       {
