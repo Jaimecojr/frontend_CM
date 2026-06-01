@@ -13,26 +13,28 @@ const menuItemBaseStyles = cva(
           "hover:bg-gray-100 hover:text-dark hover:dark:bg-[#FFFFFF1A] hover:dark:text-white",
       },
     },
-    defaultVariants: {
-      isActive: false,
-    },
+    defaultVariants: { isActive: false },
   },
 );
 
-export function MenuItem(
-  props: {
-    className?: string;
-    children: React.ReactNode;
-    isActive: boolean;
-  } & ({ as?: "button"; onClick: () => void } | { as: "link"; href: string }),
-) {
+type BaseProps = {
+  className?: string;
+  children: React.ReactNode;
+  isActive: boolean;
+  title?: string; // ✅ nuevo (tooltip nativo)
+};
+
+type ButtonProps = { as?: "button"; onClick: () => void };
+type LinkProps = { as: "link"; href: string };
+
+export function MenuItem(props: BaseProps & (ButtonProps | LinkProps)) {
   const { toggleSidebar, isMobile } = useSidebarContext();
 
   if (props.as === "link") {
     return (
       <Link
         href={props.href}
-        // Close sidebar on clicking link if it's mobile
+        title={props.title} // ✅
         onClick={() => isMobile && toggleSidebar()}
         className={cn(
           menuItemBaseStyles({
@@ -50,11 +52,15 @@ export function MenuItem(
   return (
     <button
       onClick={props.onClick}
+      title={props.title}
       aria-expanded={props.isActive}
-      className={menuItemBaseStyles({
-        isActive: props.isActive,
-        className: "flex w-full items-center gap-3 py-3",
-      })}
+      className={cn(
+        menuItemBaseStyles({
+          isActive: props.isActive,
+          className: "flex w-full items-center gap-3 py-3",
+        }),
+        props.className, // ✅ ahora sí aplica
+      )}
     >
       {props.children}
     </button>

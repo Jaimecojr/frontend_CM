@@ -1,61 +1,71 @@
 "use client";
 
 import { useIsMobile } from "@/hooks/use-mobile";
-import { createContext, useContext, useEffect, useState } from "react";
-
-type SidebarState = "expanded" | "collapsed";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 type SidebarContextType = {
-  state: SidebarState;
+  // Mobile (overlay)
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  isMobile: boolean;
   toggleSidebar: () => void;
+
+  // Desktop (mini)
+  isCollapsed: boolean;
+  setIsCollapsed: (v: boolean) => void;
+  toggleCollapse: () => void;
+
+  isMobile: boolean;
 };
 
 const SidebarContext = createContext<SidebarContextType | null>(null);
 
 export function useSidebarContext() {
   const context = useContext(SidebarContext);
-  if (!context) {
-    throw new Error("useSidebarContext must be used within a SidebarProvider");
-  }
+  if (!context) throw new Error("useSidebarContext must be used within a SidebarProvider");
   return context;
 }
 
 export function SidebarProvider({
   children,
-  defaultOpen = true,
+  defaultCollapsed = false,
 }: {
   children: React.ReactNode;
-  defaultOpen?: boolean;
+  defaultCollapsed?: boolean;
 }) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
   const isMobile = useIsMobile();
 
+  const [isOpen, setIsOpen] = useState(false); // overlay
+  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed); // mini desktop
+
   useEffect(() => {
-    if (isMobile) {
-      setIsOpen(false);
-    } else {
-      setIsOpen(true);
-    }
+    // cuando pasa a mobile, sidebar overlay debe arrancar cerrado
+    if (isMobile) setIsOpen(false);
+    // cuando vuelve a desktop, overlay no aplica
+    if (!isMobile) setIsOpen(false);
   }, [isMobile]);
 
   function toggleSidebar() {
+    // solo para mobile
     setIsOpen((prev) => !prev);
   }
 
-  return (
-    <SidebarContext.Provider
-      value={{
-        state: isOpen ? "expanded" : "collapsed",
-        isOpen,
-        setIsOpen,
-        isMobile,
-        toggleSidebar,
-      }}
-    >
-      {children}
-    </SidebarContext.Provider>
+  function toggleCollapse() {
+    // solo para desktop
+    setIsCollapsed((prev) => !prev);
+  }
+
+  const value = useMemo(
+    () => ({
+      isOpen,
+      setIsOpen,
+      toggleSidebar,
+      isCollapsed,
+      setIsCollapsed,
+      toggleCollapse,
+      isMobile,
+    }),
+    [isOpen, isCollapsed, isMobile],
   );
+
+  return <SidebarContext.Provider value={value}>{children}</SidebarContext.Provider>;
 }

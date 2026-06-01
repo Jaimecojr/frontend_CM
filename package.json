@@ -4,12 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:clean": "rm -rf .next && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.16",
+    "@tanstack/react-table": "^8.21.3",
+    "@types/react-google-recaptcha": "^2.1.9",
     "apexcharts": "^4.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -23,6 +26,8 @@
     "react": "^19.2.0",
     "react-apexcharts": "^1.7.0",
     "react-dom": "^19.2.0",
+    "react-google-recaptcha": "^3.1.0",
+    "sweetalert2": "^11.26.18",
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {

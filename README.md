@@ -1,85 +1,123 @@
-# NextAdmin - Next.js Admin Dashboard Template and Components
+# Contacto Médico — Frontend
 
-**NextAdmin** is a Free, open-source Next.js admin dashboard toolkit featuring 200+ UI components and templates that come with pre-built elements, components, pages, high-quality design, integrations, and much more to help you create powerful admin dashboards with ease.
+Panel administrativo y sitio web público construidos con **Next.js 15** y **TypeScript**.
 
+---
 
-[![nextjs admin template](https://cdn.pimjo.com/nextadmin-2.png)](https://nextadmin.co/)
+## Requisitos previos
 
+| Herramienta | Versión mínima |
+|-------------|----------------|
+| Node.js     | 18             |
+| npm         | 9              |
 
-**NextAdmin** provides you with a diverse set of dashboard UI components, elements, examples and pages necessary for creating top-notch admin panels or dashboards with **powerful** features and integrations. Whether you are working on a complex web application or a basic website, **NextAdmin** has got you covered.
+---
 
-### [✨ Visit Website](https://nextadmin.co/)
-### [🚀 Live Demo](https://demo.nextadmin.co/)
-### [📖 Docs](https://docs.nextadmin.co/)
+## Instalación local
 
-By leveraging the latest features of **Next.js 14** and key functionalities like **server-side rendering (SSR)**, **static site generation (SSG)**, and seamless **API route integration**, **NextAdmin** ensures optimal performance. With the added benefits of **React 18 advancements** and **TypeScript** reliability, **NextAdmin** is the ultimate choice to kickstart your **Next.js** project efficiently.
-
-## Installation
-
-1. Download/fork/clone the repo and Once you're in the correct directory, it's time to install all the necessary dependencies. You can do this by typing the following command:
-
-```
+```bash
+# 1. Instalar dependencias
 npm install
-```
-If you're using **Yarn** as your package manager, the command will be:
 
-```
-yarn install
+# 2. Crear archivo de variables de entorno
+cp .env.example .env.local   # o crear .env.local manualmente
 ```
 
-2. Okay, you're almost there. Now all you need to do is start the development server. If you're using **npm**, the command is:
+### Variables de entorno (`.env.local`)
 
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=<tu_site_key_de_recaptcha_v2>
 ```
+
+> `NEXT_PUBLIC_API_URL` apunta a la API Laravel. En local debe estar corriendo en el puerto 8000 (`php artisan serve`).
+
+```bash
+# 3. Iniciar el servidor de desarrollo
 npm run dev
 ```
-And if you're using **Yarn**, it's:
+
+El panel queda disponible en `http://localhost:3000`.
+
+---
+
+## Scripts disponibles
+
+| Comando             | Descripción                                        |
+|---------------------|----------------------------------------------------|
+| `npm run dev`       | Servidor de desarrollo con hot-reload              |
+| `npm run dev:clean` | Dev con caché limpia                               |
+| `npm run build`     | Compilar para producción                           |
+| `npm run start`     | Iniciar servidor de producción (después de build)  |
+| `npm run lint`      | Verificar código con ESLint                        |
+
+---
+
+## Estructura relevante
 
 ```
-yarn dev
+src/app/4dnn1n/    → Panel administrativo (ruta protegida)
+src/app/web/       → Sitio web público (guía médica, afiliarse, etc.)
+src/lib/api.ts     → Cliente HTTP centralizado
+src/services/      → Servicios de consumo de la API
+src/components/    → Componentes reutilizables
 ```
 
-And voila! You're now ready to start developing. **Happy coding**!
+---
 
-## Highlighted Features
-**200+ Next.js Dashboard Ul Components and Templates** - includes a variety of prebuilt **Ul elements, components, pages, and examples** crafted with a high-quality design.
-Additionally, features seamless **essential integrations and extensive functionalities**.
+## Configuración de producción
 
-- A library of over **200** professional dashboard UI components and elements.
-- Five distinctive dashboard variations, catering to diverse use-cases.
-- A comprehensive set of essential dashboard and admin pages.
-- More than **45** **Next.js** files, ready for use.
-- Styling facilitated by **Tailwind CSS** files.
-- A design that resonates premium quality and high aesthetics.
-- A handy UI kit with assets.
-- Over ten web apps complete with examples.
-- Support for both **dark mode** and **light mode**.
-- Essential integrations including - Authentication (**NextAuth**), Database (**Postgres** with **Prisma**), and Search (**Algolia**).
-- Detailed and user-friendly documentation.
-- Customizable plugins and add-ons.
-- **TypeScript** compatibility.
-- Plus, much more!
+### 1. Variables de entorno en el servidor
 
-All these features and more make **NextAdmin** a robust, well-rounded solution for all your dashboard development needs.
+```env
+NEXT_PUBLIC_API_URL=https://api.contactomedico.net
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=<site_key_de_produccion>
+```
 
-## Update Logs
+> Las variables `NEXT_PUBLIC_*` se incrustan en el bundle al momento del build — deben estar definidas **antes** de ejecutar `npm run build`.
 
-### Version 1.2.1 - [Mar 20, 2025]
-- Fix Peer dependency issues and NextConfig warning.
-- Updated apexcharts and react-apexhcarts to the latest version.
+### 2. Build y arranque
 
-### Version 1.2.0 - Major Upgrade and UI Improvements - [Jan 27, 2025]
+```bash
+npm run build
+npm run start
+```
 
-- Upgraded to Next.js v15 and updated dependencies
-- API integration with loading skeleton for tables and charts.
-- Improved code structure for better readability.
-- Rebuilt components like dropdown, sidebar, and all ui-elements using accessibility practices.
-- Using search-params to store dropdown selection and refetch data.
-- Semantic markups, better separation of concerns and more.
+O con PM2 para mantenerlo activo en segundo plano:
 
-### Version 1.1.0
-- Updated Dependencies
-- Removed Unused Integrations
-- Optimized App
+```bash
+pm2 start npm --name "frontend-cm" -- start
+pm2 save
+```
 
-### Version 1.0
-- Initial Release - [May 13, 2024]
+### 3. reCAPTCHA
+
+- Crear una clave en [Google reCAPTCHA](https://www.google.com/recaptcha/admin) tipo **v2 "No soy un robot"**.
+- Registrar el dominio `contactomedico.net` en la consola de reCAPTCHA.
+- Usar la **Site Key** en `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`.
+
+### 4. Cache de secciones públicas
+
+Los componentes `AlliesSection.tsx` y `DoctorsSection.tsx` usan `cache: "no-store"` en desarrollo. Antes del build de producción, cambiar por `next: { revalidate: 3600 }` en ambos archivos:
+
+- `src/components/web/AlliesSection.tsx` — `fetch` dentro de `getAllies()`
+- `src/components/web/DoctorsSection.tsx` — `fetch` dentro de `getSpecialists()`
+
+```ts
+// Antes (desarrollo)
+cache: "no-store",
+
+// Después (producción)
+next: { revalidate: 3600 },
+```
+
+### 5. Dominio
+
+El proceso Next.js corre por defecto en el puerto **3000**. El administrador del servidor debe apuntar el dominio `contactomedico.net` a ese puerto mediante el proxy inverso que tenga configurado (Nginx, Apache, panel de hosting, etc.).
+
+---
+
+## Notas adicionales
+
+- El panel administrativo vive bajo la ruta `/4dnn1n` — no modificar esa ruta sin actualizar también los guards de autenticación.
+- **CORS:** el backend permite solicitudes del origen configurado en `FRONTEND_URL` (variable del backend). Si el dominio del frontend cambia, actualizar esa variable en el `.env` de la API.

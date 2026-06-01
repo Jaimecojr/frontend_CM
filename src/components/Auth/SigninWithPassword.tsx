@@ -6,6 +6,7 @@ import { Checkbox } from "../FormElements/checkbox";
 import { PasswordIcon } from "@/assets/icons";
 import { User2Icon } from "lucide-react";
 import { csrf, getXsrfToken } from "@/app/4dnn1n/home/fetch";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 
 export default function SigninWithPassword() {
   const [data, setData] = useState({ user: "", password: "", remember: false });
@@ -37,12 +38,13 @@ export default function SigninWithPassword() {
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "X-XSRF-TOKEN": xsrf, // 👈 CLAVE
+          "X-XSRF-TOKEN": xsrf, //CLAVE
           Accept: "application/json",
         },
         body: JSON.stringify({
           user: data.user,
           password: data.password,
+          remember: data.remember,
         }),
       });
 
@@ -59,16 +61,18 @@ export default function SigninWithPassword() {
         throw new Error(msg);
       }
 
-      // 4. Redirigir al dashboard
+      // 4. Redirigir al dashboard — no se resetea loading para que el overlay
+      //    permanezca visible durante toda la navegación
       window.location.href = "/4dnn1n/home";
     } catch (err: any) {
       setError(err.message || "Error inesperado");
-    } finally {
       setLoading(false);
     }
   };
 
   return (
+    <>
+    <LoadingOverlay isLoading={loading} />
     <form onSubmit={handleSubmit}>
       <InputGroup
         type="text"
@@ -82,9 +86,9 @@ export default function SigninWithPassword() {
 
       <InputGroup
         type="password"
-        label="Password"
+        label="Contraseña"
         name="password"
-        placeholder="Password"
+        placeholder="Contraseña"
         value={data.password}
         handleChange={handleChange}
         icon={<PasswordIcon />}
@@ -92,7 +96,7 @@ export default function SigninWithPassword() {
 
       <div className="my-4">
         <Checkbox
-          label="Remember me"
+          label="Recordarme"
           name="remember"
           onChange={(e) => setData({ ...data, remember: e.target.checked })}
         />
@@ -108,5 +112,6 @@ export default function SigninWithPassword() {
         {loading ? "Cargando..." : "Ingresar"}
       </button>
     </form>
+    </>
   );
 }

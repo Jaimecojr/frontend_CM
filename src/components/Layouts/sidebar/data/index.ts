@@ -20,47 +20,55 @@ export const NAV_DATA = [
       {
         title: "Dashboard",
         icon: Icons.HomeIcon,
-        items: [
-          {
-            title: "eCommerce",
-            url: "/4dnn1n/home", // antes "/"
-          },
-        ],
-      },
-      {
-        title: "Asesores",
-        icon: Briefcase,
-        url: "",
-        items: [],
-      },
-      {
-        title: "Médicos",
-        icon: Stethoscope,
-        url: "",
+        url: "/4dnn1n/home",
         items: [],
       },
       {
         title: "Usuarios",
         icon: Users,
-        url: "",
-        items: [],
-      },
-      {
-        title: "Franquicias",
-        icon: Building2,
-        url: "",
+        url: "/4dnn1n/affiliates",
         items: [],
       },
       {
         title: "Citas",
         icon: CalendarDays,
-        url: "",
+        url: "/4dnn1n/appointments",
+        items: [],
+      },
+      {
+        title: "Médicos",
+        icon: Stethoscope,
+        url: "/4dnn1n/doctors",
         items: [],
       },
       {
         title: "Convenios",
         icon: Handshake,
-        url: "",
+        url: "/4dnn1n/agreements",
+        items: [],
+      },
+      {
+        title: "Asesores",
+        icon: Briefcase,
+        url: "/4dnn1n/counselors",
+        items: [],
+      },
+      {
+        title: "Contactos",
+        icon: Phone,
+        url: "/4dnn1n/contacts",
+        items: [],
+      },
+      {
+        title: "Afiliaciones",
+        icon: FileText,
+        url: "/4dnn1n/membership-forms",
+        items: [],
+      },
+      {
+        title: "Franquicias",
+        icon: Building2,
+        url: "/4dnn1n/franchises",
         items: [],
       },
       {
@@ -70,27 +78,15 @@ export const NAV_DATA = [
         items: [],
       },
       {
-        title: "4dnn1nistración de contenido",
+        title: "Administración de contenido",
         icon: LayoutDashboard,
-        url: "",
-        items: [],
-      },
-      {
-        title: "Contactos",
-        icon: Phone,
-        url: "",
-        items: [],
-      },
-      {
-        title: "Afiliaciones",
-        icon: FileText,
-        url: "",
+        url: "/4dnn1n/content",
         items: [],
       },
       {
         title: "Configuración",
         icon: Settings,
-        url: "",
+        url: "/4dnn1n/settings",
         items: [],
       },
       {

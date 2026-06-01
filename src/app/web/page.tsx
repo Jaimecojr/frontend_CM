@@ -1,17 +1,42 @@
-// src/app/web/page.tsx
-export default function HomePage() {
+import type { Metadata } from "next";
+import { HeroSection } from "@/components/web/HeroSection";
+import { QuickAccessSection } from "@/components/web/QuickAccessSection";
+import { AboutSection } from "@/components/web/AboutSection";
+import { AlliesSection } from "@/components/web/AlliesSection";
+import { DoctorsSection } from "@/components/web/DoctorsSection";
+
+export const metadata: Metadata = {
+  title: "Contacto Médico | Especialistas en Salud para Ti y Tu Familia",
+  description:
+    "Accede a especialistas, IPS y laboratorios con tarifas preferenciales en Colombia. Más de 15 años facilitando servicios de salud en Armenia, Pereira, Manizales, Cali, Ibagué y Neiva. ¡Afíliate hoy!",
+  keywords:
+    "especialistas médicos, servicio médico especializado, intermediación médica, guía médica, médico en casa, convenios IPS, medicina interna, médico Armenia, especialistas Pereira, salud Manizales, servicio médico Cali, servicio médico Ibagué, servicio médico Neiva, Colombia",
+  openGraph: {
+    title: "Contacto Médico | Los Mejores Especialistas a tu Alcance",
+    description:
+      "Facilitamos el acceso a especialistas, IPS y laboratorios con tarifas preferenciales. Más de 15 años brindando salud con sentido humano en Colombia.",
+    url: "https://contactomedico.net",
+    siteName: "Contacto Médico",
+    images: [
+      {
+        url: "https://contactomedico.net/logo.png",
+        width: 800,
+        height: 600,
+      },
+    ],
+    locale: "es_CO",
+    type: "website",
+  },
+};
+
+export default function WebPage() {
   return (
-    <section className="text-center py-20">
-      <h2 className="text-3xl font-bold mb-4">Bienvenido a Contacto Médico</h2>
-      <p className="text-gray-600 mb-6">
-        Una plataforma moderna para conectar profesionales de la salud.
-      </p>
-      <a
-        href="/4dnn1n/home"
-        className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-      >
-        Ir al panel administrativo
-      </a>
-    </section>
+    <main>
+      <HeroSection />
+      <QuickAccessSection />
+      <AboutSection />
+      <AlliesSection />
+      <DoctorsSection />
+    </main>
   );
 }

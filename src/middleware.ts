@@ -27,3 +27,7 @@ export async function middleware(req: NextRequest) {
 
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: ["/4dnn1n/:path*"],
+};
