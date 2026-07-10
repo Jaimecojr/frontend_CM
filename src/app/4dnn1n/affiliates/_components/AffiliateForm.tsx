@@ -103,6 +103,7 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
   const [renovationType, setRenovationType] = useState("vencimiento");
   const [renovationDateIni, setRenovationDateIni] = useState("");
   const [renovationValue, setRenovationValue] = useState("");
+  const [renovationDatePayment, setRenovationDatePayment] = useState(getTodayString());
 
   const [form, setForm] = useState({
     name: initial?.name ?? "",
@@ -121,10 +122,10 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
 
     validity: initial?.validity ?? defaultToday,
     validity_end: initial?.validity_end ?? addOneYear(defaultToday),
-    sale_date: initial?.sale_date ?? defaultToday,
+    payment_date: initial?.payment_date ?? defaultToday,
     balance: initial?.balance ?? 0,
-    value_sale: initial?.value_sale ?? 0,
-    comission: FormNumber(initial?.comission, 0),
+    value: initial?.value ?? 0,
+    commission: FormNumber(initial?.commission, 0),
     payment_commission: (initial?.payment_commission as "si" | "no") ?? "no",
     company: initial?.company ?? "",
 
@@ -153,7 +154,17 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
     }
   }, [initial]);
 
-  // Set renovation value based on agreement
+  // Auto-llenar valor desde el convenio al crear
+  useEffect(() => {
+    if (isCreate && agreements.length > 0 && form.agreement_id) {
+      const selected = agreements.find(a => a.id === Number(form.agreement_id));
+      if (selected?.amount) {
+        setForm(prev => ({ ...prev, value: selected.amount! }));
+      }
+    }
+  }, [form.agreement_id, agreements, isCreate]);
+
+  // Auto-llenar valor de renovación desde el convenio al editar
   useEffect(() => {
     if (isEdit && wantsRenovation === "si" && agreements.length > 0 && form.agreement_id) {
        const selected = agreements.find(a => a.id === Number(form.agreement_id));
@@ -352,29 +363,29 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
 
     // Prepare payload
     const payload: any = {
-      ...form, // manda todo
+      ...form,
       id_card: onlyDigits(form.id_card),
       movil: onlyDigits(form.movil),
       bithdate: form.bithdate || null,
-      // Validaciones extras si hacen falta
       contract_code: form.contract_code || "",
-      value_sale: form.value_sale || 0,
+      value: form.value || 0,
       balance: form.balance || 0,
-      comission: form.comission || 0,
+      commission: form.commission || 0,
+      payment_date: form.payment_date || defaultToday,
       city_id: Number(form.city_id),
       user_id: Number(form.user_id),
       counselor_id: Number(form.counselor_id),
       agreement_id: Number(form.agreement_id),
-      // En creación siempre activo; en edición no se toca (el backend preserva el valor actual)
       ...(isCreate && { stade: 1 }),
     };
 
     if (isEdit && wantsRenovation === "si") {
+       payload.payment_date = renovationDatePayment;
        payload.renovation = {
           date_ini: renovationDateIni,
           date_end: addOneYear(renovationDateIni),
-          date_payment: getTodayString(),
-          value: Number(renovationValue) || 0
+          date_payment: renovationDatePayment,
+          value: Number(renovationValue) || 0,
        };
     }
 
@@ -404,10 +415,10 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
       counselor_id: "",
       validity: defaultToday,
       validity_end: addOneYear(defaultToday),
-      sale_date: defaultToday,
+      payment_date: defaultToday,
       balance: 0,
-      value_sale: 0,
-      comission: 0,
+      value: 0,
+      commission: 0,
       payment_commission: "no",
       company: "",
       carnet: "no",
@@ -646,7 +657,7 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
         </div>
 
         {/* Fechas de Vigencia Combinadas */}
-        <div className="md:col-span-2 lg:col-span-2">
+        <div className={`md:col-span-2 ${isEdit ? "lg:col-span-3" : "lg:col-span-2"}`}>
           {isEdit || isView ? (
              <div className="mt-2">
                <Label>Vigencia</Label>
@@ -725,6 +736,15 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
                              className="rounded-md border border-transparent bg-transparent px-2 py-1 text-sm font-medium text-gray-800 cursor-not-allowed dark:text-gray-200"
                            />
                          </div>
+
+                         <div className="flex items-center gap-3">
+                           <span className="text-sm italic text-gray-600 dark:text-gray-400">Fecha de Venta:</span>
+                           <DatePickerWithToday
+                             value={renovationDatePayment}
+                             onChange={setRenovationDatePayment}
+                             className="rounded-md border bg-white px-2 py-1 text-sm dark:border-dark-4 dark:bg-dark-2"
+                           />
+                         </div>
                        </div>
                      </div>
                    )}
@@ -759,16 +779,19 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
           )}
         </div>
 
-        <div>
-          <Label required={!isView}>Fecha Venta</Label>
-          <div className="mt-1">
-            <DatePickerWithToday
-              value={form.sale_date}
-              disabled={isView}
-              onChange={(date) => setForm({ ...form, sale_date: date })}
-            />
+        {/* Fecha de Venta: visible en creación/vista, oculta en edición (aparece en sección renovar) */}
+        {!isEdit && (
+          <div>
+            <Label required={!isView}>Fecha de Venta</Label>
+            <div className="mt-1">
+              <DatePickerWithToday
+                value={form.payment_date}
+                disabled={isView}
+                onChange={(date) => setForm({ ...form, payment_date: date })}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Saldos y Comisiones */}
         <div>
@@ -788,10 +811,10 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
           <Label>Comisión</Label>
           <input
             type="number"
-            value={form.comission}
+            value={form.commission}
             disabled={isView}
             onChange={(e) =>
-              setForm({ ...form, comission: Number(e.target.value) })
+              setForm({ ...form, commission: Number(e.target.value) })
             }
             className="mt-1 w-full rounded-lg border px-3 py-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:dark:bg-dark-2"
           />

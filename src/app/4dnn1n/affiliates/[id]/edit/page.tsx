@@ -90,8 +90,6 @@ export default function EditAffiliatePage() {
 
           if (renovationData) {
             payload.validity_end = renovationData.date_end;
-            payload.sale_date = renovationData.date_payment;
-            payload.value_sale = renovationData.value;
             payload.stade = 1;
           }
 

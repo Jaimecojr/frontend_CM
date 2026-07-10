@@ -22,20 +22,20 @@ export type ApiAffiliate = {
   city_id: number;
   email: string;
   validity: string;
-  value_sale: number;
   agreement_id: number;
-  balance: number;
-  comission: number;
-  payment_commission: "si" | "no";
   company: string;
   photo?: string | null;
   photo_rename?: string | null;
   validity_end: string;
+  payment_date?: string | null;
+  value?: number | null;
+  balance?: number | null;
+  commission?: number | null;
+  payment_commission?: "si" | "no" | null;
   stade?: number | null;
   carnet: "si" | "no";
   state: number;
   user_id: number;
-  sale_date: string;
 
   // relationships
   city?: { id: number; name: string; department_id?: number } | null;
@@ -161,16 +161,35 @@ export async function checkAffiliateIdCard(
 }
 
 // Crear / Actualizar
-export type CreateAffiliatePayload = Omit<
-  ApiAffiliate,
-  | "id"
-  | "city"
-  | "counselor"
-  | "agreement"
-  | "user"
-  | "created_at"
-  | "updated_at"
->;
+export type CreateAffiliatePayload = {
+  counselor_id: number;
+  contract_code?: string;
+  name: string;
+  lastname: string;
+  bithdate?: string | null;
+  id_card: string;
+  phone?: string | null;
+  movil?: string | null;
+  address?: string;
+  city_id: number;
+  email?: string;
+  validity: string;
+  agreement_id: number;
+  company?: string;
+  photo?: string | null;
+  photo_rename?: string | null;
+  validity_end: string;
+  payment_date: string;
+  value: number;
+  balance: number;
+  commission: number;
+  payment_commission: "si" | "no";
+  stade?: number | null;
+  carnet: "si" | "no";
+  state: number;
+  user_id: number;
+  beneficiaries?: ApiBeneficiary[];
+};
 
 export async function createAffiliate(payload: CreateAffiliatePayload) {
   await csrf();
