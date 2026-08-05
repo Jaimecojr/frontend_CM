@@ -1,25 +1,16 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export async function middleware(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const url = req.nextUrl.clone();
 
   if (url.pathname.startsWith("/4dnn1n")) {
-    try {
-      const res = await fetch("http://localhost:8000/user", {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          Cookie: req.headers.get("cookie") || "",
-          Accept: "application/json",
-        },
-      });
+    // Verificación rápida de presencia de cookie, sin llamar al backend.
+    // La verificación real de sesión la hace useRequireAuth() en el cliente,
+    // que sí consulta /user contra Laravel.
+    const tieneCookieSesion = req.cookies.has("XSRF-TOKEN");
 
-      if (res.ok) return NextResponse.next();
-
-      url.pathname = "/auth/sign-in";
-      return NextResponse.redirect(url);
-    } catch {
+    if (!tieneCookieSesion) {
       url.pathname = "/auth/sign-in";
       return NextResponse.redirect(url);
     }

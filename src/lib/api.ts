@@ -23,25 +23,57 @@ export function getXsrfToken() {
   return m ? decodeURIComponent(m[1]) : null;
 }
 
-export async function csrf() {
-  await fetch(`${API_URL}/sanctum/csrf-cookie`, {
-    method: "GET",
-    credentials: "include",
-  });
+// Cachea la promesa de la petición CSRF: mientras la sesión siga activa,
+// la cookie XSRF-TOKEN sigue siendo válida, así que no hace falta pedirla
+// de nuevo antes de cada mutación individual.
+let csrfPromise: Promise<void> | null = null;
+
+export function csrf(): Promise<void> {
+  if (!csrfPromise) {
+    csrfPromise = fetch(`${API_URL}/sanctum/csrf-cookie`, {
+      method: "GET",
+      credentials: "include",
+    })
+      .then(() => undefined)
+      .catch((err) => {
+        csrfPromise = null;
+        throw err;
+      });
+  }
+  return csrfPromise;
+}
+
+// Invalida la cookie CSRF cacheada — se usa cuando el backend responde 419
+// (token CSRF vencido o inválido), para forzar pedirla de nuevo una vez.
+function resetCsrf() {
+  csrfPromise = null;
 }
 
 export async function apiFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    credentials: "include",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      // 🔥 Sanctum CSRF header (solo si existe cookie)
-      "X-XSRF-TOKEN": getXsrfToken() ?? "",
-      ...(options.headers || {}),
-    },
-  });
+  const method = (options.method ?? "GET").toUpperCase();
+  const llevaBody = method !== "GET" && method !== "HEAD";
+
+  const doFetch = () =>
+    fetch(`${API_URL}${path}`, {
+      ...options,
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+        // Solo se envía Content-Type en peticiones con body — en un GET
+        // este header no es necesario y provoca un preflight CORS extra.
+        ...(llevaBody ? { "Content-Type": "application/json" } : {}),
+        "X-XSRF-TOKEN": getXsrfToken() ?? "",
+        ...(options.headers || {}),
+      },
+    });
+
+  let res = await doFetch();
+
+  if (res.status === 419) {
+    resetCsrf();
+    await csrf();
+    res = await doFetch();
+  }
 
   const data = (await res.json().catch(() => ({}))) as any;
 

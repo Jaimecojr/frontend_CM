@@ -359,8 +359,6 @@ export function MiWidget() {
 }
 ```
 
-Los datos del `home/fetch.ts` (overviewData, chatsData) son **estáticos/fake** y no usan la API real — no aplica esta restricción para ellos.
-
 ### Design tokens del panel — obligatorios en todos los widgets
 Todos los componentes del dashboard deben usar los mismos tokens que el resto del panel. Usar `rounded-xl border bg-card` o similares es incorrecto — los estilos no van a concordar.
 
@@ -476,6 +474,18 @@ En `[id]/edit/page.tsx`, `payload.stade = 1` se agrega explícitamente solo cuan
 
 ### Regla de acceso para el toggle manual de stade
 El botón/acción de activar o inactivar un afiliado manualmente desde la tabla **solo debe mostrarse al super admin (`user?.type === 1`)**. Los asesores y otros roles no deben poder cambiar el estado directamente — el flujo correcto es siempre a través de una renovación. Esto evita cambios accidentales o indebidos en el estado de los afiliados.
+
+## Cliente API (`src/lib/api.ts` y `home/fetch.ts`)
+
+Ambos archivos implementan `csrf()` y `apiFetch()` de forma independiente (duplicado intencional — no unificar salvo que se decida refactorizar explícitamente).
+
+- **`csrf()` es idempotente:** cachea la promesa de la petición a `/sanctum/csrf-cookie` a nivel de módulo. Aunque cada mutación de cada `fetch.ts` siga llamando `await csrf()` antes de crear/editar/eliminar (patrón establecido en todos los módulos), solo se dispara **una petición de red real por sesión del navegador** — las llamadas siguientes reutilizan la misma promesa. No quitar esas llamadas a `csrf()` de los módulos pensando que son redundantes: siguen siendo necesarias como red de seguridad, simplemente ya no cuestan una petición de red extra cada vez.
+- **Reintento automático en 419:** si el backend responde `419` (token CSRF vencido o inválido), `apiFetch` invalida la cookie cacheada, pide una nueva y reintenta la petición original una vez, de forma transparente para quien la llama.
+- **`Content-Type` solo en peticiones con body:** los `GET`/`HEAD` no lo envían, para que el navegador los trate como "simple request" y no disparen un preflight `OPTIONS` innecesario (ver `max_age` en el CLAUDE.md del backend). Si agregas una función de fetch nueva, no fuerces `Content-Type: application/json` en un `GET`.
+
+## Middleware de Autenticación (`src/middleware.ts`)
+
+El middleware **no** llama al backend — solo verifica la presencia de la cookie `XSRF-TOKEN` para redirigir rápido a `/auth/sign-in` cuando no hay sesión en absoluto. **No es el guard real de autenticación** (no valida que la sesión siga siendo válida en Laravel): esa responsabilidad es de `useRequireAuth()` (`src/hooks/useRequireAuth.ts`), que sí consulta `/user` en el cliente vía `AuthContext`. Si necesitas endurecer la protección de rutas, hazlo ahí — no agregues de vuelta un `fetch` al backend en el middleware, porque reintroduce un round-trip bloqueante en cada navegación dentro de `/4dnn1n`.
 
 ## Formularios Públicos — CSRF con Sanctum
 
