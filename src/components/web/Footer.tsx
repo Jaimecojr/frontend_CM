@@ -1,8 +1,48 @@
+'use client';
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import logo from "@/assets/logos/logo.png";
+import LegalModal from "@/components/web/LegalModal";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+type Franchise = {
+  id: number;
+  name: string;
+  address: string | null;
+  city: { id: number; name: string } | null;
+};
+
+function toTitleCase(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/(^|\s)\p{L}/gu, (letter) => letter.toUpperCase());
+}
+
+async function getActiveFranchises(): Promise<Franchise[]> {
+  try {
+    const res = await fetch(`${API_URL}/api/public/franchises`, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const json = await res.json();
+    return json.data ?? [];
+  } catch {
+    return [];
+  }
+}
 
 export function Footer() {
+  const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(null);
+  const [franchises, setFranchises] = useState<Franchise[]>([]);
+
+  useEffect(() => {
+    getActiveFranchises().then(setFranchises);
+  }, []);
+
   return (
     <footer className="bg-[#1A1A2E] text-white">
       {/* Barra de acento superior */}
@@ -65,30 +105,30 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Sedes Eje Cafetero */}
+          {/* Nuestras Sedes */}
           <div className="space-y-5">
             <h6 className="text-[#E8192C] font-bold uppercase tracking-widest text-xs">
-              Sedes Eje Cafetero
+              Nuestras Sedes
             </h6>
-            <ul className="space-y-3 text-slate-400 text-sm">
-              {[
-                { city: "Armenia", address: "Av. Bolívar No. 12-45" },
-                { city: "Pereira", address: "Calle 14 No. 23-11" },
-                { city: "Manizales", address: "Carrera 23 No. 45-67" },
-              ].map(({ city, address }) => (
+            <ul className="space-y-2.5 text-slate-400 text-xs">
+              {franchises
+                .filter((franchise) => !!franchise.address?.trim())
+                .map((franchise) => (
                 <li
-                  key={city}
-                  className="flex gap-3 hover:text-[#1DBFCE] cursor-pointer transition-all duration-200 hover:translate-x-1"
+                  key={franchise.id}
+                  className="flex gap-2 hover:text-[#1DBFCE] cursor-pointer transition-all duration-200 hover:translate-x-1"
                 >
                   <span
                     className="material-symbols-outlined text-[#1DBFCE] shrink-0"
-                    style={{ fontSize: "16px", marginTop: "1px" }}
+                    style={{ fontSize: "14px", marginTop: "1px" }}
                   >
                     location_on
                   </span>
                   <span>
-                    <span className="text-white font-medium">{city}: </span>
-                    {address}
+                    <span className="text-white font-medium">
+                      {toTitleCase(franchise.city?.name ?? franchise.name)}:{" "}
+                    </span>
+                    {toTitleCase(franchise.address as string)}
                   </span>
                 </li>
               ))}
@@ -98,40 +138,42 @@ export function Footer() {
           {/* Enlaces y otras sedes */}
           <div className="space-y-5">
             <h6 className="text-[#E8192C] font-bold uppercase tracking-widest text-xs">
-              Enlaces & Otras Sedes
+              Enlaces
             </h6>
             <ul className="space-y-3 text-slate-400 text-sm">
-              {[
-                "Cali y Valle del Cauca",
-                "Aviso de Privacidad",
-                "Términos y Condiciones",
-                "Preguntas Frecuentes",
-              ].map((item) => (
-                <li
-                  key={item}
-                  className="hover:text-[#1DBFCE] cursor-pointer transition-all duration-200 hover:translate-x-1"
+              <li>
+                <button
+                  type="button"
+                  onClick={() => setLegalModal('privacy')}
+                  className="hover:text-[#1DBFCE] cursor-pointer transition-all duration-200 hover:translate-x-1 text-left"
                 >
-                  {item}
-                </li>
-              ))}
+                  Aviso de Privacidad
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => setLegalModal('terms')}
+                  className="hover:text-[#1DBFCE] cursor-pointer transition-all duration-200 hover:translate-x-1 text-left"
+                >
+                  Términos y Condiciones
+                </button>
+              </li>
+              <li className="hover:text-[#1DBFCE] cursor-pointer transition-all duration-200 hover:translate-x-1">
+                Preguntas Frecuentes
+              </li>
             </ul>
           </div>
         </div>
 
         {/* Copyright */}
-        <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-slate-500 text-xs">
-          <p>© 2024 Contacto Médico. Salud con sentido humano.</p>
-          <div className="flex items-center gap-2">
-            <span
-              className="material-symbols-outlined text-[#1DBFCE]"
-              style={{ fontSize: "16px" }}
-            >
-              health_and_safety
-            </span>
-            <span>Vigilado Supersalud</span>
-          </div>
+        <div className="pt-8 border-t border-slate-800 text-center text-slate-500 text-xs">
+          <p>© {new Date().getFullYear()} Contacto Médico. Salud con sentido humano.</p>
         </div>
       </div>
+      {legalModal && (
+        <LegalModal type={legalModal} onClose={() => setLegalModal(null)} />
+      )}
     </footer>
   );
 }

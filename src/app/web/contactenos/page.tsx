@@ -450,7 +450,7 @@ export default function ContactenosPage() {
                 {/* Botón */}
                 <button
                   type="submit"
-                  disabled={submitState === "loading"}
+                  disabled={submitState === "loading" || !privacyAccepted || !termsAccepted || !captchaToken}
                   className="w-full py-4 bg-[#E8192C] text-white rounded-xl font-bold text-[15px] shadow-md hover:bg-[#c41422] active:scale-[0.98] transition-all duration-200 uppercase tracking-wide disabled:opacity-60 flex items-center justify-center gap-2"
                 >
                   {submitState === "loading" ? (

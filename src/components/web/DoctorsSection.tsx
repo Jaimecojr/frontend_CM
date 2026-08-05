@@ -1,3 +1,4 @@
+import Link from "next/link";
 
 type Specialist = {
   id: number;
@@ -51,7 +52,10 @@ export async function DoctorsSection() {
               humano para tu bienestar.
             </p>
           </div>
-          <button className="shrink-0 flex items-center gap-1.5 text-[#1DBFCE] font-bold text-sm hover:gap-3 transition-all duration-200">
+          <Link
+            href="/web/guia-medica"
+            className="shrink-0 flex items-center gap-1.5 text-[#1DBFCE] font-bold text-sm hover:gap-3 transition-all duration-200"
+          >
             Ver todos los especialistas
             <span
               className="material-symbols-outlined"
@@ -59,7 +63,7 @@ export async function DoctorsSection() {
             >
               arrow_forward
             </span>
-          </button>
+          </Link>
         </div>
 
         {/* Grid de médicos */}

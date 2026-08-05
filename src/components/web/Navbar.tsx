@@ -1,12 +1,26 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import logo from "@/assets/logos/logo.png";
 
+const NAV_LINKS = [
+  { href: "/web", label: "Inicio" },
+  { href: "/web/guia-medica", label: "Guía Médica" },
+  { href: "/web/servicios", label: "Servicios" },
+  { href: "/web/contactenos", label: "Contáctenos" },
+];
+
 export function Navbar() {
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   return (
     <header className="sticky top-0 w-full z-50">
       {/* Barra de acento de marca */}
@@ -30,54 +44,20 @@ export function Navbar() {
 
           {/* Links de navegación */}
           <ul className="hidden lg:flex items-center gap-8 text-[13.5px] font-semibold tracking-tight">
-            <li>
-              <Link
-                href="/web"
-                className={pathname === "/web" ? "text-[#E8192C] border-b-2 border-[#E8192C] pb-0.5" : "text-[#64748B] hover:text-[#1A1A2E] border-b-2 border-transparent hover:border-[#1DBFCE] pb-0.5 transition-all duration-200"}
-              >
-                Inicio
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/web/guia-medica"
-                className={pathname === "/web/guia-medica" ? "text-[#E8192C] border-b-2 border-[#E8192C] pb-0.5" : "text-[#64748B] hover:text-[#1A1A2E] border-b-2 border-transparent hover:border-[#1DBFCE] pb-0.5 transition-all duration-200"}
-              >
-                Guía Médica
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="#"
-                className="text-[#64748B] hover:text-[#1A1A2E] border-b-2 border-transparent hover:border-[#1DBFCE] pb-0.5 transition-all duration-200"
-              >
-                Servicios
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/web/contactenos"
-                className={pathname === "/web/contactenos" ? "text-[#E8192C] border-b-2 border-[#E8192C] pb-0.5" : "text-[#64748B] hover:text-[#1A1A2E] border-b-2 border-transparent hover:border-[#1DBFCE] pb-0.5 transition-all duration-200"}
-              >
-                Contáctenos
-              </Link>
-            </li>
+            {NAV_LINKS.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className={pathname === link.href ? "text-[#E8192C] border-b-2 border-[#E8192C] pb-0.5" : "text-[#64748B] hover:text-[#1A1A2E] border-b-2 border-transparent hover:border-[#1DBFCE] pb-0.5 transition-all duration-200"}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
           </ul>
 
           {/* Acciones */}
           <div className="flex items-center gap-3">
-            <Link
-              href="/4dnn1n"
-              className="hidden md:flex items-center gap-1.5 px-5 py-2.5 border border-[#1DBFCE] text-[#1DBFCE] rounded-lg font-semibold text-[13.5px] hover:bg-[#1DBFCE] hover:text-white transition-all duration-200"
-            >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: "15px" }}
-              >
-                person
-              </span>
-              Portal Pacientes
-            </Link>
             <Link
               href="/web/afiliarse"
               className={`flex items-center gap-1.5 px-5 py-2.5 bg-[#E8192C] text-white rounded-lg font-semibold text-[13.5px] shadow hover:bg-[#c41422] active:scale-95 transition-all duration-200 ${pathname === "/web/afiliarse" ? "opacity-90" : ""}`}
@@ -90,11 +70,41 @@ export function Navbar() {
               </span>
               Afíliate
             </Link>
-            <button className="lg:hidden p-2 text-[#1A1A2E]">
-              <span className="material-symbols-outlined">menu</span>
+            <button
+              type="button"
+              onClick={() => setMobileOpen((open) => !open)}
+              className="lg:hidden p-2 text-[#1A1A2E]"
+              aria-expanded={mobileOpen}
+              aria-label={mobileOpen ? "Cerrar menú" : "Abrir menú"}
+            >
+              <span className="material-symbols-outlined">
+                {mobileOpen ? "close" : "menu"}
+              </span>
             </button>
           </div>
         </nav>
+
+        {/* Panel de navegación móvil */}
+        {mobileOpen && (
+          <div className="lg:hidden border-t border-slate-100 px-6 py-5">
+            <ul className="flex flex-col gap-1 text-[14px] font-semibold">
+              {NAV_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className={
+                      pathname === link.href
+                        ? "block py-3 text-[#E8192C]"
+                        : "block py-3 text-[#64748B] hover:text-[#1A1A2E] transition-colors duration-200"
+                    }
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </header>
   );

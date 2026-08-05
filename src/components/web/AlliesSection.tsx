@@ -38,12 +38,12 @@ export async function AlliesSection() {
               href={ally.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="block w-full rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300"
+              className="block w-full rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 bg-white border border-slate-100"
             >
               <img
                 src={`${API_URL}/storage/${ally.image}`}
                 alt={`Aliado ${ally.position}`}
-                className="w-full h-[270px] object-cover"
+                className="w-full h-auto object-contain p-2"
               />
             </a>
           ))}

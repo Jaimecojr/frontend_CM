@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export function AboutSection() {
   return (
@@ -11,10 +12,9 @@ export function AboutSection() {
           <div className="rounded-xl overflow-hidden shadow-xl relative aspect-[4/3]">
             <Image
               alt="Sobre Contacto Médico"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMolyAIsiYoCZVEghD_NZQhC6vaslTmMZCH-jTxXqxzbhkg-3OtuI_TO1NP0EVAxAsqgG5KjQw5M4PMZykwlize6XQtZr5FJoOsdxR_0Mu_vpRWzYqN_MpQ2CrUJnmj_nrEY-AK63_wo2w2lofnjeuzzLT547Jca35urV92si941OcYbyFGJh0qmfdTSrcmNS1MxAVwNTcKlNmf7xliPsmNFvd0ewCcROWr_SWtfiW39cjHZQ5QXbB3I_aSIf-iHGQw1jMQgv5oeQG"
+              src="/images/slide3.jpg"
               fill
-              className="object-cover"
-              unoptimized
+              className="object-cover object-left-top"
             />
           </div>
           {/* Badges de experiencia */}
@@ -105,7 +105,10 @@ export function AboutSection() {
             ))}
           </div>
 
-          <button className="flex items-center gap-2 px-7 py-3.5 bg-[#1DBFCE] text-white rounded-lg font-semibold text-[15px] hover:bg-[#17a8b5] active:scale-95 transition-all duration-200 shadow-md shadow-cyan-100">
+          <Link
+            href="/web/quienes-somos"
+            className="inline-flex items-center gap-2 px-7 py-3.5 bg-[#1DBFCE] text-white rounded-lg font-semibold text-[15px] hover:bg-[#17a8b5] active:scale-95 transition-all duration-200 shadow-md shadow-cyan-100"
+          >
             Conoce más sobre nosotros
             <span
               className="material-symbols-outlined"
@@ -113,7 +116,7 @@ export function AboutSection() {
             >
               arrow_forward
             </span>
-          </button>
+          </Link>
         </div>
       </div>
     </section>
