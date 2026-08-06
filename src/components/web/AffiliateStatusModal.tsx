@@ -49,15 +49,15 @@ export function AffiliateStatusModal({ result, onClose }: AffiliateStatusModalPr
   const status = activa
     ? {
         icon: "check_circle",
-        label: "Afiliación activa",
-        meta: `Vigente hasta el ${dayjs(data?.validity_end).format("DD/MM/YYYY")}`,
+        text: `Afiliación Activa — Vigente hasta ${dayjs(data?.validity_end).format("DD/MM/YYYY")}`,
         chip: "bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-600/20",
         iconTint: "text-emerald-600",
       }
     : {
         icon: "cancel",
-        label: "Afiliación inactiva",
-        meta: data ? `Venció el ${dayjs(data.validity_end).format("DD/MM/YYYY")}` : "",
+        text: data
+          ? `Afiliación Inactiva — Venció ${dayjs(data.validity_end).format("MM/YYYY")}`
+          : "",
         chip: "bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20",
         iconTint: "text-red-600",
       };
@@ -88,7 +88,7 @@ export function AffiliateStatusModal({ result, onClose }: AffiliateStatusModalPr
               className="text-lg font-bold leading-tight text-[#1A1A2E]"
               style={{ fontFamily: "'Lora', Georgia, serif" }}
             >
-              Estado de Afiliación
+              Registro Grupo Familiar
             </h2>
           </div>
           <button
@@ -127,10 +127,7 @@ export function AffiliateStatusModal({ result, onClose }: AffiliateStatusModalPr
                 >
                   {status.icon}
                 </span>
-                <div className="text-left">
-                  <p className="text-sm font-semibold leading-tight">{status.label}</p>
-                  <p className="text-xs leading-tight opacity-80">{status.meta}</p>
-                </div>
+                <p className="text-left text-sm font-semibold leading-tight">{status.text}</p>
               </div>
 
               {/* Beneficiarios */}
