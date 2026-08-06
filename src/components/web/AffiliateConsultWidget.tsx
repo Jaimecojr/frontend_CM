@@ -48,7 +48,7 @@ export function AffiliateConsultWidget() {
           </label>
           <input
             className="w-full bg-[#ffffff] border border-[#e5eeff] rounded-xl py-3 px-4 focus:ring-2 focus:ring-[#1DBFCE] transition-all outline-none"
-            placeholder="Ej. 1094947820"
+            placeholder="Ej. 1023456789"
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
