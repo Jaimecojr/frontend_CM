@@ -1,38 +1,24 @@
 "use client";
 
 import React, { useState } from "react";
-import { checkAffiliateStatus } from "@/services/affiliateService";
+import { checkAffiliateStatus, AffiliateStatusResponse } from "@/services/affiliateService";
+import { AffiliateStatusModal } from "@/components/web/AffiliateStatusModal";
 
 export function AffiliateConsultWidget() {
-  const [docType, setDocType] = useState("CC");
   const [docNum, setDocNum] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [result, setResult] = useState<AffiliateStatusResponse | null>(null);
+
+  const handleDocNumChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDocNum(e.target.value.replace(/\D/g, ""));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setResult(null);
     try {
-      const response = await checkAffiliateStatus(docType, docNum);
-      if (response.success && response.data) {
-        setResult({
-          success: true,
-          message: `Hola ${response.data.name}, tu estado es: ${
-            response.data.stade === 1 ? "Activo" : "Inactivo"
-          }.`,
-        });
-      } else {
-        setResult({
-          success: false,
-          message: response.message || "No se encontró el afiliado.",
-        });
-      }
-    } catch (error) {
-      setResult({
-        success: false,
-        message: "Ocurrió un error al consultar. Intente nuevamente.",
-      });
+      const response = await checkAffiliateStatus(docNum);
+      setResult(response);
     } finally {
       setLoading(false);
     }
@@ -49,13 +35,11 @@ export function AffiliateConsultWidget() {
             Tipo de Documento
           </label>
           <select
-            className="w-full bg-[#ffffff] border border-[#e5eeff] rounded-xl py-3 px-4 focus:ring-2 focus:ring-[#1DBFCE] transition-all outline-none"
-            value={docType}
-            onChange={(e) => setDocType(e.target.value)}
+            className="w-full bg-[#f8faff] border border-[#e5eeff] rounded-xl py-3 px-4 text-[#64748B] outline-none disabled:cursor-not-allowed"
+            value="CC"
+            disabled
           >
             <option value="CC">Cédula de Ciudadanía</option>
-            <option value="CE">Cédula de Extranjería</option>
-            <option value="TI">Tarjeta de Identidad</option>
           </select>
         </div>
         <div>
@@ -64,34 +48,29 @@ export function AffiliateConsultWidget() {
           </label>
           <input
             className="w-full bg-[#ffffff] border border-[#e5eeff] rounded-xl py-3 px-4 focus:ring-2 focus:ring-[#1DBFCE] transition-all outline-none"
-            placeholder="Ej. 1094..."
+            placeholder="Ej. 1094947820"
             type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={20}
             value={docNum}
-            onChange={(e) => setDocNum(e.target.value)}
+            onChange={handleDocNumChange}
             required
           />
         </div>
-        
-        {result && (
-          <div
-            className={`p-4 rounded-xl text-sm font-medium ${
-              result.success
-                ? "bg-[#eff4ff] text-[#1DBFCE] border border-[#dce9ff]"
-                : "bg-[#ffdad6] text-[#93000a] border border-[#ffb3ae]"
-            }`}
-          >
-            {result.message}
-          </div>
-        )}
 
         <button
           className="w-full py-4 bg-[#1DBFCE] text-white rounded-xl font-semibold text-base shadow-md hover:bg-[#1DBFCE]/90 transition-all uppercase tracking-wide disabled:opacity-50"
           type="submit"
-          disabled={loading}
+          disabled={loading || docNum.length === 0}
         >
           {loading ? "Consultando..." : "Consultar Estado"}
         </button>
       </form>
+
+      {result && (
+        <AffiliateStatusModal result={result} onClose={() => setResult(null)} />
+      )}
     </div>
   );
 }
