@@ -1,5 +1,7 @@
 // src/services/affiliateService.ts
 
+import { csrf, getXsrfToken } from "@/lib/api";
+
 export interface AffiliateStatusResponse {
   success: boolean;
   message: string;
@@ -17,13 +19,16 @@ export async function checkAffiliateStatus(
   docNum: string
 ): Promise<AffiliateStatusResponse> {
   try {
+    await csrf();
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/public/affiliate-status`,
       {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
+          "X-XSRF-TOKEN": getXsrfToken() ?? "",
         },
         body: JSON.stringify({ document_number: docNum }),
       }
