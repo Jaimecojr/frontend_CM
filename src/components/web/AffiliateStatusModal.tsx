@@ -56,7 +56,7 @@ export function AffiliateStatusModal({ result, onClose }: AffiliateStatusModalPr
     : {
         icon: "cancel",
         text: data
-          ? `Afiliación Inactiva — Venció ${dayjs(data.validity_end).format("MM/YYYY")}`
+          ? `Afiliación Inactiva — Venció ${dayjs(data.validity_end).format("DD/MM/YYYY")}`
           : "",
         chip: "bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20",
         iconTint: "text-red-600",
