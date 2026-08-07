@@ -483,9 +483,11 @@ Ambos archivos implementan `csrf()` y `apiFetch()` de forma independiente (dupli
 - **Reintento automático en 419:** si el backend responde `419` (token CSRF vencido o inválido), `apiFetch` invalida la cookie cacheada, pide una nueva y reintenta la petición original una vez, de forma transparente para quien la llama.
 - **`Content-Type` solo en peticiones con body:** los `GET`/`HEAD` no lo envían, para que el navegador los trate como "simple request" y no disparen un preflight `OPTIONS` innecesario (ver `max_age` en el CLAUDE.md del backend). Si agregas una función de fetch nueva, no fuerces `Content-Type: application/json` en un `GET`.
 
-## Middleware de Autenticación (`src/middleware.ts`)
+## Middleware de Autenticación (`src/proxy.ts`)
 
-El middleware **no** llama al backend — solo verifica la presencia de la cookie `XSRF-TOKEN` para redirigir rápido a `/auth/sign-in` cuando no hay sesión en absoluto. **No es el guard real de autenticación** (no valida que la sesión siga siendo válida en Laravel): esa responsabilidad es de `useRequireAuth()` (`src/hooks/useRequireAuth.ts`), que sí consulta `/user` en el cliente vía `AuthContext`. Si necesitas endurecer la protección de rutas, hazlo ahí — no agregues de vuelta un `fetch` al backend en el middleware, porque reintroduce un round-trip bloqueante en cada navegación dentro de `/4dnn1n`.
+El middleware **no** llama al backend — solo verifica la presencia de una cookie para redirigir rápido a `/auth/sign-in` cuando no hay sesión en absoluto. **No es el guard real de autenticación** (no valida que la sesión siga siendo válida en Laravel): esa responsabilidad es de `useRequireAuth()` (`src/hooks/useRequireAuth.ts`), que sí consulta `/user` en el cliente vía `AuthContext`. Si necesitas endurecer la protección de rutas, hazlo ahí — no agregues de vuelta un `fetch` al backend en el middleware, porque reintroduce un round-trip bloqueante en cada navegación dentro de `/4dnn1n`.
+
+**La cookie que se verifica es `auth_hint`, NO `XSRF-TOKEN`.** `XSRF-TOKEN` la pone Laravel para cualquier sesión (autenticada o no) y nunca se borra en `/logout`, así que casi siempre está presente — usarla como check hace que el fast-path nunca redirija y se cae siempre al round-trip lento de `useRequireAuth`, además de un salto visible de URL (`/4dnn1n` → `/auth/sign-in`). `auth_hint` es una cookie propia que el backend (`api-cm/routes/web.php`) solo pone en `/login` exitoso y borra explícitamente en `/logout`, con el mismo `domain`/`path`/`same_site` que la cookie de sesión. Si el backend cambia el nombre o dominio de esa cookie, hay que actualizar `proxy.ts` en el mismo cambio.
 
 ## Formularios Públicos — CSRF con Sanctum
 
