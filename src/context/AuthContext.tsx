@@ -4,8 +4,16 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { getAuthUser, logout, csrf } from "@/app/4dnn1n/home/fetch";
 import { useRouter } from "next/navigation";
 
+export interface AuthUser {
+  id: number;
+  name: string;
+  email: string;
+  user: string;
+  type: number;
+}
+
 interface AuthContextType {
-  user: any;
+  user: AuthUser | null;
   loading: boolean;
   isLoggingOut: boolean;
   refreshUser: () => Promise<void>;
@@ -15,7 +23,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 

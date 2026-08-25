@@ -1,4 +1,5 @@
 import { memCache, TTL_LIST, TTL_CATALOG } from "@/lib/memCache";
+import type { AuthUser } from "@/context/AuthContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -61,7 +62,7 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
 //
 // 🔥 Obtener usuario autenticado
 //
-export async function getAuthUser() {
+export async function getAuthUser(): Promise<AuthUser | null> {
   try {
     return await apiFetch("/user");
   } catch {
