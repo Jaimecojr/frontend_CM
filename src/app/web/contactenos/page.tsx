@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
-import type { Department, City } from "@/app/4dnn1n/counselors/fetch";
+import type { Department, City } from "@/types/geo";
 import { csrf, getXsrfToken } from "@/lib/api";
 import LegalModal from "@/components/web/LegalModal";
 

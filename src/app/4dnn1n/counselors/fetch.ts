@@ -31,8 +31,8 @@ export type ApiCounselor = {
   user?: { id: number; name: string } | null;
 };
 
-export type Department = { id: number; name: string };
-export type City = { id: number; name: string; department_id: number };
+import type { Department, City } from "@/types/geo";
+export type { Department, City };
 
 type ApiResponse<T> = { message: string; data: T };
 

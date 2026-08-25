@@ -182,8 +182,8 @@ export async function getDoctorsBySpecialty(specialtyId: number): Promise<Doctor
 
 // ─── Departamentos y ciudades (para el selector de ciudad) ───────────────────
 
-export type Department = { id: number; name: string };
-export type City = { id: number; name: string; department_id: number };
+import type { Department, City } from "@/types/geo";
+export type { Department, City };
 
 export async function getDepartments(): Promise<Department[]> {
   return memCache.get("departments", TTL_GEO, async () => {

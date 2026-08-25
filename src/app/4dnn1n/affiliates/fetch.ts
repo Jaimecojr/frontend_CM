@@ -48,8 +48,8 @@ export type ApiAffiliate = {
   updated_at?: string;
 };
 
-export type Department = { id: number; name: string };
-export type City = { id: number; name: string; department_id: number };
+import type { Department, City } from "@/types/geo";
+export type { Department, City };
 export type FranchiseOption = { id: number; name: string };
 export type CounselorOption = { id: number; name: string; lastname: string };
 export type AgreementOption = { id: number; name: string; amount?: number };

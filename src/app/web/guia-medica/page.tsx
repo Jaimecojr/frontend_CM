@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import type { ApiDoctor } from "@/app/4dnn1n/doctors/fetch";
-import type { Department, City } from "@/app/4dnn1n/counselors/fetch";
+import type { Department, City } from "@/types/geo";
 import type { ApiSpecialty } from "@/app/4dnn1n/doctors/specialties/fetch";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
