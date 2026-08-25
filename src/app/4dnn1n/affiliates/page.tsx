@@ -6,6 +6,7 @@ import { CreateToolbarButton } from "@/components/data-table/CreateToolbarButton
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useServerTable } from "@/hooks/useServerTable";
+import { useOptimisticToggle } from "@/hooks/useOptimisticToggle";
 import { alert } from "@/lib/alert";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import { useAuth } from "@/context/AuthContext";
@@ -33,33 +34,18 @@ export default function AffiliatesPage() {
   // Estado del modal de nota rápida
   const [noteTarget, setNoteTarget] = useState<ApiAffiliate | null>(null);
 
-  const onToggleState = async (c: ApiAffiliate) => {
-    const isActive = Number(c.stade) === 1;
-    const nextStade: 1 | 2 = isActive ? 2 : 1;
-
-    try {
-      const ok = await alert.confirm({
-        title: isActive ? "¿Inactivar afiliado?" : "¿Activar afiliado?",
-        text: isActive ? "El afiliado quedará inactivo." : "El afiliado quedará activo.",
-        confirmButtonText: isActive ? "Sí, inactivar" : "Sí, activar",
-        cancelButtonText: "Cancelar",
-        onConfirm: async () => {
-          setData((prev) => prev.map((x) => (x.id === c.id ? { ...x, stade: nextStade } : x)));
-          await updateAffiliateState(c.id, nextStade);
-        },
-      });
-      if (ok) {
-        await alert.success("Actualizado", isActive ? "Afiliado inactivado." : "Afiliado activado.");
-        if (stadeFilter !== "all") {
-          setData((prev) => prev.filter((x) => x.id !== c.id));
-          setMeta((m) => ({ ...m, total: m.total - 1 }));
-        }
-      }
-    } catch (err) {
-      setData((prev) => prev.map((x) => (x.id === c.id ? { ...x, stade: c.stade } : x)));
-      await alert.error("Error", getApiErrorMessage(err));
-    }
-  };
+  const onToggleState = useOptimisticToggle<ApiAffiliate, "stade", 1 | 2>({
+    field: "stade",
+    activeValue: 1,
+    inactiveValue: 2,
+    setData,
+    setMeta,
+    stadeFilter,
+    updateFn: updateAffiliateState,
+    confirmTitle: (isActive) => (isActive ? "¿Inactivar afiliado?" : "¿Activar afiliado?"),
+    confirmText: (isActive) => (isActive ? "El afiliado quedará inactivo." : "El afiliado quedará activo."),
+    successMessage: (isActive) => (isActive ? "Afiliado inactivado." : "Afiliado activado."),
+  });
 
   const onSendCarnet = async (c: ApiAffiliate) => {
     try {

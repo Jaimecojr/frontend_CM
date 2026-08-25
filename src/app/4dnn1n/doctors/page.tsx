@@ -9,12 +9,12 @@ import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { Button } from "@/components/ui-elements/button";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useServerTable } from "@/hooks/useServerTable";
-import { alert } from "@/lib/alert";
-import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import { useOptimisticToggle } from "@/hooks/useOptimisticToggle";
 import { useAuth } from "@/context/AuthContext";
 import { getDoctors, updateDoctorState, type ApiDoctor } from "./fetch";
 import { buildDoctorColumns } from "./_components/columns";
-import { getDepartments, getCitiesByDepartment, type Department, type City } from "../counselors/fetch";
+import { getDepartments, getCitiesByDepartment } from "../counselors/fetch";
+import type { Department, City } from "@/types/geo";
 import { getSpecialties, type ApiSpecialty } from "./specialties/fetch";
 
 const STATE_OPTIONS = [
@@ -74,34 +74,20 @@ export default function DoctorsPage() {
     },
   );
 
-  const onToggleState = async (item: ApiDoctor) => {
-    const isActive = Number(item.state) === 1;
-    const nextState: 1 | 2 = isActive ? 2 : 1;
-
-    try {
-      const ok = await alert.confirm({
-        title: isActive ? "¿Inactivar médico?" : "¿Activar médico?",
-        text: isActive
-          ? "El médico no aparecerá activo en el sistema."
-          : "El médico volverá a estar disponible.",
-        confirmButtonText: "Sí, continuar",
-        onConfirm: async () => {
-          setData((prev) => prev.map((x) => (x.id === item.id ? { ...x, state: nextState } : x)));
-          await updateDoctorState(item.id, nextState);
-        },
-      });
-      if (ok) {
-        await alert.success("Actualizado", `El médico ha sido ${isActive ? "inactivado" : "activado"}.`);
-        if (stadeFilter !== "all") {
-          setData((prev) => prev.filter((x) => x.id !== item.id));
-          setMeta((m) => ({ ...m, total: m.total - 1 }));
-        }
-      }
-    } catch (err) {
-      setData((prev) => prev.map((x) => (x.id === item.id ? { ...x, state: item.state } : x)));
-      await alert.error("Error", getApiErrorMessage(err));
-    }
-  };
+  const onToggleState = useOptimisticToggle<ApiDoctor, "state", 1 | 2>({
+    field: "state",
+    activeValue: 1,
+    inactiveValue: 2,
+    setData,
+    setMeta,
+    stadeFilter,
+    updateFn: updateDoctorState,
+    confirmTitle: (isActive) => (isActive ? "¿Inactivar médico?" : "¿Activar médico?"),
+    confirmText: (isActive) =>
+      isActive ? "El médico no aparecerá activo en el sistema." : "El médico volverá a estar disponible.",
+    confirmButtonText: () => "Sí, continuar",
+    successMessage: (isActive) => `El médico ha sido ${isActive ? "inactivado" : "activado"}.`,
+  });
 
   const columns = useMemo(
     () => buildDoctorColumns({ onToggleState, hasAccess }),
