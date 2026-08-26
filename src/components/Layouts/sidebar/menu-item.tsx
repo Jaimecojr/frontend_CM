@@ -21,7 +21,7 @@ type BaseProps = {
   className?: string;
   children: React.ReactNode;
   isActive: boolean;
-  title?: string; // ✅ nuevo (tooltip nativo)
+  title?: string; // native tooltip
 };
 
 type ButtonProps = { as?: "button"; onClick: () => void };
@@ -34,7 +34,7 @@ export function MenuItem(props: BaseProps & (ButtonProps | LinkProps)) {
     return (
       <Link
         href={props.href}
-        title={props.title} // ✅
+        title={props.title}
         onClick={() => isMobile && toggleSidebar()}
         className={cn(
           menuItemBaseStyles({
@@ -59,7 +59,7 @@ export function MenuItem(props: BaseProps & (ButtonProps | LinkProps)) {
           isActive: props.isActive,
           className: "flex w-full items-center gap-3 py-3",
         }),
-        props.className, // ✅ ahora sí aplica
+        props.className, // now correctly applied
       )}
     >
       {props.children}

@@ -23,7 +23,7 @@ export default function AuthLayoutClient({ children }: { children: React.ReactNo
       <div className="flex min-h-screen">
         <Sidebar />
 
-        {/* 👇 CLAVE: flex-1 + min-w-0 + flex-col */}
+        {/* KEY: flex-1 + min-w-0 + flex-col */}
         <div className="flex min-w-0 flex-1 flex-col bg-gray-2 dark:bg-[#020d1a]">
           <Header />
 

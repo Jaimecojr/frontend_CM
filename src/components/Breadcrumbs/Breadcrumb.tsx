@@ -6,16 +6,16 @@ type Crumb = {
 };
 
 interface BreadcrumbProps {
-  pageName?: string; // fallback simple
-  items?: Crumb[];   // multinivel
-  showTitle?: boolean; // ✅ nuevo
+  pageName?: string; // simple fallback
+  items?: Crumb[];   // multi-level
+  showTitle?: boolean;
   className?: string;
 }
 
 const Breadcrumb = ({
   pageName,
   items,
-  showTitle = false, // ✅ por defecto NO muestra el h2
+  showTitle = false, // does NOT show the h2 by default
   className = "",
 }: BreadcrumbProps) => {
   const defaultItems: Crumb[] = [
@@ -30,7 +30,7 @@ const Breadcrumb = ({
     <div
       className={`mb-6 flex items-center justify-end ${className}`}
     >
-      {/* ✅ Solo mostramos título si lo piden */}
+      {/* Only show the title if asked for */}
       {showTitle && (
         <h2 className="mr-auto text-[26px] font-bold leading-[30px] text-dark dark:text-white">
           {lastLabel}
