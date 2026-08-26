@@ -73,7 +73,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
 
   const [saving, setSaving] = useState(false);
 
-  // estado de validación cédula
+  // id card validation state
   const [idCardError, setIdCardError] = useState<string | null>(null);
   const [checkingIdCard, setCheckingIdCard] = useState(false);
   const lastCheckedRef = useRef<string>("");
@@ -86,7 +86,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
     date_admission: (initial as any)?.date_admission ?? "",
     type_contra: (initial as any)?.type_contra ?? TYPE_CONTRA[0],
 
-    // rol siempre 0
+    // rol always 0
     rol: 0,
 
     phone: (initial as any)?.phone ?? "",
@@ -98,7 +98,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
     state: Number((initial as any)?.state ?? 1),
   });
 
-  //Franquicias
+  //Franchises
   useEffect(() => {
     (async () => {
       try {
@@ -110,7 +110,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
     })();
   }, []);
 
-  // Departamentos
+  // Departments
   useEffect(() => {
     (async () => {
       try {
@@ -122,7 +122,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
     })();
   }, []);
 
-  // Preseleccionar departamento por city.department_id (edit/view)
+  // Preselect department from city.department_id (edit/view)
   useEffect(() => {
     const depFromCity = (initial as any)?.city?.department_id;
     if (depFromCity && departmentId === "") {
@@ -130,7 +130,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
     }
   }, [initial, departmentId]);
 
-  // Cargar ciudades al cambiar departamento
+  // Load cities when department changes
   useEffect(() => {
     let cancelled = false;
 
@@ -165,23 +165,23 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
     };
   }, [departmentId]);
 
-  // ✅ valida cédula en backend (sin unique en DB)
+  // validates id card against backend (no unique constraint in DB)
   const validateIdCard = async (raw: string) => {
     const value = onlyDigits(raw);
 
-    // si está vacía, error
+    // if empty, error
     if (!value) {
       setIdCardError("La cédula es obligatoria.");
       return false;
     }
 
-    // si es edit y no cambió, no validar
+    // if editing and it hasn't changed, skip validation
     if (isEdit && value === onlyDigits(initialIdCard)) {
       setIdCardError(null);
       return true;
     }
 
-    // evitar consultar lo mismo repetido
+    // avoid querying the same value repeatedly
     if (lastCheckedRef.current === value && idCardError === null) return true;
 
     setCheckingIdCard(true);
@@ -197,7 +197,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
       setIdCardError(null);
       return true;
     } catch (e) {
-      // si falla la consulta, no bloquees totalmente, pero sí avisa
+      // if the query fails, don't block completely, but do warn
       setIdCardError("No se pudo validar la cédula (intenta de nuevo).");
       return false;
     } finally {
@@ -211,7 +211,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
     if (isView) return false;
 
     if (!form.name || !form.lastname || !form.id_card) return false;
-    if (!!idCardError) return false; // si está invalidada
+    if (!!idCardError) return false; // if it's invalid
 
     if (!form.type_contra) return false;
     if (!departmentId) return false;
@@ -225,7 +225,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
   const submit = async () => {
     if (!onSubmit) return;
 
-    // fuerza validación antes de enviar
+    // force validation before submitting
     const okId = await validateIdCard(form.id_card);
     if (!okId) {
       await alert.warn("Cédula inválida", "Revisa la cédula antes de guardar.");
@@ -240,7 +240,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
     const payload: any = {
       name: form.name,
       lastname: form.lastname,
-      id_card: onlyDigits(form.id_card), // ✅ siempre numérica
+      id_card: onlyDigits(form.id_card), // always numeric
       address: form.address || null,
       date_admission: form.date_admission || null,
       type_contra: form.type_contra,

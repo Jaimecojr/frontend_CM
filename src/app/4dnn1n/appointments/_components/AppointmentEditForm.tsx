@@ -32,7 +32,7 @@ function onlyDigits(v: string) {
 }
 
 export default function AppointmentEditForm({ initial, onSubmit }: Props) {
-  // ── Especialidad + Médico ────────────────────────────────────────────────
+  // ── Specialty + Doctor ────────────────────────────────────────────────
   const [specialties, setSpecialties] = useState<SpecialtyOption[]>([]);
   const [specialtyId, setSpecialtyId] = useState(
     String(initial.doctor?.specialty_id ?? ""),
@@ -43,7 +43,7 @@ export default function AppointmentEditForm({ initial, onSubmit }: Props) {
 
   const initialDoctorId = useRef(initial.doctor_id);
 
-  // ── Campos del formulario ────────────────────────────────────────────────
+  // ── Form fields ────────────────────────────────────────────────
   const [form, setForm] = useState({
     date:    initial.date,
     hour:    initial.hour,
@@ -55,12 +55,12 @@ export default function AppointmentEditForm({ initial, onSubmit }: Props) {
 
   const [saving, setSaving] = useState(false);
 
-  // Cargar especialidades al montar
+  // Load specialties on mount
   useEffect(() => {
     getActiveSpecialties().then(setSpecialties).catch(console.error);
   }, []);
 
-  // Cargar médicos al cambiar especialidad
+  // Load doctors when specialty changes
   useEffect(() => {
     if (!specialtyId) {
       setDoctors([]);
@@ -73,7 +73,7 @@ export default function AppointmentEditForm({ initial, onSubmit }: Props) {
       .then((list) => {
         if (cancelled) return;
         setDoctors(list);
-        // Auto-seleccionar el médico inicial la primera vez que cargan
+        // Auto-select the initial doctor the first time the list loads
         if (initialDoctorId.current) {
           const doc = list.find((d) => d.id === initialDoctorId.current);
           if (doc) {
@@ -99,7 +99,7 @@ export default function AppointmentEditForm({ initial, onSubmit }: Props) {
     }));
   };
 
-  // ── Validaciones ─────────────────────────────────────────────────────────
+  // ── Validations ─────────────────────────────────────────────────────────
 
   const valueError = useMemo(() => {
     if (!form.value) return null;
@@ -146,7 +146,7 @@ export default function AppointmentEditForm({ initial, onSubmit }: Props) {
   return (
     <div className="space-y-6">
 
-      {/* ── Sección 1: Paciente (solo lectura) ───────────────────────────── */}
+      {/* ── Section 1: Patient (read-only) ───────────────────────────── */}
       <div className="rounded-2xl border border-stroke bg-background p-5 shadow-sm dark:border-dark-3">
         <h3 className="mb-3 text-base font-semibold text-dark dark:text-white">
           1. Paciente
@@ -167,7 +167,7 @@ export default function AppointmentEditForm({ initial, onSubmit }: Props) {
         </p>
       </div>
 
-      {/* ── Sección 2: Especialidad y médico ─────────────────────────────── */}
+      {/* ── Section 2: Specialty and doctor ─────────────────────────────── */}
       <div className="rounded-2xl border border-stroke bg-background p-5 shadow-sm dark:border-dark-3">
         <h3 className="mb-4 text-base font-semibold text-dark dark:text-white">
           2. Especialidad y Médico
@@ -215,7 +215,7 @@ export default function AppointmentEditForm({ initial, onSubmit }: Props) {
         </div>
       </div>
 
-      {/* ── Sección 3: Detalles de la cita ───────────────────────────────── */}
+      {/* ── Section 3: Appointment details ───────────────────────────────── */}
       <div className="rounded-2xl border border-stroke bg-background p-5 shadow-sm dark:border-dark-3">
         <h3 className="mb-4 text-base font-semibold text-dark dark:text-white">
           3. Detalles de la Cita

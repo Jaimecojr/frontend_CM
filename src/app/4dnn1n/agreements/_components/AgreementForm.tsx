@@ -58,7 +58,7 @@ export default function AgreementForm({ mode, initial, onSubmit }: Props) {
     state: Number((initial as any)?.state ?? 1),
   });
 
-  // Departamentos
+  // Departments
   useEffect(() => {
     (async () => {
       try {
@@ -70,7 +70,7 @@ export default function AgreementForm({ mode, initial, onSubmit }: Props) {
     })();
   }, []);
 
-  // Preseleccionar departamento por city.department_id (edit/view)
+  // Preselect department from city.department_id (edit/view)
   useEffect(() => {
     const depFromCity = (initial as any)?.city?.department_id;
     if (depFromCity && departmentId === "") {
@@ -78,7 +78,7 @@ export default function AgreementForm({ mode, initial, onSubmit }: Props) {
     }
   }, [initial, departmentId]);
 
-  // Cargar ciudades al cambiar departamento
+  // Load cities when department changes
   useEffect(() => {
     let cancelled = false;
 

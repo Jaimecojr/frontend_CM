@@ -3,9 +3,9 @@ import type { AuthUser } from "@/context/AuthContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
-// Cachea la promesa de la petición CSRF: mientras la sesión siga activa,
-// la cookie XSRF-TOKEN sigue siendo válida, así que no hace falta pedirla
-// de nuevo en cada llamada.
+// Caches the CSRF request promise: as long as the session stays active,
+// the XSRF-TOKEN cookie remains valid, so there's no need to request it
+// again on every call.
 let csrfPromise: Promise<void> | null = null;
 
 export function csrf(): Promise<void> {
@@ -28,18 +28,18 @@ function resetCsrf() {
 }
 
 //
-// 🔥 Fetch para rutas protegidas (que YA NO tienen /api)
+// Fetch for protected routes (which NO LONGER have /api)
 //
 export async function apiFetch(path: string, options: RequestInit = {}) {
   const method = (options.method ?? "GET").toUpperCase();
-  const llevaBody = method !== "GET" && method !== "HEAD";
+  const hasBody = method !== "GET" && method !== "HEAD";
 
   const doFetch = () =>
     fetch(`${API_URL}${path}`, {
       ...options,
       credentials: "include",
       headers: {
-        ...(llevaBody ? { "Content-Type": "application/json" } : {}),
+        ...(hasBody ? { "Content-Type": "application/json" } : {}),
         "X-XSRF-TOKEN": getXsrfToken() ?? "",
         ...(options.headers || {}),
       },
@@ -60,7 +60,7 @@ export async function apiFetch(path: string, options: RequestInit = {}) {
 }
 
 //
-// 🔥 Obtener usuario autenticado
+// Get authenticated user
 //
 export async function getAuthUser(): Promise<AuthUser | null> {
   try {
@@ -71,7 +71,7 @@ export async function getAuthUser(): Promise<AuthUser | null> {
 }
 
 //
-// 🔥 Logout
+// Logout
 //
 export async function logout() {
   return await apiFetch("/logout", {
@@ -88,7 +88,7 @@ export function getXsrfToken() {
   return m ? decodeURIComponent(m[1]) : null;
 }
 
-// ─── Tipos Dashboard ─────────────────────────────────────────────────────────
+// ─── Dashboard Types ─────────────────────────────────────────────────────────
 
 export type TodayAppointment = {
   id: number;

@@ -13,7 +13,7 @@ vi.mock("@/lib/alert", () => ({
 
 type Item = { id: number; stade: 1 | 2 };
 
-function crearOpts(overrides: Partial<Parameters<typeof useOptimisticToggle<Item, "stade">>[0]> = {}) {
+function createOpts(overrides: Partial<Parameters<typeof useOptimisticToggle<Item, "stade">>[0]> = {}) {
   return {
     field: "stade" as const,
     activeValue: 1 as const,
@@ -31,7 +31,7 @@ function crearOpts(overrides: Partial<Parameters<typeof useOptimisticToggle<Item
 
 describe("useOptimisticToggle", () => {
   it("actualiza el dato de forma optimista y llama updateFn con el valor invertido", async () => {
-    const opts = crearOpts();
+    const opts = createOpts();
     (alert.confirm as any).mockImplementation(async ({ onConfirm }: any) => {
       await onConfirm();
       return true;
@@ -48,7 +48,7 @@ describe("useOptimisticToggle", () => {
 
   it("revierte el dato optimista si updateFn falla", async () => {
     const error = new Error("falló la red");
-    const opts = crearOpts({
+    const opts = createOpts({
       updateFn: vi.fn().mockRejectedValue(error),
     });
     (alert.confirm as any).mockImplementation(async ({ onConfirm }: any) => {
@@ -62,12 +62,12 @@ describe("useOptimisticToggle", () => {
     });
 
     expect(alert.error).toHaveBeenCalled();
-    // Dos llamadas a setData: la optimista y la de revertir.
+    // Two setData calls: the optimistic one and the revert.
     expect(opts.setData).toHaveBeenCalledTimes(2);
   });
 
   it("quita el ítem de la lista y decrementa el total si hay un filtro de estado activo", async () => {
-    const opts = crearOpts({ stadeFilter: "1" });
+    const opts = createOpts({ stadeFilter: "1" });
     (alert.confirm as any).mockImplementation(async ({ onConfirm }: any) => {
       await onConfirm();
       return true;

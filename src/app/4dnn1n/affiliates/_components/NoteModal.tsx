@@ -19,7 +19,7 @@ export function NoteModal({ affiliateId, affiliateName, onClose }: Props) {
   const [mounted, setMounted] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Necesario para el portal — solo se monta en el cliente
+  // Needed for the portal — only mounts on the client
   useEffect(() => {
     setMounted(true);
     return () => setMounted(false);
@@ -41,7 +41,7 @@ export function NoteModal({ affiliateId, affiliateName, onClose }: Props) {
   };
 
   const modalContent = (
-    // Backdrop — renderizado en document.body via portal
+    // Backdrop — rendered into document.body via portal
     <div
       className="fixed inset-0 z-[1050] flex items-center justify-center bg-black/60 p-4"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
@@ -98,7 +98,7 @@ export function NoteModal({ affiliateId, affiliateName, onClose }: Props) {
     </div>
   );
 
-  // Renderizar en document.body para evitar problemas de z-index con transforms de layouts
+  // Render into document.body to avoid z-index issues with layout transforms
   if (!mounted) return null;
   return createPortal(modalContent, document.body);
 }

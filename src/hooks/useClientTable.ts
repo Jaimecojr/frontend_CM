@@ -7,10 +7,10 @@ import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 type FetchFn<T> = () => Promise<T[]>;
 
 /**
- * Hook simple para cargar una lista desde la API (client-side).
- * Complementa useServerTable para módulos con pocos registros.
+ * Simple hook to load a list from the API (client-side).
+ * Complements useServerTable for modules with few records.
  *
- * Uso:
+ * Usage:
  *   const { data, setData, loading } = useClientTable(getCounselors);
  */
 export function useClientTable<T>(fetchFn: FetchFn<T>) {

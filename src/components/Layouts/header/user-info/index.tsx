@@ -16,7 +16,7 @@ export function UserInfo() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, loading, logoutUser } = useAuth();
 
-  // Placeholder mientras carga
+  // Placeholder while loading
   if (loading || !user) {
     return <div className="h-12 w-12 animate-pulse rounded-full bg-gray-300" />;
   }
@@ -63,7 +63,7 @@ export function UserInfo() {
 
           <hr className="border-gray-200 dark:border-dark-3" />
 
-          {/* TEMA */}
+          {/* THEME */}
           <div className="flex items-center justify-between px-5 py-3">
             <span className="text-sm text-[#4B5563] dark:text-dark-6">Modo oscuro</span>
             <ThemeToggleSwitch />

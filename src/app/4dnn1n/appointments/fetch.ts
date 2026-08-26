@@ -11,18 +11,18 @@ export type ApiAppointment = {
   city_id: number;
   phone: string;
   value: number;
-  /** 1 = titular (afiliado), 2 = beneficiario */
+  /** 1 = policyholder (affiliate), 2 = beneficiary */
   type: 1 | 2;
   name: string;
   user_id: number;
 
-  // relaciones
+  // relationships
   doctor?: { id: number; name: string; lastname: string; specialty_id?: number } | null;
   city?: { id: number; name: string } | null;
   user?: { id: number; name: string } | null;
-  /** titular o beneficiario según type — normalizado en el backend */
+  /** policyholder or beneficiary depending on type — normalized in the backend */
   owner?: { id: number; name: string; lastname?: string; id_card?: string } | null;
-  /** id del afiliado titular (para el formulario de edición) */
+  /** id of the policyholder affiliate (for the edit form) */
   affiliate_id?: number | null;
 
   created_at?: string;
@@ -43,7 +43,7 @@ export type AppointmentsResponse = {
 
 type ApiResponse<T> = { message: string; data: T };
 
-// ─── Listado ──────────────────────────────────────────────────────────────────
+// ─── List ──────────────────────────────────────────────────────────────────
 
 export async function getAppointments(params?: {
   search?: string;
@@ -73,7 +73,7 @@ export async function getAppointment(id: number): Promise<ApiAppointment> {
   return res.data;
 }
 
-// ─── Crear / Actualizar ────────────────────────────────────────────────────────
+// ─── Create / Update ────────────────────────────────────────────────────────
 
 export type CreateAppointmentPayload = {
   afi_code: number;
@@ -120,7 +120,7 @@ export async function getAffiliateForEdit(affiliateId: number): Promise<Affiliat
   return res.data;
 }
 
-// ─── Búsqueda de afiliado por cédula (para el formulario de cita) ─────────────
+// ─── Affiliate search by id card (for the appointment form) ─────────────
 
 export type AffiliateBeneficiary = {
   id: number;
@@ -147,7 +147,7 @@ export async function searchAffiliateByIdCard(idCard: string): Promise<Affiliate
   return res.data;
 }
 
-// ─── Especialidades activas (para el selector del formulario) ─────────────────
+// ─── Active specialties (for the form selector) ─────────────────
 
 export type SpecialtyOption = { id: number; name: string };
 
@@ -158,7 +158,7 @@ export async function getActiveSpecialties(): Promise<SpecialtyOption[]> {
   });
 }
 
-// ─── Médicos activos filtrados por especialidad ───────────────────────────────
+// ─── Active doctors filtered by specialty ───────────────────────────────
 
 export type DoctorForAppointment = {
   id: number;
@@ -180,7 +180,7 @@ export async function getDoctorsBySpecialty(specialtyId: number): Promise<Doctor
   });
 }
 
-// ─── Departamentos y ciudades (para el selector de ciudad) ───────────────────
+// ─── Departments and cities (for the city selector) ───────────────────
 
 import type { Department, City } from "@/types/geo";
 export type { Department, City };

@@ -16,12 +16,12 @@ export default function AccountPage() {
   const router = useRouter();
   const { user, refreshUser } = useAuth();
 
-  // ── Sección A: nombre de usuario ──────────────────────────────
+  // ── Section A: username ──────────────────────────────
   const [username, setUsername] = useState(user?.user ?? "");
   const [usernameError, setUsernameError] = useState("");
   const [savingUsername, setSavingUsername] = useState(false);
 
-  // ── Sección B: contraseña ─────────────────────────────────────
+  // ── Section B: password ─────────────────────────────────────
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -113,7 +113,7 @@ export default function AccountPage() {
 
   return (
     <div className="space-y-6">
-      {/* ── Sección A: nombre de usuario ── */}
+      {/* ── Section A: username ── */}
       <ShowcaseSection
         title="Nombre de usuario"
         description="Actualiza el nombre de usuario con el que accedes al panel."
@@ -151,7 +151,7 @@ export default function AccountPage() {
         </form>
       </ShowcaseSection>
 
-      {/* ── Sección B: contraseña ── */}
+      {/* ── Section B: password ── */}
       <ShowcaseSection
         title="Contraseña"
         description="Cambia tu contraseña de acceso al panel."
@@ -172,7 +172,7 @@ export default function AccountPage() {
       >
         {showPasswordSection ? (
           <form onSubmit={handleSavePassword} className="max-w-md space-y-4">
-            {/* Contraseña actual */}
+            {/* Current password */}
             <div>
               <label className="text-sm font-medium text-dark dark:text-white">
                 Contraseña actual <span className="text-red-500">*</span>
@@ -202,7 +202,7 @@ export default function AccountPage() {
               )}
             </div>
 
-            {/* Nueva contraseña */}
+            {/* New password */}
             <div>
               <label className="text-sm font-medium text-dark dark:text-white">
                 Nueva contraseña <span className="text-red-500">*</span>
@@ -233,7 +233,7 @@ export default function AccountPage() {
               )}
             </div>
 
-            {/* Confirmar nueva contraseña */}
+            {/* Confirm new password */}
             <div>
               <label className="text-sm font-medium text-dark dark:text-white">
                 Confirmar nueva contraseña <span className="text-red-500">*</span>

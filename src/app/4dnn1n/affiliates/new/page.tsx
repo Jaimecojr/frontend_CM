@@ -62,7 +62,7 @@ export default function NewAffiliatePage() {
         });
       })
       .catch(() => {
-        // Si falla la pre-carga, continuar con el formulario vacío
+        // If prefill fails, continue with the empty form
       })
       .finally(() => setLoadingPrefill(false));
   }, [fromId]);

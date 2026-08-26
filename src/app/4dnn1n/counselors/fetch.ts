@@ -21,7 +21,7 @@ export type ApiCounselor = {
   phone?: string | null;
   movil?: string | null;
 
-  password?: string; // NO debería venir, pero lo dejamos opcional por tipado
+  password?: string; // Should NOT come back, but we leave it optional for typing purposes
   state: number; // 1/2
 
   city_id: number;
@@ -83,7 +83,7 @@ export type CreateCounselorPayload = {
   state?: 1 | 2;
 
   city_id: number;
-  user_id: number; // franquicia
+  user_id: number; // franchise
 };
 
 export async function createCounselor(payload: CreateCounselorPayload) {
@@ -97,7 +97,7 @@ export async function createCounselor(payload: CreateCounselorPayload) {
 }
 
 export type UpdateCounselorPayload = Partial<Omit<CreateCounselorPayload, "password">> & {
-  password?: string; // opcional en editar
+  password?: string; // optional when editing
 };
 
 export async function updateCounselor(id: number, payload: UpdateCounselorPayload) {
@@ -120,7 +120,7 @@ export async function updateCounselorState(id: number, state: 1 | 2) {
   return result;
 }
 
-//Comprobar cedula
+//Check id card
 type CheckIdCardResponse = { exists: boolean; message?: string };
 
 export async function checkCounselorIdCard(id_card: string, ignore_id?: number) {
@@ -131,7 +131,7 @@ export async function checkCounselorIdCard(id_card: string, ignore_id?: number) 
   return apiFetch<CheckIdCardResponse>(`/api/counselors/check-id-card?${params.toString()}`);
 }
 
-//Consultar franquicias activas
+//Query active franchises
 export type FranchiseOption = {
   id: number;
   name: string;

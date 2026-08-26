@@ -47,18 +47,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoggingOut(true);
 
     try {
-      // 1️⃣ Obtener token CSRF antes del POST
+      // 1️⃣ Get CSRF token before the POST
       await csrf();
 
-      // 2️⃣ Llamar a /logout
+      // 2️⃣ Call /logout
       await logout();
     } catch (e) {
       console.error("Logout failed:", e);
     } finally {
-      // 3️⃣ Borrar usuario local
+      // 3️⃣ Clear local user
       setUser(null);
 
-      // 4️⃣ Redirección limpia (full reload para limpiar estados)
+      // 4️⃣ Clean redirect (full reload to clear state)
       window.location.href = "/auth/sign-in";
     }
   };

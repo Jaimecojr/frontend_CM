@@ -61,12 +61,12 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
     email: initial?.email ?? "",
     user: initial?.user ?? "",
     city_id: (initial as any)?.city_id ?? "",
-    state: Number((initial as any)?.state ?? 1), // 1 activo, 2 inactivo
+    state: Number((initial as any)?.state ?? 1), // 1 active, 2 inactive
     password: "",
     password2: "",
   });
 
-  // Departamentos
+  // Departments
   useEffect(() => {
     (async () => {
       try {
@@ -78,7 +78,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
     })();
   }, []);
 
-  // Pre-seleccionar departamento cuando viene initial.city.department_id (edit/view)
+  // Pre-select department when initial.city.department_id is present (edit/view)
   useEffect(() => {
     const depFromCity = (initial as any)?.city?.department_id;
     if (depFromCity && departmentId === "") {
@@ -86,7 +86,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
     }
   }, [initial, departmentId]);
 
-  // Cargar ciudades al cambiar departamento
+  // Load cities when department changes
   useEffect(() => {
     let cancelled = false;
 
@@ -107,10 +107,10 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
           const currentCity = prev.city_id ? Number(prev.city_id) : 0;
           const exists = currentCity && list.some((c) => c.id === currentCity);
 
-          // ✅ si existe, mantener
+          // if it exists, keep it
           if (exists) return prev;
 
-          // ✅ si no existe (o está vacío), poner primera ciudad por defecto
+          // if it doesn't exist (or is empty), default to the first city
           const firstCityId = list[0]?.id ? String(list[0].id) : "";
           return { ...prev, city_id: firstCityId };
         });
@@ -127,19 +127,19 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
   const canSubmit = useMemo(() => {
     if (isView) return false;
 
-    // obligatorios
+    // required
     if (!form.nit || !form.name || !form.email || !form.user) return false;
     if (!departmentId) return false;
     if (!form.city_id) return false;
     if (form.movil && form.movil.length !== 10) return false;
 
-    // create: password obligatorio
+    // create: password required
     if (isCreate) {
       if (!form.password || form.password.length < 6) return false;
       if (form.password !== form.password2) return false;
     }
 
-    // edit: password opcional, pero si lo ponen, validar
+    // edit: password optional, but validate if provided
     if (isEdit && form.password) {
       if (form.password.length < 6) return false;
       if (form.password !== form.password2) return false;
@@ -225,7 +225,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
           />
         </div>
 
-        {/* Nombre franquicia */}
+        {/* Franchise name */}
         <div>
           <Label required={!isView}>Nombre de franquicia</Label>
           <input
@@ -237,7 +237,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
           />
         </div>
 
-        {/* Contacto */}
+        {/* Contact */}
         <div>
           <Label>Nombre del contacto</Label>
           <input
@@ -250,7 +250,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
           />
         </div>
 
-        {/* Teléfonos */}
+        {/* Phones */}
         <div>
           <Label>Teléfono(s)</Label>
           <input
@@ -262,7 +262,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
           />
         </div>
 
-        {/* Celular */}
+        {/* Mobile */}
         <div>
           <Label>Celular</Label>
           <input
@@ -279,7 +279,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
           )}
         </div>
 
-        {/* Dirección */}
+        {/* Address */}
         <div>
           <Label>Dirección</Label>
           <input
@@ -292,7 +292,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
           />
         </div>
 
-        {/* Departamento */}
+        {/* Department */}
         <div>
           <Label required={!isView}>Departamento</Label>
           <SearchableSelect
@@ -305,7 +305,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
           />
         </div>
 
-        {/* Ciudad */}
+        {/* City */}
         <div>
           <Label required={!isView}>Ciudad</Label>
           <SearchableSelect
@@ -323,7 +323,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
           />
         </div>
 
-        {/* Fecha creación */}
+        {/* Creation date */}
         <div>
           <Label>Fecha de creación</Label>
           <div className="mt-1">
@@ -348,7 +348,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
           />
         </div>
 
-        {/* Usuario */}
+        {/* User */}
         <div>
           <Label required={!isView}>Usuario</Label>
           <input
@@ -359,7 +359,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
           />
         </div>
 
-        {/* Passwords: NO en view */}
+        {/* Passwords: NOT shown in view mode */}
         {!isView && (
           <div>
             <Label required={isCreate}>Contraseña</Label>
@@ -395,7 +395,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
         )}
       </div>
 
-      {/* Acciones */}
+      {/* Actions */}
       <div className="mt-6 flex flex-wrap items-center justify-end gap-3">
         {!isView && (
           <Button

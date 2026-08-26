@@ -38,23 +38,23 @@ type DataTableProps<TData, TValue> = {
   defaultPageSize?: number;
   pageSizeOptions?: number[];
 
-  // Búsqueda — puede ser controlada desde el padre (server-side)
+  // Search — can be controlled from the parent (server-side)
   searchPlaceholder?: string;
   searchValue?: string;
   onSearchChange?: (v: string) => void;
   isSearching?: boolean;
 
-  // Filtro de estado — siempre controlado desde el padre cuando se usa
+  // State filter — always controlled from the parent when used
   enableStateFilter?: boolean;
   getStateValue?: (row: TData) => number;
   stateFilterOptions?: { label: string; value: string }[];
   stateFilterValue?: string;
   onStateFilterChange?: (v: string) => void;
 
-  // Para client-side search cuando el padre NO lo controla
+  // For client-side search when the parent does NOT control it
   getSearchText?: (row: TData) => string;
 
-  // Paginación server-side
+  // Server-side pagination
   serverSide?: boolean;
   serverPage?: number;
   serverLastPage?: number;
@@ -68,7 +68,7 @@ type DataTableProps<TData, TValue> = {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Debounce interno (solo para client-side search)
+// Internal debounce (only for client-side search)
 // ─────────────────────────────────────────────────────────────────────────────
 function useDebouncedValue<T>(value: T, delay = 300) {
   const [deb, setDeb] = React.useState(value);
@@ -80,7 +80,7 @@ function useDebouncedValue<T>(value: T, delay = 300) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Componente
+// Component
 // ─────────────────────────────────────────────────────────────────────────────
 export function DataTable<TData, TValue>({
   title,
@@ -90,12 +90,12 @@ export function DataTable<TData, TValue>({
   defaultPageSize = 20,
   pageSizeOptions = [20, 25, 50, 100],
   toolbarActions,
-  // búsqueda
+  // search
   searchPlaceholder = "Buscar...",
   searchValue: externalSearch,
   onSearchChange: externalOnSearchChange,
   isSearching: externalIsSearching,
-  // filtro estado
+  // state filter
   enableStateFilter,
   getStateValue,
   stateFilterOptions,
@@ -116,7 +116,7 @@ export function DataTable<TData, TValue>({
   const isControlledSearch = externalSearch !== undefined;
   const isControlledState  = controlledStateFilter !== undefined;
 
-  // ── Búsqueda ──────────────────────────────────────────────────────────────
+  // ── Search ──────────────────────────────────────────────────────────────
   const [internalSearch, setInternalSearch] = React.useState("");
   const debouncedInternalSearch = useDebouncedValue(internalSearch, 300);
   const searchInput    = isControlledSearch ? externalSearch    : internalSearch;
@@ -126,21 +126,21 @@ export function DataTable<TData, TValue>({
     ? (externalIsSearching ?? false)
     : (internalSearch !== debouncedInternalSearch);
 
-  // ── Filtro de estado ──────────────────────────────────────────────────────
+  // ── State filter ──────────────────────────────────────────────────────
   const [internalStateFilter, setInternalStateFilter] = React.useState(
     stateFilterOptions?.[0]?.value ?? "1",
   );
   const stateFilter    = isControlledState ? controlledStateFilter : internalStateFilter;
   const setStateFilter = isControlledState ? (controlledOnStateChange ?? (() => {})) : setInternalStateFilter;
 
-  // ── Filtrado client-side (solo si NO es server-side) ─────────────────────
+  // ── Client-side filtering (only if NOT server-side) ─────────────────────
   const getSearchTextRef = React.useRef(getSearchText);
   getSearchTextRef.current = getSearchText;
   const getStateValueRef = React.useRef(getStateValue);
   getStateValueRef.current = getStateValue;
 
   const filteredData = React.useMemo(() => {
-    if (serverSide) return data; // server ya filtró
+    if (serverSide) return data; // server already filtered
 
     let result = data;
 
@@ -160,7 +160,7 @@ export function DataTable<TData, TValue>({
     return result;
   }, [data, effectiveSearch, serverSide, isControlledState, enableStateFilter, getStateValue, stateFilter]);
 
-  // ── Paginación ────────────────────────────────────────────────────────────
+  // ── Pagination ────────────────────────────────────────────────────────────
   const [clientPage, setClientPage] = React.useState(0);
   const [clientPageSize, setClientPageSize] = React.useState(defaultPageSize);
 
@@ -174,7 +174,7 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: serverSide ? undefined : getPaginationRowModel(),
     state: serverSide
-      ? {} // server-side: sin paginación interna
+      ? {} // server-side: no internal pagination
       : { pagination: { pageIndex: clientPage, pageSize: clientPageSize } },
     onPaginationChange: serverSide
       ? undefined
@@ -227,7 +227,7 @@ export function DataTable<TData, TValue>({
         />
       </div>
 
-      {/* ── Cuerpo ── */}
+      {/* ── Body ── */}
       <div
         className={cn(
           "min-w-0",
@@ -262,7 +262,7 @@ export function DataTable<TData, TValue>({
 
             <TableBody>
               {loading ? (
-                // Skeleton mientras carga
+                // Skeleton while loading
                 Array.from({ length: 8 }).map((_, i) => (
                   <TableRow key={i}>
                     {columns.map((_, ci) => (
@@ -304,7 +304,7 @@ export function DataTable<TData, TValue>({
         </div>
       </div>
 
-      {/* Paginación — mismo diseño para ambos modos */}
+      {/* Pagination — same design for both modes */}
       {serverSide ? (
         serverLastPage > 1 ? (
           <div className="mt-4 flex items-center justify-between gap-3">
@@ -350,7 +350,7 @@ export function DataTable<TData, TValue>({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Paginación server-side simple
+// Simple server-side pagination
 // ─────────────────────────────────────────────────────────────────────────────
 function ServerPagination({
   page,

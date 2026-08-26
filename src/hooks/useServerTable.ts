@@ -18,10 +18,10 @@ type Options = {
 };
 
 /**
- * Hook reutilizable de paginación server-side para el DataTable.
- * Encapsula: filtro de estado, búsqueda debounced, paginación y estados de carga.
+ * Reusable server-side pagination hook for the DataTable.
+ * Encapsulates: state filter, debounced search, pagination, and loading states.
  *
- * Uso:
+ * Usage:
  *   const table = useServerTable(getAffiliates, { defaultStade: "1" });
  *   <DataTable {...table.tableProps} ... />
  */
@@ -59,7 +59,7 @@ export function useServerTable<T>(fetchFn: FetchFn<T>, options: Options = {}) {
   const extraParamsStr = JSON.stringify(options.extraParams || {});
   const prevExtraParamsRef = useRef(extraParamsStr);
 
-  // Resetear página y activar skeleton cuando cambian los filtros extra
+  // Reset the page and enable the skeleton when the extra filters change
   if (prevExtraParamsRef.current !== extraParamsStr) {
     prevExtraParamsRef.current = extraParamsStr;
     if (page !== 1) setPage(1);
@@ -76,7 +76,7 @@ export function useServerTable<T>(fetchFn: FetchFn<T>, options: Options = {}) {
       .then(({ data: rows, meta: m }) => {
         if (!cancelled) { setData(rows); setMeta(m); }
       })
-      .catch(() => {}) // el caller puede manejar el error si quiere
+      .catch(() => {}) // the caller can handle the error if they want to
       .finally(() => {
         if (!cancelled) { isInitialLoadRef.current = false; setLoading(false); setIsHardLoad(false); }
       });
@@ -84,7 +84,7 @@ export function useServerTable<T>(fetchFn: FetchFn<T>, options: Options = {}) {
     return () => { cancelled = true; };
   }, [stadeFilter, debouncedSearch, page, extraParamsStr]);
 
-  /** Props listos para pasar directamente al DataTable */
+  /** Props ready to pass directly to the DataTable */
   const tableProps = {
     data,
     loading: isHardLoad && loading,

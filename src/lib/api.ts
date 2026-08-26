@@ -23,9 +23,9 @@ export function getXsrfToken() {
   return m ? decodeURIComponent(m[1]) : null;
 }
 
-// Cachea la promesa de la petición CSRF: mientras la sesión siga activa,
-// la cookie XSRF-TOKEN sigue siendo válida, así que no hace falta pedirla
-// de nuevo antes de cada mutación individual.
+// Caches the CSRF request promise: while the session stays active,
+// the XSRF-TOKEN cookie remains valid, so there's no need to request it
+// again before each individual mutation.
 let csrfPromise: Promise<void> | null = null;
 
 export function csrf(): Promise<void> {
@@ -43,15 +43,15 @@ export function csrf(): Promise<void> {
   return csrfPromise;
 }
 
-// Invalida la cookie CSRF cacheada — se usa cuando el backend responde 419
-// (token CSRF vencido o inválido), para forzar pedirla de nuevo una vez.
+// Invalidates the cached CSRF cookie — used when the backend responds 419
+// (expired or invalid CSRF token), to force requesting it again once.
 function resetCsrf() {
   csrfPromise = null;
 }
 
 export async function apiFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
   const method = (options.method ?? "GET").toUpperCase();
-  const llevaBody = method !== "GET" && method !== "HEAD";
+  const hasBody = method !== "GET" && method !== "HEAD";
 
   const doFetch = () =>
     fetch(`${API_URL}${path}`, {
@@ -59,9 +59,9 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
       credentials: "include",
       headers: {
         Accept: "application/json",
-        // Solo se envía Content-Type en peticiones con body — en un GET
-        // este header no es necesario y provoca un preflight CORS extra.
-        ...(llevaBody ? { "Content-Type": "application/json" } : {}),
+        // Content-Type is only sent on requests with a body — on a GET
+        // this header isn't necessary and triggers an extra CORS preflight.
+        ...(hasBody ? { "Content-Type": "application/json" } : {}),
         "X-XSRF-TOKEN": getXsrfToken() ?? "",
         ...(options.headers || {}),
       },

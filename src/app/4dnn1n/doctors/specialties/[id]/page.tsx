@@ -32,11 +32,11 @@ export default function SpecialtyViewPage() {
       });
   }, [specialtyId]);
 
-  // Hook para cargar los médicos de esta especialidad
+  // Hook to load the doctors for this specialty
   const { data, setData, setMeta, stadeFilter, tableProps } = useServerTable<ApiDoctor>(
     getDoctors,
     {
-      defaultStade: "1", // Mostrar solo activos por defecto como se solicitó
+      defaultStade: "1", // Show only active ones by default, as requested
       extraParams: { specialty_id: specialtyId },
     }
   );

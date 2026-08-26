@@ -64,7 +64,7 @@ export default function DoctorForm({ mode, initial, onSubmit }: Props) {
     state: initial?.state ?? 1,
   });
 
-  // Especialidades (solo activas o todas si es view)
+  // Specialties (only active ones, or all if view mode)
   useEffect(() => {
     (async () => {
       try {
@@ -78,7 +78,7 @@ export default function DoctorForm({ mode, initial, onSubmit }: Props) {
     })();
   }, [initial?.specialty_id]);
 
-  // Departamentos
+  // Departments
   useEffect(() => {
     (async () => {
       try {
@@ -90,7 +90,7 @@ export default function DoctorForm({ mode, initial, onSubmit }: Props) {
     })();
   }, []);
 
-  // Preseleccionar departamento por city.department_id (edit/view)
+  // Preselect department from city.department_id (edit/view)
   useEffect(() => {
     const depFromCity = initial?.city?.department_id || (initial as any)?.department_id;
     if (depFromCity && departmentId === "") {
@@ -98,7 +98,7 @@ export default function DoctorForm({ mode, initial, onSubmit }: Props) {
     }
   }, [initial, departmentId]);
 
-  // Cargar ciudades al cambiar departamento
+  // Load cities when department changes
   useEffect(() => {
     let cancelled = false;
 

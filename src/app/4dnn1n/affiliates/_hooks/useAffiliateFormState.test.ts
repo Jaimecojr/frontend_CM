@@ -17,13 +17,13 @@ vi.mock("@/lib/alert", () => ({
 
 import { checkAffiliateIdCard } from "../fetch";
 
-async function renderConCatalogosCargados(args: Parameters<typeof useAffiliateFormState>[0]) {
+async function renderWithCatalogsLoaded(args: Parameters<typeof useAffiliateFormState>[0]) {
   const view = renderHook(() => useAffiliateFormState(args));
   await waitFor(() => expect(view.result.current.franchises).toHaveLength(1));
   return view;
 }
 
-function llenarCamposObligatorios(setForm: (fn: (prev: any) => any) => void) {
+function fillRequiredFields(setForm: (fn: (prev: any) => any) => void) {
   setForm((prev: any) => ({
     ...prev,
     name: "Juan",
@@ -40,7 +40,7 @@ function llenarCamposObligatorios(setForm: (fn: (prev: any) => any) => void) {
 
 describe("useAffiliateFormState", () => {
   it("carga los catálogos base al montar", async () => {
-    const { result } = await renderConCatalogosCargados({ mode: "create" });
+    const { result } = await renderWithCatalogsLoaded({ mode: "create" });
 
     expect(result.current.counselors).toHaveLength(1);
     expect(result.current.agreements).toHaveLength(1);
@@ -48,28 +48,28 @@ describe("useAffiliateFormState", () => {
   });
 
   it("canSubmit es falso mientras falten campos obligatorios", async () => {
-    const { result } = await renderConCatalogosCargados({ mode: "create" });
+    const { result } = await renderWithCatalogsLoaded({ mode: "create" });
     expect(result.current.canSubmit).toBe(false);
   });
 
   it("canSubmit es verdadero con todos los campos obligatorios completos", async () => {
-    const { result } = await renderConCatalogosCargados({ mode: "create" });
+    const { result } = await renderWithCatalogsLoaded({ mode: "create" });
 
     act(() => result.current.setDepartmentId(1));
     await waitFor(() => expect(result.current.cities).toHaveLength(1));
 
-    act(() => llenarCamposObligatorios(result.current.setForm));
+    act(() => fillRequiredFields(result.current.setForm));
 
     expect(result.current.canSubmit).toBe(true);
   });
 
   it("submit agrega stade:1 solo en modo creación y llama a onSubmit con el payload", async () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined);
-    const { result } = await renderConCatalogosCargados({ mode: "create", onSubmit });
+    const { result } = await renderWithCatalogsLoaded({ mode: "create", onSubmit });
 
     act(() => result.current.setDepartmentId(1));
     await waitFor(() => expect(result.current.cities).toHaveLength(1));
-    act(() => llenarCamposObligatorios(result.current.setForm));
+    act(() => fillRequiredFields(result.current.setForm));
 
     await act(async () => {
       await result.current.submit();
@@ -82,7 +82,7 @@ describe("useAffiliateFormState", () => {
 
   it("submit agrega el objeto renovation cuando wantsRenovation es 'si' en modo edición", async () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined);
-    const { result } = await renderConCatalogosCargados({
+    const { result } = await renderWithCatalogsLoaded({
       mode: "edit",
       initial: { id: 1, id_card: "123456789", validity_end: "2027-01-01" },
       onSubmit,
@@ -90,7 +90,7 @@ describe("useAffiliateFormState", () => {
 
     act(() => result.current.setDepartmentId(1));
     await waitFor(() => expect(result.current.cities).toHaveLength(1));
-    act(() => llenarCamposObligatorios(result.current.setForm));
+    act(() => fillRequiredFields(result.current.setForm));
     act(() => result.current.setWantsRenovation("si"));
     act(() => result.current.setRenovationValue("150000"));
 
@@ -106,7 +106,7 @@ describe("useAffiliateFormState", () => {
   });
 
   it("clear resetea el formulario a sus valores por defecto", async () => {
-    const { result } = await renderConCatalogosCargados({ mode: "create" });
+    const { result } = await renderWithCatalogsLoaded({ mode: "create" });
 
     act(() => result.current.setForm((prev) => ({ ...prev, name: "Algo" })));
     expect(result.current.form.name).toBe("Algo");
@@ -118,14 +118,14 @@ describe("useAffiliateFormState", () => {
 
   it("validateIdCard marca error si el documento ya existe", async () => {
     (checkAffiliateIdCard as any).mockResolvedValueOnce({ exists: true });
-    const { result } = await renderConCatalogosCargados({ mode: "create" });
+    const { result } = await renderWithCatalogsLoaded({ mode: "create" });
 
-    let esValido = true;
+    let isValid = true;
     await act(async () => {
-      esValido = await result.current.validateIdCard("999888777");
+      isValid = await result.current.validateIdCard("999888777");
     });
 
-    expect(esValido).toBe(false);
+    expect(isValid).toBe(false);
     expect(result.current.idCardError).toMatch(/ya existe/);
   });
 });

@@ -9,7 +9,7 @@ export interface AffiliateStatusResponse {
     name: string;
     lastname: string;
     id_card: string;
-    stade: number; // 1 = Activo, 2 = Inactivo
+    stade: number; // 1 = Active, 2 = Inactive
     validity_end: string;
     beneficiaries: { name: string }[];
   };

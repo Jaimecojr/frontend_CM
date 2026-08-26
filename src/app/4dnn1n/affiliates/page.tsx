@@ -31,7 +31,7 @@ export default function AffiliatesPage() {
     { defaultStade: "1" },
   );
 
-  // Estado del modal de nota rápida
+  // Quick-note modal state
   const [noteTarget, setNoteTarget] = useState<ApiAffiliate | null>(null);
 
   const onToggleState = useOptimisticToggle<ApiAffiliate, "stade", 1 | 2>({
@@ -95,7 +95,7 @@ export default function AffiliatesPage() {
         }
       />
 
-      {/* Modal de nota rápida desde la lista */}
+      {/* Quick-note modal from the list */}
       {noteTarget && (
         <NoteModal
           affiliateId={noteTarget.id}

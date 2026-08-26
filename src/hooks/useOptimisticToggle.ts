@@ -21,10 +21,10 @@ type Options<T extends { id: number | string }, F extends keyof T, V extends T[F
 };
 
 /**
- * Encapsula el patrón "confirmar → actualizar de forma optimista → llamar
- * a la API → revertir si falla" repetido en los módulos con toggle de
- * estado (afiliados, médicos, etc.). Ver spec 2026-08-07 para el detalle
- * de dónde vivía este bloque antes de extraerse.
+ * Encapsulates the "confirm → optimistically update → call the API →
+ * revert on failure" pattern repeated across modules with a state
+ * toggle (affiliates, doctors, etc.). See spec 2026-08-07 for details
+ * on where this block lived before being extracted.
  */
 export function useOptimisticToggle<T extends { id: number | string }, F extends keyof T, V extends T[F] = T[F]>(
   opts: Options<T, F, V>,

@@ -40,7 +40,7 @@ export function buildUserColumns({
       cell: ({ row }) => row.original.city?.name ?? "-",
     },
 
-    // Estado visual mejorado (Badge/Pill)
+    // Improved visual state (Badge/Pill)
     {
       id: "state",
       header: () => <div className="text-center">Estado</div>,
@@ -72,7 +72,7 @@ export function buildUserColumns({
 
         return (
           <div className="flex items-center gap-2">
-            {/* Ver */}
+            {/* View */}
             <Link
               href={`/4dnn1n/franchises/${u.id}`}
               className="rounded-md p-2 hover:bg-muted"
@@ -84,7 +84,7 @@ export function buildUserColumns({
 
             {isSuperAdmin && (
               <>
-                {/* Editar */}
+                {/* Edit */}
                 <Link
                   href={`/4dnn1n/franchises/${u.id}/edit`}
                   className="rounded-md p-2 hover:bg-muted"
@@ -94,7 +94,7 @@ export function buildUserColumns({
                   <Pencil className="h-4 w-4" />
                 </Link>
 
-                {/* Activar / Inactivar */}
+                {/* Activate / Deactivate */}
                 <button
                   type="button"
                   className="rounded-md p-2 hover:bg-muted"

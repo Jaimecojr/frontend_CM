@@ -106,7 +106,7 @@ export async function updateAffiliateState(id: number, stade: 1 | 2) {
   return result;
 }
 
-// Helpers para combos
+// Helpers for combo boxes
 export async function getDepartments(): Promise<Department[]> {
   return memCache.get("departments", TTL_GEO, async () => {
     const res = await apiFetch<ApiResponse<Department[]>>(`/api/departments`);
@@ -146,7 +146,7 @@ export async function getActiveAgreements(): Promise<AgreementOption[]> {
   });
 }
 
-// Validar cédula
+// Validate id card
 type CheckIdCardResponse = { exists: boolean; message?: string };
 export async function checkAffiliateIdCard(
   id_card: string,
@@ -160,7 +160,7 @@ export async function checkAffiliateIdCard(
   );
 }
 
-// Crear / Actualizar
+// Create / Update
 export type CreateAffiliatePayload = {
   counselor_id: number;
   contract_code?: string;
@@ -214,7 +214,7 @@ export async function updateAffiliate(
   return result;
 }
 
-// Renovación
+// Renovation
 export type CreateRenovationPayload = {
   affiliate_id: number;
   date_ini: string;
@@ -231,7 +231,7 @@ export async function createRenovation(payload: CreateRenovationPayload) {
   });
 }
 
-// Afiliados que vencen hoy (para el dashboard)
+// Affiliates expiring today (for the dashboard)
 export type ExpiringAffiliate = Pick<ApiAffiliate, 'id' | 'name' | 'lastname' | 'id_card' | 'validity_end' | 'movil' | 'phone'> & {
   counselor?: { id: number; name: string; lastname: string } | null;
   agreement?: { id: number; name: string } | null;
@@ -251,7 +251,7 @@ export async function getExpiringToday(): Promise<ExpiringTodayResponse> {
   });
 }
 
-// ─── Notas de afiliado ────────────────────────────────────────────────────────
+// ─── Affiliate notes ────────────────────────────────────────────────────────
 
 export type ApiAffiliateNote = {
   id: number;

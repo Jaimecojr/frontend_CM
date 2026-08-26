@@ -23,14 +23,14 @@ export function Sidebar() {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
   const toggleExpanded = (title: string) => {
-    // ✅ si está colapsado, NO abrir acordeones
+    // if collapsed, do NOT open accordions
     if (!isMobile && isCollapsed) return;
 
     setExpandedItems((prev) => (prev.includes(title) ? [] : [title]));
   };
 
   useEffect(() => {
-    // ✅ si estás en home, no dejes nada expandido
+    // if on home, don't leave anything expanded
     if (pathname === "/4dnn1n/home") {
       setExpandedItems([]);
       return;
@@ -121,7 +121,7 @@ export function Sidebar() {
           <div className="custom-scrollbar mt-6 flex-1 overflow-y-auto pr-3 min-[850px]:mt-10">
             {NAV_DATA.map((section) => (
               <div key={section.label} className="mb-6">
-                {/* Oculta label cuando está colapsado en desktop */}
+                {/* Hides the label when collapsed on desktop */}
                 {!(!isMobile && isCollapsed) && (
                   <h2 className="mb-5 text-sm font-medium text-dark-4 dark:text-dark-6">
                     {section.label}
@@ -174,7 +174,7 @@ export function Sidebar() {
                               />
                             </MenuItem>
 
-                            {/* No mostramos submenu en colapsado */}
+                            {/* We don't show the submenu when collapsed */}
                             {expandedItems.includes(item.title) &&
                               !(!isMobile && isCollapsed) && (
                                 <ul

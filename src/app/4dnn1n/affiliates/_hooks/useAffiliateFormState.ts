@@ -67,19 +67,19 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
 
   const [saving, setSaving] = useState(false);
 
-  // estado de validación cédula
+  // id-card validation state
   const [idCardError, setIdCardError] = useState<string | null>(null);
   const [checkingIdCard, setCheckingIdCard] = useState(false);
   const lastCheckedRef = useRef<string>("");
 
-  // Búsqueda inteligente de asesores
+  // Smart counselor search
   const [searchCounselor, setSearchCounselor] = useState("");
   const [showCounselors, setShowCounselors] = useState(false);
 
-  // Vigencias
+  // Validity dates
   const defaultToday = getTodayString();
 
-  // Estados para renovación
+  // Renovation state
   const [wantsRenovation, setWantsRenovation] = useState("no");
   const [renovationType, setRenovationType] = useState("vencimiento");
   const [renovationDateIni, setRenovationDateIni] = useState("");
@@ -129,7 +129,7 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
     }
   }, [initial]);
 
-  // Auto-llenar valor desde el convenio al crear
+  // Auto-fill value from the agreement when creating
   useEffect(() => {
     if (isCreate && agreements.length > 0 && form.agreement_id) {
       const selected = agreements.find(a => a.id === Number(form.agreement_id));
@@ -139,7 +139,7 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
     }
   }, [form.agreement_id, agreements, isCreate]);
 
-  // Auto-llenar valor de renovación desde el convenio al editar
+  // Auto-fill renovation value from the agreement when editing
   useEffect(() => {
     if (isEdit && wantsRenovation === "si" && agreements.length > 0 && form.agreement_id) {
        const selected = agreements.find(a => a.id === Number(form.agreement_id));
@@ -160,7 +160,7 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
     }
   }, [renovationType, wantsRenovation, initial?.validity_end, form.validity_end, isEdit]);
 
-  // Cargar info bases
+  // Load base info
   useEffect(() => {
     (async () => {
       try {
@@ -181,7 +181,7 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
     })();
   }, []);
 
-  // Preseleccionar departamento por city.department_id (edit/view)
+  // Preselect department from city.department_id (edit/view)
   useEffect(() => {
     const depFromCity = initial?.city?.department_id;
     if (depFromCity && departmentId === "") {
@@ -189,7 +189,7 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
     }
   }, [initial, departmentId]);
 
-  // Cargar ciudades al cambiar departamento
+  // Load cities when department changes
   useEffect(() => {
     let cancelled = false;
 
@@ -224,7 +224,7 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
     };
   }, [departmentId]);
 
-  // Validador de Cédula
+  // Id-card validator
   const validateIdCard = async (raw: string) => {
     const value = onlyDigits(raw);
 
@@ -260,7 +260,7 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
     }
   };
 
-  // Manejador Beneficiarios
+  // Beneficiaries handler
   const addBeneficiary = () => {
     if (form.beneficiaries.length >= 7) return;
     setForm((p) => ({
@@ -286,7 +286,7 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
     });
   };
 
-  // Filtrado de Asesores (Autocomplete)
+  // Counselor filtering (autocomplete)
   const filteredCounselors = useMemo(() => {
     const s = searchCounselor.toLowerCase();
     if (!s) return counselors;
@@ -297,21 +297,21 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
     );
   }, [counselors, searchCounselor]);
 
-  // Bloqueo envíos invalidos
+  // Block invalid submissions
   const canSubmit = useMemo(() => {
     if (isView) return false;
 
     if (!form.name || !form.lastname || !form.id_card) return false;
     if (!!idCardError) return false;
 
-    // Celular validación: 10 dígitos exactos
+    // Mobile phone validation: exactly 10 digits
     if (!form.movil || form.movil.length !== 10) return false;
 
-    if (!form.user_id) return false; // Franquicia requerida
-    if (!form.counselor_id) return false; // Asesor requerido
-    if (!form.agreement_id) return false; // Convenio
-    if (!departmentId || !form.city_id) return false; // Ciudad
-    if (!form.email || !form.company) return false; // Email y Empresa son obligatorios temporalmente en vista
+    if (!form.user_id) return false; // Franchise required
+    if (!form.counselor_id) return false; // Counselor required
+    if (!form.agreement_id) return false; // Agreement
+    if (!departmentId || !form.city_id) return false; // City
+    if (!form.email || !form.company) return false; // Email and Company are temporarily required in this view
 
     return true;
   }, [form, isView, departmentId, idCardError]);

@@ -44,7 +44,7 @@ export function DataTableToolbar({
   isSearching,
   extraFilters,
 }: Props) {
-  // Solo muestra el selector si realmente hay más que el default (según filtrado)
+  // Only shows the selector if there are really more rows than the default (based on filtering)
   const showPageSize = filteredRows > defaultPageSize;
 
   const selectValue =
@@ -53,7 +53,7 @@ export function DataTableToolbar({
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end w-full">
       <div className="flex w-full flex-col gap-2">
-        {/* fila superior: buscador + acciones */}
+        {/* top row: search box + actions */}
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
           {extraFilters}
           {stateFilterValue !== undefined && onStateFilterChange && (
@@ -99,7 +99,7 @@ export function DataTableToolbar({
           {actions ? <div className="shrink-0">{actions}</div> : null}
         </div>
 
-        {/* fila debajo: page size */}
+        {/* row below: page size */}
         {showPageSize ? (
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
             <span className="text-xs text-neutral-500 dark:text-neutral-400">

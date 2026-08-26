@@ -7,7 +7,7 @@ const base = {
   allowOutsideClick: false,
 } satisfies SweetAlertOptions;
 
-// Helper para mezclar sin que TS se enrede con el union de SweetAlertOptions
+// Helper to merge without TS getting tangled in the SweetAlertOptions union
 const withBase = (opts: SweetAlertOptions): SweetAlertOptions =>
   ({ ...base, ...opts } as SweetAlertOptions);
 
@@ -32,7 +32,7 @@ export const alert = {
     icon?: SweetAlertIcon;
     confirmButtonText?: string;
     cancelButtonText?: string;
-    /** Si se provee, se ejecuta tras confirmar mostrando un spinner de carga. */
+    /** If provided, it runs after confirming while showing a loading spinner. */
     onConfirm?: () => Promise<unknown>;
   }) => {
     const opts = withBase({
@@ -49,7 +49,7 @@ export const alert = {
       return res.isConfirmed;
     }
 
-    // Con carga: mantiene el modal abierto con spinner mientras corre onConfirm
+    // With loading: keeps the modal open with a spinner while onConfirm runs
     let storedError: unknown;
 
     const res = await Swal.fire({

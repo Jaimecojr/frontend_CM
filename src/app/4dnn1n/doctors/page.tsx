@@ -27,7 +27,7 @@ export default function DoctorsPage() {
   const { user } = useAuth();
   const hasAccess = user?.type === 1 || user?.type === 2;
 
-  // Filtros Avanzados
+  // Advanced filters
   const [departments, setDepartments] = useState<Department[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [specialties, setSpecialties] = useState<ApiSpecialty[]>([]);

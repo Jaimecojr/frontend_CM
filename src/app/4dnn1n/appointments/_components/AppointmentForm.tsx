@@ -40,21 +40,21 @@ type PatientSelection = {
 };
 
 export default function AppointmentForm({ onSubmit, userId }: Props) {
-  // ── Búsqueda de afiliado ─────────────────────────────────────────────────
+  // ── Affiliate search ─────────────────────────────────────────────────
   const [idCardInput, setIdCardInput] = useState("");
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [affiliate, setAffiliate] = useState<AffiliateForAppointment | null>(null);
   const [selectedPatient, setSelectedPatient] = useState<PatientSelection | null>(null);
 
-  // ── Especialidad + Médico ────────────────────────────────────────────────
+  // ── Specialty + Doctor ────────────────────────────────────────────────
   const [specialties, setSpecialties] = useState<SpecialtyOption[]>([]);
   const [specialtyId, setSpecialtyId] = useState("");
   const [doctors, setDoctors] = useState<DoctorForAppointment[]>([]);
   const [doctorsLoading, setDoctorsLoading] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState<DoctorForAppointment | null>(null);
 
-  // ── Campos del formulario ────────────────────────────────────────────────
+  // ── Form fields ────────────────────────────────────────────────
   const [form, setForm] = useState({
     date: "",
     hour: "",
@@ -66,12 +66,12 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
 
   const [saving, setSaving] = useState(false);
 
-  // Cargar especialidades al montar
+  // Load specialties on mount
   useEffect(() => {
     getActiveSpecialties().then(setSpecialties).catch(console.error);
   }, []);
 
-  // Cargar médicos al cambiar especialidad
+  // Load doctors when specialty changes
   useEffect(() => {
     if (!specialtyId) {
       setDoctors([]);
@@ -140,7 +140,7 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
     }));
   };
 
-  // ── Validaciones ─────────────────────────────────────────────────────────
+  // ── Validations ─────────────────────────────────────────────────────────
 
   const valueError = useMemo(() => {
     if (!form.value) return null;
@@ -199,7 +199,7 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
   return (
     <div className="space-y-6">
 
-      {/* ── Sección 1: Buscar afiliado ───────────────────────────────────── */}
+      {/* ── Section 1: Search affiliate ───────────────────────────────────── */}
       <div className="rounded-2xl border border-stroke bg-background p-5 shadow-sm dark:border-dark-3">
         <h3 className="mb-4 text-base font-semibold text-dark dark:text-white">
           1. Buscar Afiliado
@@ -231,21 +231,21 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
           </div>
         </div>
 
-        {/* Error de búsqueda */}
+        {/* Search error */}
         {searchError && (
           <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
             {searchError}
           </div>
         )}
 
-        {/* Resultado: titular + beneficiarios */}
+        {/* Result: policyholder + beneficiaries */}
         {affiliate && (
           <div className="mt-4 space-y-3">
             <p className="text-xs font-medium uppercase tracking-wide text-dark-5 dark:text-dark-6">
               Selecciona quién va a la cita
             </p>
 
-            {/* Titular */}
+            {/* Policyholder */}
             <PatientCard
               icon={<User className="h-4 w-4" />}
               label="Titular"
@@ -261,7 +261,7 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
               }
             />
 
-            {/* Beneficiarios */}
+            {/* Beneficiaries */}
             {affiliate.beneficiaries && affiliate.beneficiaries.length > 0 && (
               <>
                 <p className="text-xs text-dark-5 dark:text-dark-6">Beneficiarios:</p>
@@ -284,7 +284,7 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
         )}
       </div>
 
-      {/* ── Sección 2: Especialidad y médico ─────────────────────────────── */}
+      {/* ── Section 2: Specialty and doctor ─────────────────────────────── */}
       {selectedPatient && (
         <div className="rounded-2xl border border-stroke bg-background p-5 shadow-sm dark:border-dark-3">
           <h3 className="mb-4 text-base font-semibold text-dark dark:text-white">
@@ -334,7 +334,7 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
         </div>
       )}
 
-      {/* ── Sección 3: Detalles de la cita ───────────────────────────────── */}
+      {/* ── Section 3: Appointment details ───────────────────────────────── */}
       {selectedDoctor && (
         <div className="rounded-2xl border border-stroke bg-background p-5 shadow-sm dark:border-dark-3">
           <h3 className="mb-4 text-base font-semibold text-dark dark:text-white">
@@ -342,7 +342,7 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
           </h3>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {/* Fecha */}
+            {/* Date */}
             <div>
               <Label required>Fecha</Label>
               <div className="mt-1">
@@ -353,7 +353,7 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
               </div>
             </div>
 
-            {/* Hora */}
+            {/* Time */}
             <div>
               <Label required>Hora</Label>
               <input
@@ -364,7 +364,7 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
               />
             </div>
 
-            {/* Dirección */}
+            {/* Address */}
             <div className="md:col-span-2">
               <Label required>Dirección de la consulta</Label>
               <input
@@ -375,7 +375,7 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
               />
             </div>
 
-            {/* Ciudad (solo lectura — viene del médico) */}
+            {/* City (read-only — comes from the doctor) */}
             <div>
               <Label>Ciudad</Label>
               <div className="mt-1 flex h-[38px] items-center rounded-lg border border-stroke bg-gray-2 px-3 text-sm text-dark dark:border-dark-3 dark:bg-dark-3 dark:text-white">
@@ -383,7 +383,7 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
               </div>
             </div>
 
-            {/* Valor */}
+            {/* Value */}
             <div>
               <Label required>Valor de la consulta</Label>
               <input
@@ -400,7 +400,7 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
               {valueError && <p className="mt-1 text-xs text-red-500">{valueError}</p>}
             </div>
 
-            {/* Teléfono */}
+            {/* Phone */}
             <div>
               <Label>Teléfono del paciente</Label>
               <input
@@ -449,7 +449,7 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
   );
 }
 
-// ─── Componente auxiliar: tarjeta de paciente seleccionable ───────────────────
+// ─── Helper component: selectable patient card ───────────────────
 
 function PatientCard({
   icon,

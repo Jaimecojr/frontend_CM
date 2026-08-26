@@ -23,22 +23,22 @@ export default function SigninWithPassword() {
     setError("");
 
     try {
-      // 1. Obtener CSRF
+      // 1. Get CSRF
       await csrf();
 
-      // 2. Leer cookie XSRF-TOKEN
+      // 2. Read XSRF-TOKEN cookie
       const xsrf = getXsrfToken();
       if (!xsrf) {
         throw new Error("No se pudo obtener el token CSRF");
       }
 
-      // 3. Hacer login
+      // 3. Log in
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "X-XSRF-TOKEN": xsrf, //CLAVE
+          "X-XSRF-TOKEN": xsrf, //KEY
           Accept: "application/json",
         },
         body: JSON.stringify({
@@ -55,14 +55,14 @@ export default function SigninWithPassword() {
           const err = await res.json();
           if (err?.message) msg = err.message;
         } catch {
-          // si viene HTML (419), dejamos el msg genérico
+          // if HTML comes back (419), we keep the generic msg
         }
 
         throw new Error(msg);
       }
 
-      // 4. Redirigir al dashboard — no se resetea loading para que el overlay
-      //    permanezca visible durante toda la navegación
+      // 4. Redirect to the dashboard — loading is not reset so the overlay
+      //    stays visible throughout the navigation
       window.location.href = "/4dnn1n/home";
     } catch (err: any) {
       setError(err.message || "Error inesperado");

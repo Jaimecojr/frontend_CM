@@ -4,20 +4,20 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Estructura de cada opción del select
+// Structure of each select option
 export interface SelectOption {
-  value: string | number; // valor que se guarda (ej. id)
-  label: string;          // texto que se muestra al usuario
+  value: string | number; // value that gets stored (e.g. id)
+  label: string;          // text shown to the user
 }
 
 interface SearchableSelectProps {
-  options: SelectOption[];          // lista de opciones a mostrar
-  value: string | number;           // valor seleccionado actualmente (controlado desde el padre)
-  onChange: (value: string) => void; // callback que recibe el value del ítem elegido
-  placeholder?: string;             // texto cuando el dropdown está abierto y no hay selección
-  disabledPlaceholder?: string;     // texto a mostrar en modo disabled si no hay match en options
-  disabled?: boolean;               // si true, muestra un input de solo lectura (modo vista)
-  className?: string;               // clases extra para el contenedor
+  options: SelectOption[];          // list of options to display
+  value: string | number;           // currently selected value (controlled from the parent)
+  onChange: (value: string) => void; // callback that receives the value of the chosen item
+  placeholder?: string;             // text shown when the dropdown is open and there is no selection
+  disabledPlaceholder?: string;     // text to show in disabled mode when there is no match in options
+  disabled?: boolean;               // if true, shows a read-only input (view mode)
+  className?: string;               // extra classes for the container
 }
 
 export function SearchableSelect({
@@ -29,15 +29,15 @@ export function SearchableSelect({
   disabled = false,
   className,
 }: SearchableSelectProps) {
-  const [open, setOpen] = useState(false);   // controla si el dropdown está visible
-  const [search, setSearch] = useState("");  // texto de búsqueda que escribe el usuario
-  const containerRef = useRef<HTMLDivElement>(null); // referencia al contenedor para detectar clicks fuera
-  const inputRef = useRef<HTMLInputElement>(null);   // referencia al input para darle foco al abrir
+  const [open, setOpen] = useState(false);   // controls whether the dropdown is visible
+  const [search, setSearch] = useState("");  // search text typed by the user
+  const containerRef = useRef<HTMLDivElement>(null); // reference to the container to detect outside clicks
+  const inputRef = useRef<HTMLInputElement>(null);   // reference to the input to focus it on open
 
-  // Busca la opción que coincide con el value actual (comparación como string para evitar "1" !== 1)
+  // Finds the option that matches the current value (compared as string to avoid "1" !== 1)
   const selected = options.find((o) => String(o.value) === String(value));
 
-  // Filtra las opciones según el texto escrito; si no hay búsqueda, muestra todas
+  // Filters the options based on the typed text; shows all of them if there is no search
   const filtered =
     search.trim()
       ? options.filter((o) =>
@@ -45,7 +45,7 @@ export function SearchableSelect({
         )
       : options;
 
-  // Cierra el dropdown cuando el usuario hace click fuera del componente
+  // Closes the dropdown when the user clicks outside the component
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (
@@ -60,9 +60,9 @@ export function SearchableSelect({
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
-  // Modo solo lectura (isView): renderiza un input deshabilitado con el label del valor actual.
-  // Se resuelve en orden: label encontrado en options → disabledPlaceholder → cadena vacía.
-  // disabledPlaceholder es útil cuando el label viene de un objeto anidado del API (ej. initial.city.name).
+  // Read-only mode (isView): renders a disabled input with the current value's label.
+  // Resolved in order: label found in options → disabledPlaceholder → empty string.
+  // disabledPlaceholder is useful when the label comes from a nested API object (e.g. initial.city.name).
   if (disabled) {
     return (
       <input
@@ -79,25 +79,25 @@ export function SearchableSelect({
 
   return (
     <div ref={containerRef} className={cn("relative", className)}>
-      {/* Contenedor del input visible — actúa como trigger del dropdown */}
+      {/* Visible input container — acts as the dropdown trigger */}
       <div
         className={cn(
           "flex items-center w-full rounded-lg border border-stroke bg-transparent px-3 py-2 transition-colors",
           "dark:border-dark-3 dark:bg-dark-2",
           open
-            ? "border-primary dark:border-primary"          // borde azul cuando está abierto
+            ? "border-primary dark:border-primary"          // blue border when open
             : "hover:border-gray-400 dark:hover:border-dark-4",
         )}
         onClick={() => {
           setOpen((o) => !o);
-          // Da foco al input en el siguiente tick para que el cursor aparezca al abrir
+          // Focuses the input on the next tick so the cursor appears on open
           if (!open) setTimeout(() => inputRef.current?.focus(), 0);
         }}
       >
         {/*
-          Input con doble comportamiento según el estado:
-          - Cerrado (readOnly): muestra el label de la opción seleccionada, no es editable
-          - Abierto: muestra el texto de búsqueda y permite escribir para filtrar
+          Input with dual behavior depending on state:
+          - Closed (readOnly): shows the selected option's label, not editable
+          - Open: shows the search text and allows typing to filter
         */}
         <input
           ref={inputRef}
@@ -109,16 +109,16 @@ export function SearchableSelect({
             if (!open) setOpen(true);
           }}
           onClick={(e) => {
-            e.stopPropagation(); // evita que el click llegue al div padre y dispare el toggle
+            e.stopPropagation(); // prevents the click from reaching the parent div and triggering the toggle
             if (!open) {
               setOpen(true);
-              setSearch(""); // limpia el filtro al abrir para mostrar todas las opciones
+              setSearch(""); // clears the filter on open to show all options
             }
           }}
-          readOnly={!open} // solo editable cuando el dropdown está abierto
+          readOnly={!open} // only editable while the dropdown is open
         />
 
-        {/* Flecha que rota 180° cuando el dropdown está abierto */}
+        {/* Arrow that rotates 180° when the dropdown is open */}
         <ChevronDown
           className={cn(
             "ml-2 h-4 w-4 flex-shrink-0 text-dark-5 transition-transform duration-200 dark:text-dark-6",
@@ -127,7 +127,7 @@ export function SearchableSelect({
         />
       </div>
 
-      {/* Dropdown de opciones — solo se monta cuando open=true */}
+      {/* Options dropdown — only mounted when open=true */}
       {open && (
         <div className="absolute z-50 mt-1 w-full max-h-52 overflow-y-auto rounded-lg border border-stroke bg-white shadow-lg dark:border-dark-3 dark:bg-dark-2">
           {filtered.length === 0 ? (
@@ -139,18 +139,18 @@ export function SearchableSelect({
               <button
                 key={o.value}
                 type="button"
-                // preventDefault en mousedown evita que el listener "onClickOutside" detecte
-                // este click como "fuera del componente" y cierre el dropdown antes del onClick
+                // preventDefault on mousedown prevents the "onClickOutside" listener from
+                // detecting this click as "outside the component" and closing the dropdown before onClick
                 onMouseDown={(e) => e.preventDefault()}
                 className={cn(
                   "w-full px-3 py-2 text-left text-sm transition-colors",
                   "text-dark dark:text-white hover:bg-gray-2 dark:hover:bg-dark-3",
-                  // resalta la opción actualmente seleccionada
+                  // highlights the currently selected option
                   String(o.value) === String(value) &&
                     "bg-primary/10 text-primary font-medium dark:bg-primary/20",
                 )}
                 onClick={() => {
-                  onChange(String(o.value)); // notifica al padre con el value elegido
+                  onChange(String(o.value)); // notifies the parent with the chosen value
                   setOpen(false);
                   setSearch("");
                 }}

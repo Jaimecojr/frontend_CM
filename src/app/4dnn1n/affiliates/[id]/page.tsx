@@ -53,7 +53,7 @@ export default function ViewAffiliatePage() {
 
   if (authLoading || loading) return <FormPageSkeleton fields={14} />;
 
-  // Permiso tipo 1 o 2
+  // Restricted to user type 1 or 2
   if (user?.type !== 1 && user?.type !== 2) {
     return (
       <div className="flex h-64 items-center justify-center p-6 text-red-500 font-medium">
@@ -89,7 +89,7 @@ export default function ViewAffiliatePage() {
       >
         <AffiliateForm mode="view" initial={data} />
 
-        {/* Sección de notas / bitácora del afiliado */}
+        {/* Affiliate notes / log section */}
         <AffiliateNotes
           affiliateId={affiliateId}
           affiliateName={`${data.name} ${data.lastname}`}

@@ -188,7 +188,7 @@ export function ArrowLeftIcon(props: PropsType) {
 }
 
 export function AdvisorIcon(props: PropsType) {
-  // Asesores
+  // Advisors
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -207,7 +207,7 @@ export function AdvisorIcon(props: PropsType) {
 }
 
 export function DoctorIcon(props: PropsType) {
-  // Médicos
+  // Doctors
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -226,7 +226,7 @@ export function DoctorIcon(props: PropsType) {
 }
 
 export function UsersIcon(props: PropsType) {
-  // Usuarios
+  // Users
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -245,7 +245,7 @@ export function UsersIcon(props: PropsType) {
 }
 
 export function FranchiseIcon(props: PropsType) {
-  // Franquicias
+  // Franchises
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -264,7 +264,7 @@ export function FranchiseIcon(props: PropsType) {
 }
 
 export function AppointmentIcon(props: PropsType) {
-  // Citas
+  // Appointments
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -283,7 +283,7 @@ export function AppointmentIcon(props: PropsType) {
 }
 
 export function AgreementIcon(props: PropsType) {
-  // Convenios
+  // Agreements
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -302,7 +302,7 @@ export function AgreementIcon(props: PropsType) {
 }
 
 export function CarouselIcon(props: PropsType) {
-  // Carrusel
+  // Carousel
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -321,7 +321,7 @@ export function CarouselIcon(props: PropsType) {
 }
 
 export function ContentIcon(props: PropsType) {
-  // Administración de contenido
+  // Content management
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -340,7 +340,7 @@ export function ContentIcon(props: PropsType) {
 }
 
 export function ContactIcon(props: PropsType) {
-  // Contactos
+  // Contacts
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -359,7 +359,7 @@ export function ContactIcon(props: PropsType) {
 }
 
 export function AffiliationIcon(props: PropsType) {
-  // Afiliaciones
+  // Affiliations
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -378,7 +378,7 @@ export function AffiliationIcon(props: PropsType) {
 }
 
 export function SettingsIcon(props: PropsType) {
-  // Configuración
+  // Settings
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

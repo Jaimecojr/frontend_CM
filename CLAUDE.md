@@ -305,7 +305,7 @@ No hace falta ningún manejo manual desde el padre para estos casos.
    - Si la API falla, revierte el estado a su valor anterior y muestra una alerta (`alert.error()`).
 2. **Desmontaje de Componentes:** En los `useEffect` que realizan llamadas asíncronas, usa un flag `cancelled` para evitar intentar actualizar estados de React si el componente ya se desmontó.
 3. **Notificaciones y UI:** Usa el helper `@/lib/alert` y `@/lib/getApiErrorMessage` para mostrar resultados de acciones al usuario.
-4. **Idioma:** Todo el texto de la interfaz, placeholders, tooltips y comentarios de código deben estar en **español**.
+4. **Idioma:** El código en sí —comentarios, nombres de funciones/hooks/componentes, variables— debe estar en **inglés**, siguiendo la convención estándar de desarrollo (esto revierte la regla anterior de este documento; mismo criterio ya adoptado en el backend, ver `CLAUDE.md` de `api-cm`). Todo el texto de la interfaz que ve el usuario final —labels, placeholders, tooltips, mensajes de `alert()`— sigue en **español**, porque el panel es para asesores/franquicias colombianas. Los comentarios de código no deben referenciar `CLAUDE.md` ni otros documentos internos por nombre; deben ser autocontenidos y explicar el WHY directamente.
 
 ## Validaciones de Formulario (Campos Comunes)
 Al crear o modificar un formulario con los siguientes campos, aplica siempre estas reglas:

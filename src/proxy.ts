@@ -5,18 +5,18 @@ export function proxy(req: NextRequest) {
   const url = req.nextUrl.clone();
 
   if (url.pathname.startsWith("/4dnn1n")) {
-    // Verificación rápida de presencia de cookie, sin llamar al backend.
-    // La verificación real de sesión la hace useRequireAuth() en el cliente,
-    // que sí consulta /user contra Laravel.
+    // Quick check for cookie presence, without calling the backend.
+    // The actual session verification is done by useRequireAuth() on the client,
+    // which does query /user against Laravel.
     //
-    // OJO: no usar XSRF-TOKEN aquí — Laravel la setea para cualquier sesión
-    // (autenticada o no) y nunca se borra en /logout, así que casi siempre
-    // está presente y esta verificación nunca redirigiría. "auth_hint" es
-    // una cookie propia que el backend solo pone en /login y borra en
-    // /logout (ver routes/web.php en api-cm).
-    const tieneCookieSesion = req.cookies.has("auth_hint");
+    // HEADS UP: don't use XSRF-TOKEN here — Laravel sets it for any session
+    // (authenticated or not) and it's never cleared on /logout, so it's almost
+    // always present and this check would never redirect. "auth_hint" is
+    // a custom cookie that the backend only sets on /login and clears on
+    // /logout (see routes/web.php in api-cm).
+    const hasSessionCookie = req.cookies.has("auth_hint");
 
-    if (!tieneCookieSesion) {
+    if (!hasSessionCookie) {
       url.pathname = "/auth/sign-in";
       return NextResponse.redirect(url);
     }

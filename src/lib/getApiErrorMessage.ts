@@ -1,5 +1,5 @@
 export function getApiErrorMessage(err: any) {
-  // Nuestro ApiError (fetch)
+  // Our ApiError (fetch)
   const data = err?.data;
 
   if (data?.message) {
@@ -13,7 +13,7 @@ export function getApiErrorMessage(err: any) {
     return data.message;
   }
 
-  // Axios (por si lo usas en otro lado)
+  // Axios (in case you use it elsewhere)
   const axiosData = err?.response?.data;
   if (axiosData?.message) {
     if (axiosData?.errors && typeof axiosData.errors === "object") {
