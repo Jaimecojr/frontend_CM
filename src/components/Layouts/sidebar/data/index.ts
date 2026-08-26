@@ -89,77 +89,11 @@ export const NAV_DATA = [
         url: "/4dnn1n/settings",
         items: [],
       },
-      {
-        title: "Calendar",
-        url: "/4dnn1n/calendar", // antes "/calendar"
-        icon: Icons.Calendar,
-        items: [],
-      },
-      {
-        title: "Profile",
-        url: "/4dnn1n/profile", // antes "/profile"
-        icon: Icons.User,
-        items: [],
-      },
-      {
-        title: "Forms",
-        icon: Icons.Alphabet,
-        items: [
-          {
-            title: "Form Elements",
-            url: "/4dnn1n/forms/form-elements",
-          },
-          {
-            title: "Form Layout",
-            url: "/4dnn1n/forms/form-layout",
-          },
-        ],
-      },
-      {
-        title: "Tables",
-        url: "/4dnn1n/tables",
-        icon: Icons.Table,
-        items: [],
-      },
-      {
-        title: "Pages",
-        icon: Icons.Alphabet,
-        items: [
-          {
-            title: "Settings",
-            url: "/4dnn1n/pages/settings",
-          },
-        ],
-      },
     ],
   },
   {
     label: "OTHERS",
     items: [
-      {
-        title: "Charts",
-        icon: Icons.PieChart,
-        items: [
-          {
-            title: "Basic Chart",
-            url: "/4dnn1n/charts/basic-chart",
-          },
-        ],
-      },
-      {
-        title: "UI Elements",
-        icon: Icons.FourCircle,
-        items: [
-          {
-            title: "Alerts",
-            url: "/4dnn1n/ui-elements/alerts",
-          },
-          {
-            title: "Buttons",
-            url: "/4dnn1n/ui-elements/buttons",
-          },
-        ],
-      },
       {
         title: "Authentication",
         icon: Icons.Authentication,
