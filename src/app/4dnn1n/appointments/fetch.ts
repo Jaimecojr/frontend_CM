@@ -1,45 +1,29 @@
 import { apiFetch, csrf } from "@/lib/api";
 import { memCache, TTL_GEO, TTL_CATALOG, TTL_LIST } from "@/lib/memCache";
+import type {
+  ApiAppointment,
+  AppointmentMeta,
+  AppointmentsResponse,
+  CreateAppointmentPayload,
+  AffiliateForAppointment,
+  SpecialtyOption,
+  DoctorForAppointment,
+  Department,
+  City,
+} from "./types";
 
-export type ApiAppointment = {
-  id: number;
-  afi_code: number;
-  doctor_id: number;
-  date: string;
-  hour: string;
-  address: string;
-  city_id: number;
-  phone: string;
-  value: number;
-  /** 1 = policyholder (affiliate), 2 = beneficiary */
-  type: 1 | 2;
-  name: string;
-  user_id: number;
-
-  // relationships
-  doctor?: { id: number; name: string; lastname: string; specialty_id?: number } | null;
-  city?: { id: number; name: string } | null;
-  user?: { id: number; name: string } | null;
-  /** policyholder or beneficiary depending on type — normalized in the backend */
-  owner?: { id: number; name: string; lastname?: string; id_card?: string } | null;
-  /** id of the policyholder affiliate (for the edit form) */
-  affiliate_id?: number | null;
-
-  created_at?: string;
-  updated_at?: string;
-};
-
-export type AppointmentMeta = {
-  current_page: number;
-  last_page: number;
-  per_page: number;
-  total: number;
-};
-
-export type AppointmentsResponse = {
-  data: ApiAppointment[];
-  meta: AppointmentMeta;
-};
+export type {
+  ApiAppointment,
+  AppointmentMeta,
+  AppointmentsResponse,
+  CreateAppointmentPayload,
+  AffiliateBeneficiary,
+  AffiliateForAppointment,
+  SpecialtyOption,
+  DoctorForAppointment,
+  Department,
+  City,
+} from "./types";
 
 type ApiResponse<T> = { message: string; data: T };
 
@@ -75,20 +59,6 @@ export async function getAppointment(id: number): Promise<ApiAppointment> {
 
 // ─── Create / Update ────────────────────────────────────────────────────────
 
-export type CreateAppointmentPayload = {
-  afi_code: number;
-  doctor_id: number;
-  date: string;
-  hour: string;
-  address: string;
-  city_id: number;
-  phone: string;
-  value: number;
-  type: 1 | 2;
-  name: string;
-  user_id: number;
-};
-
 export async function createAppointment(payload: CreateAppointmentPayload): Promise<ApiAppointment> {
   await csrf();
   const res = await apiFetch<ApiResponse<ApiAppointment>>("/api/appointments", {
@@ -122,24 +92,6 @@ export async function getAffiliateForEdit(affiliateId: number): Promise<Affiliat
 
 // ─── Affiliate search by id card (for the appointment form) ─────────────
 
-export type AffiliateBeneficiary = {
-  id: number;
-  name: string;
-  id_card?: string | null;
-};
-
-export type AffiliateForAppointment = {
-  id: number;
-  name: string;
-  lastname: string;
-  id_card: string;
-  movil?: string | null;
-  phone?: string | null;
-  stade: number;
-  validity_end: string;
-  beneficiaries?: AffiliateBeneficiary[];
-};
-
 export async function searchAffiliateByIdCard(idCard: string): Promise<AffiliateForAppointment> {
   const res = await apiFetch<ApiResponse<AffiliateForAppointment>>(
     `/api/affiliates/by-id-card?id_card=${encodeURIComponent(idCard)}`,
@@ -149,8 +101,6 @@ export async function searchAffiliateByIdCard(idCard: string): Promise<Affiliate
 
 // ─── Active specialties (for the form selector) ─────────────────
 
-export type SpecialtyOption = { id: number; name: string };
-
 export async function getActiveSpecialties(): Promise<SpecialtyOption[]> {
   return memCache.get("specialties:active", TTL_CATALOG, async () => {
     const res = await apiFetch<ApiResponse<(SpecialtyOption & { state: number })[]>>("/api/specialties");
@@ -159,17 +109,6 @@ export async function getActiveSpecialties(): Promise<SpecialtyOption[]> {
 }
 
 // ─── Active doctors filtered by specialty ───────────────────────────────
-
-export type DoctorForAppointment = {
-  id: number;
-  name: string;
-  lastname: string;
-  address: string;
-  city_id: number;
-  city?: { id: number; name: string; department_id?: number } | null;
-  value_agreement: number;
-  movil?: string | null;
-};
 
 export async function getDoctorsBySpecialty(specialtyId: number): Promise<DoctorForAppointment[]> {
   return memCache.get(`doctors:specialty:${specialtyId}`, TTL_CATALOG, async () => {
@@ -181,9 +120,6 @@ export async function getDoctorsBySpecialty(specialtyId: number): Promise<Doctor
 }
 
 // ─── Departments and cities (for the city selector) ───────────────────
-
-import type { Department, City } from "@/types/geo";
-export type { Department, City };
 
 export async function getDepartments(): Promise<Department[]> {
   return memCache.get("departments", TTL_GEO, async () => {
