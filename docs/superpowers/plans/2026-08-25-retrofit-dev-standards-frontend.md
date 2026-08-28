@@ -53,7 +53,7 @@ Vitest `**/*.{test,spec}.*`), así que los tests se seguirán descubriendo desde
 la config. Los imports relativos actuales dejan de funcionar al mover el archivo — se reemplazan
 por el alias `@/` (ya configurado en `vitest.config.ts` → `resolve.alias["@"] = "./src"`).
 
-- [ ] **Step 1: Mover los 4 archivos**
+- [x] **Step 1: Mover los 4 archivos**
 
 ```bash
 mkdir -p tests/lib tests/hooks tests/app/4dnn1n/affiliates/_hooks
@@ -63,14 +63,14 @@ git mv src/app/4dnn1n/affiliates/_hooks/useAffiliateFormState.test.ts tests/app/
 git mv src/test/setup-smoke.test.tsx tests/setup-smoke.test.tsx
 ```
 
-- [ ] **Step 2: Corregir los imports en `tests/lib/dates.test.ts`**
+- [x] **Step 2: Corregir los imports en `tests/lib/dates.test.ts`**
 
 Cambiar el import relativo (`./dates` o similar) por:
 ```ts
 import { addOneYear, getTodayString } from "@/lib/dates";
 ```
 
-- [ ] **Step 3: Corregir los imports en `tests/hooks/useOptimisticToggle.test.ts`**
+- [x] **Step 3: Corregir los imports en `tests/hooks/useOptimisticToggle.test.ts`**
 
 Cambiar:
 ```ts
@@ -81,7 +81,7 @@ por:
 import { useOptimisticToggle } from "@/hooks/useOptimisticToggle";
 ```
 
-- [ ] **Step 4: Corregir los imports en `tests/app/4dnn1n/affiliates/_hooks/useAffiliateFormState.test.ts`**
+- [x] **Step 4: Corregir los imports en `tests/app/4dnn1n/affiliates/_hooks/useAffiliateFormState.test.ts`**
 
 Cambiar:
 ```ts
@@ -98,22 +98,22 @@ vi.mock("@/app/4dnn1n/affiliates/fetch", () => ({ ... }));
 y el `import { checkAffiliateIdCard } from "../fetch";` posterior por
 `from "@/app/4dnn1n/affiliates/fetch"`.
 
-- [ ] **Step 5: Revisar `tests/setup-smoke.test.tsx`**
+- [x] **Step 5: Revisar `tests/setup-smoke.test.tsx`**
 
 Si tiene algún import relativo a `src/`, ajustarlo al alias `@/`. Si es puramente un smoke test de
 configuración sin imports de `src/`, no necesita cambios más allá de la ubicación.
 
-- [ ] **Step 6: Verificar que si `vitest.setup.ts` referencia la carpeta `src/test/`, se actualice**
+- [x] **Step 6: Verificar que si `vitest.setup.ts` referencia la carpeta `src/test/`, se actualice**
 
 Run: `grep -rn "src/test\|src/lib/dates.test\|src/hooks/useOptimisticToggle.test" vitest.config.ts vitest.setup.ts package.json`
 Expected: sin coincidencias que rompan, o corregir la referencia si aparece alguna ruta hardcodeada.
 
-- [ ] **Step 7: Correr los tests**
+- [x] **Step 7: Correr los tests**
 
 Run: `npm run test`
 Expected: los mismos 4 archivos, mismos 17 casos, todos en verde, ahora descubiertos desde `tests/`.
 
-- [ ] **Step 8: Verificar tipos**
+- [x] **Step 8: Verificar tipos**
 
 Run: `npx tsc --noEmit`
 Expected: sin errores.
@@ -140,7 +140,7 @@ function FormNumber(val: any, def: number) {
 inicial. `Number()` acepta `unknown` sin problema de tipos porque `val` solo se compara contra
 `undefined`/`null` antes de pasarse — no se accede a ninguna propiedad de `val`.
 
-- [ ] **Step 1: Aplicar el fix**
+- [x] **Step 1: Aplicar el fix**
 
 ```ts
 function FormNumber(val: unknown, def: number): number {
@@ -149,12 +149,12 @@ function FormNumber(val: unknown, def: number): number {
 }
 ```
 
-- [ ] **Step 2: Verificar tipos**
+- [x] **Step 2: Verificar tipos**
 
 Run: `npx tsc --noEmit`
 Expected: sin errores (el cambio es compatible, `Number()` acepta `unknown`).
 
-- [ ] **Step 3: Correr el test existente de este hook**
+- [x] **Step 3: Correr el test existente de este hook**
 
 Run: `npm run test -- useAffiliateFormState`
 Expected: los 7 tests migrados en la Tarea 1 siguen en verde.
@@ -186,7 +186,7 @@ filas de la lista al togglear).
 confirmado leyendo cada `fetch.ts`):** `updateCounselorState(id: number, state: 1 | 2)`,
 `updateFranchiseState(id: number, state: 1 | 2)`, `updateSpecialtyState(id: number, state: 0 | 1)`.
 
-- [ ] **Step 1: Migrar `counselors/page.tsx`**
+- [x] **Step 1: Migrar `counselors/page.tsx`**
 
 Agregar el import:
 ```ts
@@ -214,7 +214,7 @@ Eliminar los imports que queden sin uso (`alert`, `getApiErrorMessage`) si ning�
 archivo los sigue usando — confirmar con `grep -n "alert\.\|getApiErrorMessage" src/app/4dnn1n/counselors/page.tsx`
 antes de borrar el import.
 
-- [ ] **Step 2: Migrar `franchises/page.tsx`**
+- [x] **Step 2: Migrar `franchises/page.tsx`**
 
 Mismo patrón exacto, cambiando el genérico y las opciones:
 ```tsx
@@ -235,7 +235,7 @@ const onToggleState = useOptimisticToggle<ApiFranchise, "state", 1 | 2>({
 });
 ```
 
-- [ ] **Step 3: Migrar `doctors/specialties/page.tsx`**
+- [x] **Step 3: Migrar `doctors/specialties/page.tsx`**
 
 Nota: este módulo usa `0`/`1` (no `1`/`2`) y un solo texto de botón de confirmación fijo:
 ```tsx
@@ -257,19 +257,19 @@ const onToggleState = useOptimisticToggle<ApiSpecialty, "state", 0 | 1>({
 });
 ```
 
-- [ ] **Step 4: Verificar tipos**
+- [x] **Step 4: Verificar tipos**
 
 Run: `npx tsc --noEmit`
 Expected: sin errores en los 3 archivos.
 
-- [ ] **Step 5: Probar manualmente los 3 módulos**
+- [x] **Step 5: Probar manualmente los 3 módulos**
 
 Iniciar el dev server (`npm run dev`) y en el panel: togglear el estado de un asesor, una
 franquicia y una especialidad — confirmar que el modal, el cambio optimista y el mensaje de éxito
 se ven igual que antes de migrar. Confirmar también el caso de error (desconectar la red o forzar
 un 500 en el endpoint correspondiente) para ver que revierte visualmente.
 
-- [ ] **Step 6: Correr la suite de tests**
+- [x] **Step 6: Correr la suite de tests**
 
 Run: `npm run test`
 Expected: sin regresiones (estos 3 módulos no tenían test propio antes, y esta tarea no les agrega
@@ -297,7 +297,7 @@ completos, no solo `state` — ver Hallazgo del backend). `useOptimisticToggle.u
 `(id, nextValue)` — hay que cambiar la firma de `updateAgreementState` para que reciba el `id` y
 resuelva el resto de los campos desde otro lado, o envolverla.
 
-- [ ] **Step 1: Cambiar la firma de `updateAgreementState` para aceptar `(id, agreement, newState)`**
+- [x] **Step 1: Cambiar la firma de `updateAgreementState` para aceptar `(id, agreement, newState)`**
 
 En `src/app/4dnn1n/agreements/fetch.ts`, cambiar:
 ```ts
@@ -310,7 +310,7 @@ export async function updateAgreementState(id: ApiAgreement["id"], agreement: Ap
 y usar `id` (no `agreement.id`) en la URL del `apiFetch`, dejando el resto del cuerpo igual
 (sigue construyendo el payload con `agreement.name`, `agreement.amount`, `agreement.city_id`).
 
-- [ ] **Step 2: Migrar `agreements/page.tsx` envolviendo `updateFn`**
+- [x] **Step 2: Migrar `agreements/page.tsx` envolviendo `updateFn`**
 
 Agregar el import:
 ```ts
@@ -337,18 +337,18 @@ const onToggleState = useOptimisticToggle<ApiAgreement, "state", 1 | 0>({
 });
 ```
 
-- [ ] **Step 3: Verificar tipos**
+- [x] **Step 3: Verificar tipos**
 
 Run: `npx tsc --noEmit`
 Expected: sin errores.
 
-- [ ] **Step 4: Probar manualmente**
+- [x] **Step 4: Probar manualmente**
 
 Togglear un convenio en el panel y confirmar que el `PUT` sigue enviando `name`/`amount`/`city_id`
 correctos (revisar la pestaña Network del navegador) y que el estado visual se actualiza igual que
 antes.
 
-- [ ] **Step 5: Correr la suite**
+- [x] **Step 5: Correr la suite**
 
 Run: `npm run test`
 Expected: sin regresiones.
@@ -371,12 +371,12 @@ solo `affiliateService.ts` en esa carpeta — el criterio del spec (Hallazgo 1.1
 el módulo `affiliates`, se mueve dentro de `src/app/4dnn1n/affiliates/`; si lo usan 2+ módulos, se
 queda en `src/services/` como capa compartida explícita.
 
-- [ ] **Step 1: Identificar consumidores**
+- [x] **Step 1: Identificar consumidores**
 
 Run: `grep -rln "from \"@/services/affiliateService\"\|from '@/services/affiliateService'" src`
 Expected: lista de archivos que lo importan.
 
-- [ ] **Step 2: Decidir destino según el resultado**
+- [x] **Step 2: Decidir destino según el resultado**
 
 Si **todos** los consumidores están dentro de `src/app/4dnn1n/affiliates/`: mover el archivo a
 `src/app/4dnn1n/affiliates/affiliateService.ts` (o fusionarlo con `fetch.ts` si su contenido se
@@ -384,16 +384,16 @@ superpone con lo que ya hace `fetch.ts` — leer ambos archivos para decidir si 
 o duplicados antes de fusionar). Si hay consumidores en 2+ módulos, dejarlo en `src/services/` y
 solo actualizar el `README`/comentario del archivo aclarando por qué vive ahí (capa compartida).
 
-- [ ] **Step 3: Actualizar los imports de los consumidores** (solo si se movió el archivo)
+- [x] **Step 3: Actualizar los imports de los consumidores** (solo si se movió el archivo)
 
 Cambiar `from "@/services/affiliateService"` por la nueva ruta en cada consumidor identificado en
 el Step 1.
 
-- [ ] **Step 4: Eliminar la carpeta `src/services/` si quedó vacía**
+- [x] **Step 4: Eliminar la carpeta `src/services/` si quedó vacía**
 
 Run: `ls src/services` — si está vacía, `rmdir src/services`.
 
-- [ ] **Step 5: Verificar tipos y tests**
+- [x] **Step 5: Verificar tipos y tests**
 
 Run: `npx tsc --noEmit`
 Run: `npm run test`
