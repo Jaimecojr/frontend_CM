@@ -411,11 +411,11 @@ Expected: sin errores, sin regresiones.
 
 **Interfaces:** ninguna — configuración, no código de producción.
 
-- [ ] **Step 1: Instalar el proveedor de cobertura**
+- [x] **Step 1: Instalar el proveedor de cobertura**
 
 Run: `npm install --save-dev @vitest/coverage-v8`
 
-- [ ] **Step 2: Agregar el bloque `coverage` a `vitest.config.ts`**
+- [x] **Step 2: Agregar el bloque `coverage` a `vitest.config.ts`**
 
 ```ts
 export default defineConfig({
@@ -441,13 +441,13 @@ export default defineConfig({
 (Umbrales en `0` por ahora — se suben en la Tarea 13, verificación final, con el número real que
 deje este plan. Subirlos antes bloquearía checkpoints sin necesidad.)
 
-- [ ] **Step 3: Agregar script a `package.json`**
+- [x] **Step 3: Agregar script a `package.json`**
 
 ```json
 "test:coverage": "vitest run --coverage"
 ```
 
-- [ ] **Step 4: Verificar que corre**
+- [x] **Step 4: Verificar que corre**
 
 Run: `npm run test:coverage`
 Expected: genera el reporte (carpeta `coverage/`) sin error de configuración.
