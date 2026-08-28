@@ -591,24 +591,24 @@ genéricos (`useServerTable<T>`).
 **Contexto verificado:** línea 10, `[key: string]: any` y `Record<string, any>` (probablemente el
 tipo de los filtros/query params adicionales que acepta el hook).
 
-- [ ] **Step 1: Leer el uso real de ese índice/record**
+- [x] **Step 1: Leer el uso real de ese índice/record**
 
 Run: `grep -n "any" src/hooks/useServerTable.ts` y leer el contexto de cada ocurrencia.
 
-- [ ] **Step 2: Reemplazar por un tipo más preciso**
+- [x] **Step 2: Reemplazar por un tipo más preciso**
 
 Si es un diccionario de query params arbitrarios, `Record<string, string | number | boolean>` es
 casi siempre suficiente para filtros de URL (evita `any` sin necesitar tipar cada filtro posible
 por módulo). Si algún módulo pasa un valor que no calza (ej. un array), ajustar la unión según lo
 que el compilador señale en el Step 3.
 
-- [ ] **Step 3: Compilar y corregir callers**
+- [x] **Step 3: Compilar y corregir callers**
 
 Run: `npx tsc --noEmit`
 Expected: revisar cada módulo que use `useServerTable` con un filtro no cubierto por el nuevo tipo
 y ajustar el tipo del hook (no forzar un cast en el caller para silenciar el error).
 
-- [ ] **Step 4: Correr la suite**
+- [x] **Step 4: Correr la suite**
 
 Run: `npm run test`
 Expected: sin regresiones.
