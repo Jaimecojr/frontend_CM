@@ -73,7 +73,7 @@ export async function updateAgreement(id: number, payload: UpdateAgreementPayloa
   return result;
 }
 
-export async function updateAgreementState(agreement: ApiAgreement, newState: 1 | 0) {
+export async function updateAgreementState(id: ApiAgreement["id"], agreement: ApiAgreement, newState: 1 | 0) {
   await csrf();
   const payload: UpdateAgreementPayload = {
     name: agreement.name,
@@ -81,7 +81,7 @@ export async function updateAgreementState(agreement: ApiAgreement, newState: 1 
     state: newState,
     city_id: agreement.city_id,
   };
-  const result = await apiFetch<ApiResponse<ApiAgreement>>(`/api/agreements/${agreement.id}`, {
+  const result = await apiFetch<ApiResponse<ApiAgreement>>(`/api/agreements/${id}`, {
     method: "PUT",
     body: JSON.stringify(payload),
   });

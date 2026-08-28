@@ -6,8 +6,7 @@ import { CreateToolbarButton } from "@/components/data-table/CreateToolbarButton
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useClientTable } from "@/hooks/useClientTable";
-import { alert } from "@/lib/alert";
-import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import { useOptimisticToggle } from "@/hooks/useOptimisticToggle";
 import { useAuth } from "@/context/AuthContext";
 
 import { getAgreements, updateAgreementState, type ApiAgreement } from "./fetch";
@@ -26,29 +25,23 @@ export default function AgreementsPage() {
 
   const { data, setData, loading } = useClientTable(getAgreements);
 
-  const onToggleState = async (agreement: ApiAgreement) => {
-    const isActive = Number(agreement.state) === 1;
-    const nextState: 1 | 0 = isActive ? 0 : 1;
-
-    try {
-      const ok = await alert.confirm({
-        title: isActive ? "¿Inactivar convenio?" : "¿Activar convenio?",
-        text: isActive ? "El convenio quedará inactivo." : "El convenio quedará activo nuevamente.",
-        confirmButtonText: isActive ? "Sí, inactivar" : "Sí, activar",
-        cancelButtonText: "Cancelar",
-        onConfirm: async () => {
-          setData((prev) => prev.map((x) => (x.id === agreement.id ? { ...x, state: nextState } : x)));
-          await updateAgreementState(agreement, nextState);
-        },
-      });
-      if (ok) {
-        await alert.success("Actualizado", isActive ? "Convenio inactivado." : "Convenio activado.");
-      }
-    } catch (err) {
-      setData((prev) => prev.map((x) => (x.id === agreement.id ? { ...x, state: agreement.state } : x)));
-      await alert.error("Error", getApiErrorMessage(err));
-    }
-  };
+  const onToggleState = useOptimisticToggle<ApiAgreement, "state", 1 | 0>({
+    field: "state",
+    activeValue: 1,
+    inactiveValue: 0,
+    setData,
+    setMeta: () => {},
+    stadeFilter: "all",
+    updateFn: (id, nextState) => {
+      const agreement = data.find((a) => a.id === id);
+      if (!agreement) return Promise.reject(new Error("Convenio no encontrado en la lista actual"));
+      return updateAgreementState(id, agreement, nextState);
+    },
+    confirmTitle: (isActive) => (isActive ? "¿Inactivar convenio?" : "¿Activar convenio?"),
+    confirmText: (isActive) =>
+      isActive ? "El convenio quedará inactivo." : "El convenio quedará activo nuevamente.",
+    successMessage: (isActive) => (isActive ? "Convenio inactivado." : "Convenio activado."),
+  });
 
   const columns = useMemo(
     () => buildAgreementColumns({ onToggleState, canView, canManage }),
