@@ -1,9 +1,8 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { ApiError, getXsrfToken } from "@/lib/api";
 
-// csrf() y apiFetch() hacen fetch real y quedan fuera de esta tarea — ver
-// nota en el reporte de la Tarea 7 (dejado como brecha aceptada por el
-// controller ruling del plan).
+// csrf() and apiFetch() perform real network calls and are covered separately
+// (mocked network tests); only the pure helpers are tested here.
 
 describe("ApiError", () => {
   it("asigna message, status y data en el constructor", () => {
@@ -31,7 +30,7 @@ describe("ApiError", () => {
 
 describe("getXsrfToken", () => {
   afterEach(() => {
-    // Limpia la cookie para no filtrar estado entre tests.
+    // Clears the cookie so state doesn't leak between tests.
     document.cookie = "XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/";
   });
 

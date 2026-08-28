@@ -48,13 +48,13 @@ describe("useServerTable", () => {
 
     const { result } = renderHook(() => useServerTable(fetchFn, { debounceMs: 100 }));
 
-    // Deja que la carga inicial (efecto al montar) resuelva su promesa.
+    // Lets the initial load (mount effect) resolve its promise.
     await act(async () => {
       await vi.advanceTimersByTimeAsync(0);
     });
     expect(fetchFn).toHaveBeenCalledTimes(1);
 
-    // Primero mueve la página para comprobar que la búsqueda la reinicia a 1.
+    // First move the page to confirm that searching resets it back to 1.
     act(() => {
       result.current.tableProps.onPageChange(2);
     });
@@ -67,7 +67,7 @@ describe("useServerTable", () => {
       result.current.tableProps.onSearchChange("foo");
     });
 
-    // Antes de que venza el debounce no debería haber un nuevo fetch.
+    // Before the debounce window closes, there should be no new fetch.
     await act(async () => {
       await vi.advanceTimersByTimeAsync(50);
     });

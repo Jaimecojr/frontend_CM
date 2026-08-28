@@ -24,7 +24,7 @@ Las rutas públicas de la página de aterrizaje e informativas se encuentran en 
 - `src/app/web/layout.tsx`: Layout específico para la web que incluye el Navbar, el Footer y la importación de fuentes (ej. Material Symbols).
 - `src/app/web/page.tsx`: Página principal que ensambla las secciones mediante componentes modulares.
 - **Componentes Modulares:** Se ubican en `src/components/web/` (ej. `HeroSection.tsx`, `Navbar.tsx`, `Footer.tsx`). Deben usar colores quemados o variables CSS específicas del manual de marca en el HTML (ej. `bg-[#E8192C]`), de forma independiente a la paleta administrativa.
-- **Servicios Públicos:** Las integraciones con APIs sin autenticación (como consultas rápidas de estado para el afiliado) deben residir en `src/services/` (ej. `affiliateService.ts`).
+- **Servicios Públicos:** Las integraciones con APIs sin autenticación (como consultas rápidas de estado para el afiliado) residen en `src/components/web/`, junto a los componentes que las consumen (ej. `affiliateService.ts` al lado de `AffiliateConsultWidget.tsx`/`AffiliateStatusModal.tsx`) — no en un directorio `src/services/` separado.
 - **Fetch público vs. autenticado:** Las páginas del sitio web (`/web`) usan `publicFetch` (sin credenciales), que llama a los endpoints `/api/public/*` del backend. **Nunca usar `apiFetch`** (que envía cookies de Sanctum) en páginas públicas — rompería para usuarios no autenticados. El patrón base es:
   ```ts
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";

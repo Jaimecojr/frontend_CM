@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { memCache } from "@/lib/memCache";
 
-// El store es un Map a nivel de módulo (singleton compartido entre todos los
-// tests del archivo), así que cada test usa una clave propia con un prefijo
-// único para no pisar el estado de otro test.
+// The store is a module-level Map (a singleton shared across all tests in
+// this file), so each test uses its own uniquely prefixed key to avoid
+// stepping on another test's state.
 
 describe("memCache", () => {
   beforeEach(() => {
@@ -33,7 +33,7 @@ describe("memCache", () => {
     const primero = await memCache.get(key, 1_000, fn);
     expect(primero).toBe("primero");
 
-    // Avanza el tiempo más allá del TTL sin esperas reales.
+    // Advances time past the TTL without any real waiting.
     vi.advanceTimersByTime(1_001);
 
     const segundo = await memCache.get(key, 1_000, fn);
