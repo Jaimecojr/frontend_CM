@@ -7,14 +7,14 @@ type FetchFn<T> = (params: {
   search: string;
   page: number;
   per_page: number;
-  [key: string]: any;
+  [key: string]: string | number | undefined;
 }) => Promise<{ data: T[]; meta: { current_page: number; last_page: number; per_page: number; total: number } }>;
 
 type Options = {
   perPage?: number;
   defaultStade?: string;
   debounceMs?: number;
-  extraParams?: Record<string, any>;
+  extraParams?: Record<string, string | number | undefined>;
 };
 
 /**
