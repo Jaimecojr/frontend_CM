@@ -49,7 +49,7 @@ function resetCsrf() {
   csrfPromise = null;
 }
 
-export async function apiFetch<T = any>(path: string, options: RequestInit = {}): Promise<T> {
+export async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
   const method = (options.method ?? "GET").toUpperCase();
   const hasBody = method !== "GET" && method !== "HEAD";
 
@@ -75,11 +75,12 @@ export async function apiFetch<T = any>(path: string, options: RequestInit = {})
     res = await doFetch();
   }
 
-  const data = (await res.json().catch(() => ({}))) as any;
+  const data = (await res.json().catch(() => ({}))) as unknown;
 
   if (!res.ok) {
-    const message = data?.message || `Error ${res.status} al consumir API`;
-    throw new ApiError(message, res.status, data);
+    const errorData = data as ApiErrorData;
+    const message = errorData?.message || `Error ${res.status} al consumir API`;
+    throw new ApiError(message, res.status, errorData);
   }
 
   return data as T;
