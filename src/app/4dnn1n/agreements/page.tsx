@@ -25,11 +25,11 @@ export default function AgreementsPage() {
 
   const { data, setData, loading } = useClientTable(getAgreements);
 
-  // `columns` only memoizes on [canView, canManage] (ambos estables tras el primer render,
-  // porque esta página solo monta con auth ya resuelto), así que el `onToggleState` cerrado
-  // dentro de `columns` es siempre el de la primera invocación. Para que `updateFn` pueda
-  // resolver el convenio completo por id sin depender de ese cierre desactualizado, se lee
-  // siempre el `data` más reciente desde un ref en vez de la variable `data` del closure.
+  // `columns` only memoizes on [canView, canManage] (both stable after the first render,
+  // since this page only mounts once auth is already resolved), so the `onToggleState`
+  // closed over inside `columns` is always the one from the first invocation. For
+  // `updateFn` to resolve the full agreement by id without depending on that stale
+  // closure, it always reads the latest `data` from a ref instead of the closed-over variable.
   const dataRef = useRef(data);
   useEffect(() => {
     dataRef.current = data;
