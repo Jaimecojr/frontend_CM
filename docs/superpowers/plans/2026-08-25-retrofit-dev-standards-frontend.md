@@ -748,32 +748,45 @@ Expected: sin errores, sin regresiones.
 
 **Interfaces:** consume el resultado combinado de las Tareas 1-13.
 
-- [ ] **Step 1: Suite completa en verde**
+- [x] **Step 1: Suite completa en verde**
 
 Run: `npm run test`
 Expected: cero fallos.
+**Resultado real:** 9 archivos / 40 tests, todos en verde.
 
-- [ ] **Step 2: Tipos limpios**
+- [x] **Step 2: Tipos limpios**
 
 Run: `npx tsc --noEmit`
 Expected: cero errores.
+**Resultado real:** 0 errores.
 
-- [ ] **Step 3: Reporte de cobertura final**
+- [x] **Step 3: Reporte de cobertura final**
 
 Run: `npm run test:coverage`
 Expected: cobertura visiblemente mayor que el ~1.7% inicial. Anotar el % real logrado por este
 plan — no se espera llegar a 85% con este alcance (el spec ya documenta que cerrar toda la brecha
 de testing del frontend es trabajo de varias iteraciones), pero sí debe haber una mejora medible
 en `src/lib/`, `src/hooks/`, y los módulos `affiliates`/`appointments`.
+**Resultado real:** 5.83% statements / 6.13% branches / 3.09% functions / 6.15% lines a nivel de
+proyecto completo (~195-204 archivos bajo `src/**/*.{ts,tsx}`, reporte project-wide real, no solo
+de los archivos tocados por los tests). Por área: `src/hooks` 61.7% lines, `src/lib` 37.5% lines —
+las dos áreas que este plan targeteó directamente. Los módulos `affiliates`/`appointments` no
+subieron su cobertura de tests (la Tarea 12/13 fue solo separación de capas, sin tests nuevos),
+pero sí quedaron con una superficie de tipos (`types.ts`) más fácil de testear a futuro.
 
-- [ ] **Step 4: Confirmar `any`/`as any` restantes**
+- [x] **Step 4: Confirmar `any`/`as any` restantes**
 
 Run: `grep -rc ": any\|as any" src | awk -F: '{sum+=$2} END {print sum}'`
 Expected: número visiblemente menor a los ~64 originales (las Tareas 2, 9 y 10 cubren los casos de
 mayor impacto; el resto disperso en `fetch.ts`/componentes no auditados queda documentado como
 trabajo pendiente, no oculto).
+**Resultado real:** 51 (bajó de ~64). Los que quedan están documentados como pendiente en el ledger
+de la sesión (`.superpowers/sdd/2026-08-25-retrofit-dev-standards-frontend/progress.md`): sobre
+todo `initial as any` en los formularios de creación/edición (`CounselorForm`, `AgreementForm`,
+`FranchiseForm`, `DoctorForm`) y un puñado de `catch (err: any)` — ninguno tocado por este plan,
+fuera del alcance original de las Tareas 9-10 (`api.ts`/`useServerTable.ts` únicamente).
 
-- [ ] **Step 5: Revisar el diff completo antes de decidir integrar**
+- [x] **Step 5: Revisar el diff completo antes de decidir integrar**
 
 ```bash
 git diff --stat
@@ -782,5 +795,35 @@ git diff
 Expected: cambios concentrados en los archivos de este plan, sin modificaciones accidentales a
 `proxy.ts`, `AuthContext.tsx` (ya resuelto en 2026-08-07), ni a los módulos ya eliminados
 (carpetas de plantilla).
+**Resultado real:** confirmado — cero cambios en `proxy.ts`, `AuthContext.tsx`, ni en las 7 carpetas
+de plantilla ya eliminadas. 31 archivos modificados, concentrados en `tests/`, `src/lib/`,
+`src/hooks/`, los módulos `affiliates`/`appointments`/`agreements`/`counselors`/`franchises`/
+`doctors/specialties`, `vitest.config.ts`, `package.json` y este mismo archivo de plan.
 
 **Checkpoint final — el usuario decide cuándo y cómo commitear/pushear este conjunto de cambios.**
+
+---
+
+### Resumen de la revisión final de todo el branch
+
+Se ejecutó una revisión final de todo el branch (13 tareas + 1 fix de comentario + 1 ronda de fixes
+post-revisión) con un modelo de mayor capacidad, siguiendo `superpowers:subagent-driven-development`.
+Veredicto: **listo para mergear, sin hallazgos críticos.** Se corrigieron antes de este checkpoint:
+una referencia obsoleta en `CLAUDE.md` (apuntaba a `src/services/`, ya eliminado en la Tarea 5), 11
+comentarios en español en los tests nuevos de las Tareas 7-8 (debían estar en inglés, salvo los
+textos de `describe()`/`it()` que sí siguen en español por convención ya establecida del proyecto),
+y una config muerta (`all: true`) más un `as any` innecesario en `vitest.config.ts`.
+
+Quedan diferidos, documentados en el ledger de la sesión (no ocultos): un puñado de `any` fuera del
+alcance original de las Tareas 9-10 (`createRenovation`, `JSON.parse` en `useServerTable`, y los
+formularios `_components/*Form.tsx`), un desajuste menor de tipos en `api.ts` (`errorData` no
+opcional leído con `?.`), y la duplicación intencional y ya documentada de `apiFetch`/`csrf` entre
+`src/lib/api.ts` y `home/fetch.ts`.
+
+**Pendiente de verificación manual antes de integrar:** el toggle de `agreements` cambió de forma
+(nueva firma de `updateAgreementState`) — se recomienda togglear un convenio en el navegador y
+confirmar en la pestaña Network que el `PUT` sigue enviando `name`/`amount`/`city_id` correctos, y
+togglear la misma fila dos veces seguidas para confirmar que el `ref` se mantiene actualizado. Los
+otros 3 módulos migrados en la Tarea 3 (counselors/franchises/specialties) son texto-por-texto
+idénticos a su lógica anterior y tienen tests propios del hook — riesgo bajo, verificar cuando sea
+conveniente.
