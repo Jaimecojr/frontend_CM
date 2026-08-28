@@ -513,24 +513,24 @@ Expected: los nuevos tests pasan, sin afectar los 17 casos existentes.
 
 **Interfaces:** ninguna — solo tests.
 
-- [ ] **Step 1: Leer ambos hooks para confirmar su contrato exacto**
+- [x] **Step 1: Leer ambos hooks para confirmar su contrato exacto**
 
 Run: `cat src/hooks/useRequireAuth.ts src/hooks/useServerTable.ts`
 
-- [ ] **Step 2: Escribir tests para `useRequireAuth`**
+- [x] **Step 2: Escribir tests para `useRequireAuth`**
 
 Cubrir al menos: redirige (o marca `isReady`/`isAllowed` según la firma real) cuando no hay usuario
 autenticado; permite continuar cuando sí hay usuario; espera la hidratación de Zustand/localStorage
 antes de decidir (mencionado en la auditoría de documentación previa) — mockear el store de auth
 según corresponda.
 
-- [ ] **Step 3: Escribir tests para `useServerTable`**
+- [x] **Step 3: Escribir tests para `useServerTable`**
 
 Cubrir al menos: carga inicial dispara el fetch con la página/filtro por defecto; cambiar de página
 dispara un nuevo fetch con los parámetros correctos; el filtro de estado (`stadeFilter`) se
 propaga al fetch. Mockear la función de fetch inyectada, no hacer red real.
 
-- [ ] **Step 4: Correr los tests**
+- [x] **Step 4: Correr los tests**
 
 Run: `npm run test`
 Expected: todo en verde.
