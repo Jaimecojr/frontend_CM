@@ -9,6 +9,11 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./vitest.setup.ts"],
     exclude: ["node_modules", ".next"],
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "html"],
+      thresholds: { lines: 0, branches: 0, functions: 0, statements: 0 },
+    },
   },
   resolve: {
     alias: {
