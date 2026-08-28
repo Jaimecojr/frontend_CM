@@ -549,7 +549,7 @@ de comportamiento observable en tipos (no en runtime).
 
 **Contexto verificado:** `apiFetch<T = any>` (línea 52) y un `as any` (línea 78).
 
-- [ ] **Step 1: Cambiar el default del genérico**
+- [x] **Step 1: Cambiar el default del genérico**
 
 ```ts
 export async function apiFetch<T = unknown>(...)
@@ -557,13 +557,13 @@ export async function apiFetch<T = unknown>(...)
 Esto obliga a que cada caller que no especifique `T` reciba `unknown` en vez de `any` — es
 intencional: revela en el Step 3 qué callers no estaban tipando su respuesta.
 
-- [ ] **Step 2: Reemplazar el `as any` de la línea 78**
+- [x] **Step 2: Reemplazar el `as any` de la línea 78**
 
 Leer el contexto exacto de esa línea (probablemente un cast sobre el body de la respuesta antes de
 parsear JSON) y sustituirlo por un type guard o por el tipo real esperado en ese punto, según lo
 que el código haga ahí — no forzar `unknown` si eso rompe una operación necesaria más abajo.
 
-- [ ] **Step 3: Compilar y corregir los callers que queden en rojo**
+- [x] **Step 3: Compilar y corregir los callers que queden en rojo**
 
 Run: `npx tsc --noEmit`
 Expected: aparecerán errores en callers de `apiFetch(...)` sin genérico explícito, donde el
@@ -571,7 +571,7 @@ resultado ahora es `unknown` en vez de `any`. Para cada uno, agregar el genéric
 tipo real de la respuesta (ej. `apiFetch<ApiAffiliate[]>(...)`) — esto es trabajo real de tipado,
 no solo silenciar el error.
 
-- [ ] **Step 4: Correr la suite completa**
+- [x] **Step 4: Correr la suite completa**
 
 Run: `npm run test`
 Expected: sin regresiones de comportamiento (solo cambios de tipos).
