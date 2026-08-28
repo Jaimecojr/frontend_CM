@@ -6,8 +6,7 @@ import { CreateToolbarButton } from "@/components/data-table/CreateToolbarButton
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useClientTable } from "@/hooks/useClientTable";
-import { alert } from "@/lib/alert";
-import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import { useOptimisticToggle } from "@/hooks/useOptimisticToggle";
 import { useAuth } from "@/context/AuthContext";
 
 import { getFranchises, updateFranchiseState, type ApiFranchise } from "./fetch";
@@ -20,31 +19,21 @@ export default function FranchisePage() {
 
   const { data, setData, loading } = useClientTable(getFranchises);
 
-  const onToggleState = async (franchise: ApiFranchise) => {
-    const isActive = Number(franchise.state) === 1;
-    const nextState: 1 | 2 = isActive ? 2 : 1;
-
-    try {
-      const ok = await alert.confirm({
-        title: isActive ? "¿Inactivar franquicia?" : "¿Activar franquicia?",
-        text: isActive
-          ? "La franquicia quedará inactiva y no podrá usarse hasta reactivarla."
-          : "La franquicia quedará activa y podrá usarse nuevamente.",
-        confirmButtonText: isActive ? "Sí, inactivar" : "Sí, activar",
-        cancelButtonText: "Cancelar",
-        onConfirm: async () => {
-          setData((prev) => prev.map((u) => (u.id === franchise.id ? { ...u, state: nextState } : u)));
-          await updateFranchiseState(franchise.id, nextState);
-        },
-      });
-      if (ok) {
-        await alert.success("Actualizado", isActive ? "Franquicia inactivada." : "Franquicia activada.");
-      }
-    } catch (err) {
-      setData((prev) => prev.map((u) => (u.id === franchise.id ? { ...u, state: franchise.state } : u)));
-      await alert.error("Error", getApiErrorMessage(err));
-    }
-  };
+  const onToggleState = useOptimisticToggle<ApiFranchise, "state", 1 | 2>({
+    field: "state",
+    activeValue: 1,
+    inactiveValue: 2,
+    setData,
+    setMeta: () => {},
+    stadeFilter: "all",
+    updateFn: updateFranchiseState,
+    confirmTitle: (isActive) => (isActive ? "¿Inactivar franquicia?" : "¿Activar franquicia?"),
+    confirmText: (isActive) =>
+      isActive
+        ? "La franquicia quedará inactiva y no podrá usarse hasta reactivarla."
+        : "La franquicia quedará activa y podrá usarse nuevamente.",
+    successMessage: (isActive) => (isActive ? "Franquicia inactivada." : "Franquicia activada."),
+  });
 
   const columns = useMemo(
     () => buildUserColumns({ onToggleState, isSuperAdmin }),

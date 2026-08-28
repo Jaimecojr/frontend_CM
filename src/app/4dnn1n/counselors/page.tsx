@@ -6,8 +6,7 @@ import { CreateToolbarButton } from "@/components/data-table/CreateToolbarButton
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useClientTable } from "@/hooks/useClientTable";
-import { alert } from "@/lib/alert";
-import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import { useOptimisticToggle } from "@/hooks/useOptimisticToggle";
 import { useAuth } from "@/context/AuthContext";
 
 import { getCounselors, updateCounselorState, type ApiCounselor } from "./fetch";
@@ -20,31 +19,21 @@ export default function CounselorsPage() {
 
   const { data, setData, loading } = useClientTable(getCounselors);
 
-  const onToggleState = async (c: ApiCounselor) => {
-    const isActive = Number(c.state) === 1;
-    const nextState: 1 | 2 = isActive ? 2 : 1;
-
-    try {
-      const ok = await alert.confirm({
-        title: isActive ? "¿Inactivar asesor?" : "¿Activar asesor?",
-        text: isActive
-          ? "El asesor quedará inactivo y no podrá usarse hasta reactivarlo."
-          : "El asesor quedará activo y podrá usarse nuevamente.",
-        confirmButtonText: isActive ? "Sí, inactivar" : "Sí, activar",
-        cancelButtonText: "Cancelar",
-        onConfirm: async () => {
-          setData((prev) => prev.map((x) => (x.id === c.id ? { ...x, state: nextState } : x)));
-          await updateCounselorState(c.id, nextState);
-        },
-      });
-      if (ok) {
-        await alert.success("Actualizado", isActive ? "Asesor inactivado." : "Asesor activado.");
-      }
-    } catch (err) {
-      setData((prev) => prev.map((x) => (x.id === c.id ? { ...x, state: c.state } : x)));
-      await alert.error("Error", getApiErrorMessage(err));
-    }
-  };
+  const onToggleState = useOptimisticToggle<ApiCounselor, "state", 1 | 2>({
+    field: "state",
+    activeValue: 1,
+    inactiveValue: 2,
+    setData,
+    setMeta: () => {},
+    stadeFilter: "all",
+    updateFn: updateCounselorState,
+    confirmTitle: (isActive) => (isActive ? "¿Inactivar asesor?" : "¿Activar asesor?"),
+    confirmText: (isActive) =>
+      isActive
+        ? "El asesor quedará inactivo y no podrá usarse hasta reactivarlo."
+        : "El asesor quedará activo y podrá usarse nuevamente.",
+    successMessage: (isActive) => (isActive ? "Asesor inactivado." : "Asesor activado."),
+  });
 
   const columns = useMemo(
     () => buildCounselorColumns({ onToggleState, hasAccess }),

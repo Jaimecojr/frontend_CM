@@ -8,8 +8,7 @@ import { CreateToolbarButton } from "@/components/data-table/CreateToolbarButton
 import { Button } from "@/components/ui-elements/button";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useClientTable } from "@/hooks/useClientTable";
-import { alert } from "@/lib/alert";
-import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import { useOptimisticToggle } from "@/hooks/useOptimisticToggle";
 import { useAuth } from "@/context/AuthContext";
 import { getSpecialties, updateSpecialtyState, type ApiSpecialty } from "./fetch";
 import { buildSpecialtyColumns } from "./_components/columns";
@@ -26,30 +25,20 @@ export default function SpecialtiesPage() {
 
   const { data, setData, loading } = useClientTable(getSpecialties);
 
-  const onToggleState = async (item: ApiSpecialty) => {
-    const isActive = Number(item.state) === 1;
-    const nextState: 0 | 1 = isActive ? 0 : 1;
-
-    try {
-      const ok = await alert.confirm({
-        title: isActive ? "¿Inactivar especialidad?" : "¿Activar especialidad?",
-        text: isActive
-          ? "No aparecerá en los selectores al crear un médico."
-          : "Estará disponible nuevamente.",
-        confirmButtonText: "Sí, continuar",
-        onConfirm: async () => {
-          setData((prev) => prev.map((x) => (x.id === item.id ? { ...x, state: nextState } : x)));
-          await updateSpecialtyState(item.id, nextState);
-        },
-      });
-      if (ok) {
-        await alert.success("Actualizado", `La especialidad ha sido ${isActive ? "inactivada" : "activada"}.`);
-      }
-    } catch (err) {
-      setData((prev) => prev.map((x) => (x.id === item.id ? { ...x, state: item.state } : x)));
-      await alert.error("Error", getApiErrorMessage(err));
-    }
-  };
+  const onToggleState = useOptimisticToggle<ApiSpecialty, "state", 0 | 1>({
+    field: "state",
+    activeValue: 1,
+    inactiveValue: 0,
+    setData,
+    setMeta: () => {},
+    stadeFilter: "all",
+    updateFn: updateSpecialtyState,
+    confirmTitle: (isActive) => (isActive ? "¿Inactivar especialidad?" : "¿Activar especialidad?"),
+    confirmText: (isActive) =>
+      isActive ? "No aparecerá en los selectores al crear un médico." : "Estará disponible nuevamente.",
+    confirmButtonText: () => "Sí, continuar",
+    successMessage: (isActive) => `La especialidad ha sido ${isActive ? "inactivada" : "activada"}.`,
+  });
 
   const columns = useMemo(
     () => buildSpecialtyColumns({ onToggleState, hasAccess }),
