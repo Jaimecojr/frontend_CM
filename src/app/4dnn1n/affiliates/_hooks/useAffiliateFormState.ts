@@ -38,7 +38,7 @@ export function onlyDigits(value: string) {
 }
 
 // Safe number formatter
-function FormNumber(val: any, def: number) {
+function FormNumber(val: unknown, def: number): number {
   if (val !== undefined && val !== null) return Number(val);
   return def;
 }
