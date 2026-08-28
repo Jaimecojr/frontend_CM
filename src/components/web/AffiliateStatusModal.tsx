@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import dayjs from "dayjs";
-import { AffiliateStatusResponse } from "@/services/affiliateService";
+import { AffiliateStatusResponse } from "@/components/web/affiliateService";
 
 interface AffiliateStatusModalProps {
   result: AffiliateStatusResponse;

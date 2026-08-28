@@ -1,4 +1,4 @@
-// src/services/affiliateService.ts
+// src/components/web/affiliateService.ts
 
 import { csrf, getXsrfToken } from "@/lib/api";
 

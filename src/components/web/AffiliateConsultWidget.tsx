@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { checkAffiliateStatus, AffiliateStatusResponse } from "@/services/affiliateService";
+import { checkAffiliateStatus, AffiliateStatusResponse } from "@/components/web/affiliateService";
 import { AffiliateStatusModal } from "@/components/web/AffiliateStatusModal";
 
 export function AffiliateConsultWidget() {
