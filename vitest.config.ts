@@ -12,8 +12,10 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
+      all: true,
+      include: ["src/**/*.{ts,tsx}"],
       thresholds: { lines: 0, branches: 0, functions: 0, statements: 0 },
-    },
+    } as any,
   },
   resolve: {
     alias: {
