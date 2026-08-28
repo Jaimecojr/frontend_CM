@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { DataTable } from "@/components/data-table/DataTable";
 import { CreateToolbarButton } from "@/components/data-table/CreateToolbarButton";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
@@ -25,6 +25,16 @@ export default function AgreementsPage() {
 
   const { data, setData, loading } = useClientTable(getAgreements);
 
+  // `columns` only memoizes on [canView, canManage] (ambos estables tras el primer render,
+  // porque esta página solo monta con auth ya resuelto), así que el `onToggleState` cerrado
+  // dentro de `columns` es siempre el de la primera invocación. Para que `updateFn` pueda
+  // resolver el convenio completo por id sin depender de ese cierre desactualizado, se lee
+  // siempre el `data` más reciente desde un ref en vez de la variable `data` del closure.
+  const dataRef = useRef(data);
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
+
   const onToggleState = useOptimisticToggle<ApiAgreement, "state", 1 | 0>({
     field: "state",
     activeValue: 1,
@@ -33,7 +43,7 @@ export default function AgreementsPage() {
     setMeta: () => {},
     stadeFilter: "all",
     updateFn: (id, nextState) => {
-      const agreement = data.find((a) => a.id === id);
+      const agreement = dataRef.current.find((a) => a.id === id);
       if (!agreement) return Promise.reject(new Error("Convenio no encontrado en la lista actual"));
       return updateAgreementState(id, agreement, nextState);
     },
