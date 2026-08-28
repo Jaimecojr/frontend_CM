@@ -470,12 +470,12 @@ una nevera", según la auditoría previa) — usar esa documentación existente 
 contrato exacto (`get`/`set`/`invalidatePrefix`) antes de escribir los tests, en vez de adivinar la
 API por el nombre.
 
-- [ ] **Step 1: Leer los 3 archivos para confirmar su API pública exacta**
+- [x] **Step 1: Leer los 3 archivos para confirmar su API pública exacta**
 
 Run: `cat src/lib/api.ts src/lib/memCache.ts src/lib/format-number.ts` (o el nombre real del
 archivo de formateo numérico — confirmar con `ls src/lib/`).
 
-- [ ] **Step 2: Escribir tests para `memCache`**
+- [x] **Step 2: Escribir tests para `memCache`**
 
 Crear `tests/lib/memCache.test.ts` cubriendo al menos: `set` seguido de `get` devuelve el valor
 cacheado antes de que expire el TTL; `get` devuelve `undefined`/`null` tras `invalidatePrefix` con
@@ -483,20 +483,20 @@ un prefijo que coincide; `get` sigue devolviendo el valor si `invalidatePrefix` 
 clave. Usar `vi.useFakeTimers()` si el TTL depende de tiempo real, para no depender de esperas
 reales en el test.
 
-- [ ] **Step 3: Escribir tests para el helper de formateo numérico**
+- [x] **Step 3: Escribir tests para el helper de formateo numérico**
 
 Crear el test correspondiente cubriendo: formato con miles/decimales según el patrón real de
 `CLAUDE.md` (`'$ ' . number_format(...)` es el patrón del backend — confirmar el equivalente real
 en TS antes de escribir las aserciones), y el caso de valor `0`/`null`/`undefined` si la función lo
 maneja explícitamente.
 
-- [ ] **Step 4: Escribir tests para las funciones puras de `api.ts` que no dependan de red**
+- [x] **Step 4: Escribir tests para las funciones puras de `api.ts` que no dependan de red**
 
 Si `api.ts` mezcla funciones puras (ej. construcción de headers, manejo de CSRF token en memoria)
 con las que sí hacen `fetch` real, testear solo las puras aquí; las que hacen red se cubren con
 mocks en la Tarea 11 (cuando se elimine el `any` de `apiFetch`).
 
-- [ ] **Step 5: Correr los tests**
+- [x] **Step 5: Correr los tests**
 
 Run: `npm run test`
 Expected: los nuevos tests pasan, sin afectar los 17 casos existentes.
