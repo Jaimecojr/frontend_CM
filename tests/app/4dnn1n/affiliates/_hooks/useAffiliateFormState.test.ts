@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { useAffiliateFormState } from "./useAffiliateFormState";
+import { useAffiliateFormState } from "@/app/4dnn1n/affiliates/_hooks/useAffiliateFormState";
 
-vi.mock("../fetch", () => ({
+vi.mock("@/app/4dnn1n/affiliates/fetch", () => ({
   getActiveFranchises: vi.fn().mockResolvedValue([{ id: 1, name: "Franquicia A" }]),
   getActiveCounselors: vi.fn().mockResolvedValue([{ id: 1, name: "Ana", lastname: "Gómez" }]),
   getActiveAgreements: vi.fn().mockResolvedValue([{ id: 1, name: "Convenio A", amount: 150000 }]),
@@ -15,7 +15,7 @@ vi.mock("@/lib/alert", () => ({
   alert: { warn: vi.fn(), success: vi.fn(), error: vi.fn() },
 }));
 
-import { checkAffiliateIdCard } from "../fetch";
+import { checkAffiliateIdCard } from "@/app/4dnn1n/affiliates/fetch";
 
 async function renderWithCatalogsLoaded(args: Parameters<typeof useAffiliateFormState>[0]) {
   const view = renderHook(() => useAffiliateFormState(args));

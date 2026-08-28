@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addOneYear, getTodayString } from "./dates";
+import { addOneYear, getTodayString } from "@/lib/dates";
 
 describe("getTodayString", () => {
   it("devuelve la fecha de hoy en formato YYYY-MM-DD", () => {

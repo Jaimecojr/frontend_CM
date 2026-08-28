@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
-import { useOptimisticToggle } from "./useOptimisticToggle";
+import { useOptimisticToggle } from "@/hooks/useOptimisticToggle";
 import { alert } from "@/lib/alert";
 
 vi.mock("@/lib/alert", () => ({
