@@ -630,26 +630,26 @@ Expected: sin regresiones.
 negocio de vigencia — excede el máximo de 8 líneas de `documentation.md` y no es un bloque JSDoc
 formal.
 
-- [ ] **Step 1: Convertir el comentario de `dates.ts` a JSDoc de máximo 8 líneas**
+- [x] **Step 1: Convertir el comentario de `dates.ts` a JSDoc de máximo 8 líneas**
 
 Leer el comentario actual completo, resumir la regla de negocio a lo esencial (qué decide, por qué
 se usa fecha local y no UTC) en un bloque `/** ... */` de máximo 8 líneas sobre la función
 `addOneYear`. Si el detalle extendido es valioso, moverlo a un comentario inline junto a la línea
 específica que lo necesita, no en el header.
 
-- [ ] **Step 2: Agregar JSDoc a los exports públicos de `affiliateService.ts` (o su nueva ubicación)**
+- [x] **Step 2: Agregar JSDoc a los exports públicos de `affiliateService.ts` (o su nueva ubicación)**
 
 Para cada función exportada sin documentación, agregar un bloque JSDoc explicando el WHY solo si
 hay una decisión no obvia — si el método es un CRUD directo sin lógica, no forzar un comentario
 (`documentation.md`: "si el código es obvio, no lo comentes").
 
-- [ ] **Step 3: Agregar JSDoc a `useRequireAuth.ts`**
+- [x] **Step 3: Agregar JSDoc a `useRequireAuth.ts`**
 
 Documentar por qué espera la hidratación antes de decidir redirigir (mencionado en la auditoría de
 documentación previa como ejemplo ya existente de buen WHY en otro hook — replicar ese nivel de
 detalle, no más).
 
-- [ ] **Step 4: Verificar tipos y tests**
+- [x] **Step 4: Verificar tipos y tests**
 
 Run: `npx tsc --noEmit`
 Run: `npm run test`
