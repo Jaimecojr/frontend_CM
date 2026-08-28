@@ -15,6 +15,14 @@ export interface AffiliateStatusResponse {
   };
 }
 
+/**
+ * Consults an affiliate's status by document number for the public-site widget.
+ *
+ * Always resolves to an `AffiliateStatusResponse` — network failures and non-ok
+ * HTTP responses are caught and converted into `{ success: false, message }`
+ * instead of throwing. This lets the calling widget just check `.success` without
+ * a try/catch around every call.
+ */
 export async function checkAffiliateStatus(
   docNum: string
 ): Promise<AffiliateStatusResponse> {
