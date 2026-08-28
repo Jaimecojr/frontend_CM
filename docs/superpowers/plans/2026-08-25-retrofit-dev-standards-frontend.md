@@ -678,16 +678,16 @@ Expected: sin cambios de comportamiento.
 uso de `memCache`. No se transcribió su contenido completo en la investigación previa — el
 ejecutor debe leer el archivo real antes de dividirlo.
 
-- [ ] **Step 1: Leer el archivo completo y listar sus tipos vs sus funciones**
+- [x] **Step 1: Leer el archivo completo y listar sus tipos vs sus funciones**
 
 Run: `grep -n "^export type\|^export interface\|^export async function\|^export function" src/app/4dnn1n/affiliates/fetch.ts`
 
-- [ ] **Step 2: Mover los tipos a `types.ts`**
+- [x] **Step 2: Mover los tipos a `types.ts`**
 
 Crear `src/app/4dnn1n/affiliates/types.ts` con todos los `export type`/`export interface`
 encontrados en el Step 1, tal cual (sin cambiar su forma).
 
-- [ ] **Step 3: Dejar `fetch.ts` como capa de aplicación**
+- [x] **Step 3: Dejar `fetch.ts` como capa de aplicación**
 
 En `fetch.ts`, eliminar las definiciones de tipo movidas y agregar:
 ```ts
@@ -697,12 +697,12 @@ export type { ApiAffiliate, CreateAffiliatePayload /* ...resto */ } from "./type
 (El re-export mantiene compatibilidad con cualquier consumidor que siga importando desde
 `./fetch` — no hace falta tocar esos archivos en esta tarea.)
 
-- [ ] **Step 4: Verificar tipos**
+- [x] **Step 4: Verificar tipos**
 
 Run: `npx tsc --noEmit`
 Expected: sin errores — el re-export desde `fetch.ts` preserva todos los imports existentes.
 
-- [ ] **Step 5: Correr la suite**
+- [x] **Step 5: Correr la suite**
 
 Run: `npm run test`
 Expected: sin regresiones (incluye el test de `useAffiliateFormState`, que consume tipos de este
