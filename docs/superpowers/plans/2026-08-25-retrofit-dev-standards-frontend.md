@@ -720,19 +720,19 @@ módulo).
 
 **Interfaces:** mismo patrón exacto de la Tarea 12, aplicado a `appointments`.
 
-- [ ] **Step 1: Leer el archivo completo y listar sus tipos vs sus funciones**
+- [x] **Step 1: Leer el archivo completo y listar sus tipos vs sus funciones**
 
 Run: `grep -n "^export type\|^export interface\|^export async function\|^export function" src/app/4dnn1n/appointments/fetch.ts`
 
-- [ ] **Step 2: Mover los tipos a `types.ts`**
+- [x] **Step 2: Mover los tipos a `types.ts`**
 
 Mismo procedimiento que la Tarea 12, Step 2.
 
-- [ ] **Step 3: Dejar `fetch.ts` como capa de aplicación con re-export de tipos**
+- [x] **Step 3: Dejar `fetch.ts` como capa de aplicación con re-export de tipos**
 
 Mismo procedimiento que la Tarea 12, Step 3.
 
-- [ ] **Step 4: Verificar tipos y tests**
+- [x] **Step 4: Verificar tipos y tests**
 
 Run: `npx tsc --noEmit`
 Run: `npm run test`
