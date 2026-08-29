@@ -354,6 +354,28 @@ describe("AppointmentForm", () => {
       expect(screen.queryByText("El teléfono debe tener exactamente 10 dígitos")).not.toBeInTheDocument();
     });
 
+    it("canSubmit es false si aún no se ha seleccionado ningún paciente", async () => {
+      // Arrange & Act: "Guardar Cita" is unconditionally rendered, even before any search
+      await renderForm();
+
+      // Assert
+      expect(screen.getByRole("button", { name: /guardar cita/i })).toBeDisabled();
+    });
+
+    it("canSubmit es false si hay paciente pero aún no se ha seleccionado médico", async () => {
+      // Arrange
+      const affiliate = makeAffiliate();
+      await renderForm();
+      await searchAndGetAffiliate(affiliate);
+
+      // Act: select the patient but stop before picking a specialty/doctor
+      fireEvent.click(screen.getByText(`${affiliate.name} ${affiliate.lastname}`));
+      await screen.findByText(/especialidad y médico/i);
+
+      // Assert
+      expect(screen.getByRole("button", { name: /guardar cita/i })).toBeDisabled();
+    });
+
     it("canSubmit es false mientras falten fecha y hora, aunque el resto ya esté completo", async () => {
       // Arrange & Act
       await renderForm();
