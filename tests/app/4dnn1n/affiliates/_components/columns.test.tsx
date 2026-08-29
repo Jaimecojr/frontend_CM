@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { buildAffiliateColumns } from "@/app/4dnn1n/affiliates/_components/columns";
 import type { ApiAffiliate } from "@/app/4dnn1n/affiliates/types";
 
@@ -65,12 +66,11 @@ describe("buildAffiliateColumns", () => {
       const fullNameColumn = columns.find((col) => col.id === "full_name");
       expect(fullNameColumn).toBeDefined();
       expect(fullNameColumn?.header).toBe("Nombres");
+      expect((fullNameColumn as any).accessorFn).toBeDefined();
 
-      if ((fullNameColumn as any)?.accessorFn) {
-        const affiliate = createMockAffiliate({ name: "Juan", lastname: "Pérez" });
-        const result = (fullNameColumn as any).accessorFn(affiliate);
-        expect(result).toBe("Juan Pérez");
-      }
+      const affiliate = createMockAffiliate({ name: "Juan", lastname: "Pérez" });
+      const result = (fullNameColumn as any).accessorFn(affiliate);
+      expect(result).toBe("Juan Pérez");
     });
 
     it("columna movil retorna movil si existe", () => {
@@ -84,12 +84,11 @@ describe("buildAffiliateColumns", () => {
 
       const movilColumn = columns.find((col) => (col as any).accessorKey === "movil");
       expect(movilColumn).toBeDefined();
+      expect((movilColumn as any).accessorFn).toBeDefined();
 
-      if ((movilColumn as any)?.accessorFn) {
-        const affiliate = createMockAffiliate({ movil: "3001234567", phone: null });
-        const result = (movilColumn as any).accessorFn(affiliate);
-        expect(result).toBe("3001234567");
-      }
+      const affiliate = createMockAffiliate({ movil: "3001234567", phone: null });
+      const result = (movilColumn as any).accessorFn(affiliate);
+      expect(result).toBe("3001234567");
     });
 
     it("columna movil retorna phone si movil es null", () => {
@@ -102,12 +101,12 @@ describe("buildAffiliateColumns", () => {
       });
 
       const movilColumn = columns.find((col) => (col as any).accessorKey === "movil");
+      expect(movilColumn).toBeDefined();
+      expect((movilColumn as any).accessorFn).toBeDefined();
 
-      if ((movilColumn as any)?.accessorFn) {
-        const affiliate = createMockAffiliate({ movil: null, phone: "6011234567" });
-        const result = (movilColumn as any).accessorFn(affiliate);
-        expect(result).toBe("6011234567");
-      }
+      const affiliate = createMockAffiliate({ movil: null, phone: "6011234567" });
+      const result = (movilColumn as any).accessorFn(affiliate);
+      expect(result).toBe("6011234567");
     });
 
     it("columna movil retorna '-' si ambos movil y phone son null", () => {
@@ -120,12 +119,12 @@ describe("buildAffiliateColumns", () => {
       });
 
       const movilColumn = columns.find((col) => (col as any).accessorKey === "movil");
+      expect(movilColumn).toBeDefined();
+      expect((movilColumn as any).accessorFn).toBeDefined();
 
-      if ((movilColumn as any)?.accessorFn) {
-        const affiliate = createMockAffiliate({ movil: null, phone: null });
-        const result = (movilColumn as any).accessorFn(affiliate);
-        expect(result).toBe("-");
-      }
+      const affiliate = createMockAffiliate({ movil: null, phone: null });
+      const result = (movilColumn as any).accessorFn(affiliate);
+      expect(result).toBe("-");
     });
   });
 
@@ -154,14 +153,14 @@ describe("buildAffiliateColumns", () => {
       });
 
       const stateColumn = columns.find((col) => col.id === "state");
+      expect(stateColumn).toBeDefined();
+      expect((stateColumn as any).accessorFn).toBeDefined();
 
-      if ((stateColumn as any)?.accessorFn) {
-        const affiliateActive = createMockAffiliate({ stade: 1 });
-        const affiliateInactive = createMockAffiliate({ stade: 2 });
+      const affiliateActive = createMockAffiliate({ stade: 1 });
+      const affiliateInactive = createMockAffiliate({ stade: 2 });
 
-        expect((stateColumn as any).accessorFn(affiliateActive)).toBe(1);
-        expect((stateColumn as any).accessorFn(affiliateInactive)).toBe(2);
-      }
+      expect((stateColumn as any).accessorFn(affiliateActive)).toBe(1);
+      expect((stateColumn as any).accessorFn(affiliateInactive)).toBe(2);
     });
 
     it("state column cell renders 'Activo' badge con clases verdes para stade=1", () => {
@@ -176,17 +175,15 @@ describe("buildAffiliateColumns", () => {
       const stateColumn = columns.find((col) => col.id === "state");
       expect(stateColumn?.cell).toBeDefined();
 
-      if (stateColumn?.cell) {
-        const affiliate = createMockAffiliate({ stade: 1 });
-        const mockRow = { original: affiliate };
-        const cellResult = (stateColumn.cell as any)({ row: mockRow });
+      const affiliate = createMockAffiliate({ stade: 1 });
+      const mockRow = { original: affiliate };
+      const cellResult = (stateColumn!.cell as any)({ row: mockRow });
 
-        // Render and check the content
-        const { container } = render(cellResult);
-        expect(screen.getByText("Activo")).toBeInTheDocument();
-        const badge = container.querySelector("span");
-        expect(badge?.className).toContain("green");
-      }
+      // Render and check the content
+      const { container } = render(cellResult);
+      expect(screen.getByText("Activo")).toBeInTheDocument();
+      const badge = container.querySelector("span");
+      expect(badge?.className).toContain("bg-green-100");
     });
 
     it("state column cell renders 'Inactivo' badge con clases rojas para stade=2", () => {
@@ -199,18 +196,17 @@ describe("buildAffiliateColumns", () => {
       });
 
       const stateColumn = columns.find((col) => col.id === "state");
+      expect(stateColumn?.cell).toBeDefined();
 
-      if (stateColumn?.cell) {
-        const affiliate = createMockAffiliate({ stade: 2 });
-        const mockRow = { original: affiliate };
-        const cellResult = (stateColumn.cell as any)({ row: mockRow });
+      const affiliate = createMockAffiliate({ stade: 2 });
+      const mockRow = { original: affiliate };
+      const cellResult = (stateColumn!.cell as any)({ row: mockRow });
 
-        // Render and check the content
-        const { container } = render(cellResult);
-        expect(screen.getByText("Inactivo")).toBeInTheDocument();
-        const badge = container.querySelector("span");
-        expect(badge?.className).toContain("red");
-      }
+      // Render and check the content
+      const { container } = render(cellResult);
+      expect(screen.getByText("Inactivo")).toBeInTheDocument();
+      const badge = container.querySelector("span");
+      expect(badge?.className).toContain("bg-red-100");
     });
   });
 
@@ -253,19 +249,18 @@ describe("buildAffiliateColumns", () => {
       });
 
       const actionsColumn = columns.find((col) => col.id === "actions");
+      expect(actionsColumn?.cell).toBeDefined();
 
-      if (actionsColumn?.cell) {
-        const affiliate = createMockAffiliate({ stade: 1 });
-        const mockRow = { original: affiliate };
-        const cellResult = (actionsColumn.cell as any)({ row: mockRow });
+      const affiliate = createMockAffiliate({ stade: 1 });
+      const mockRow = { original: affiliate };
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
-        // Render and verify toggle button does not exist
-        render(cellResult);
-        const toggleButtons = screen.queryAllByRole("button", {
-          name: /inactivar|activar/i,
-        });
-        expect(toggleButtons.length).toBe(0);
-      }
+      // Render and verify toggle button does not exist
+      render(cellResult);
+      const toggleButtons = screen.queryAllByRole("button", {
+        name: /inactivar|activar/i,
+      });
+      expect(toggleButtons.length).toBe(0);
     });
 
     it("columna actions renderiza toggle button cuando canToggle=true", () => {
@@ -279,20 +274,19 @@ describe("buildAffiliateColumns", () => {
       });
 
       const actionsColumn = columns.find((col) => col.id === "actions");
+      expect(actionsColumn?.cell).toBeDefined();
 
-      if (actionsColumn?.cell) {
-        const affiliate = createMockAffiliate({ stade: 1 });
-        const mockRow = { original: affiliate };
-        const cellResult = (actionsColumn.cell as any)({ row: mockRow });
+      const affiliate = createMockAffiliate({ stade: 1 });
+      const mockRow = { original: affiliate };
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
-        // Render and verify toggle button exists
-        render(cellResult);
-        const toggleButton = screen.getByRole("button", { name: /inactivar/i });
-        expect(toggleButton).toBeInTheDocument();
-      }
+      // Render and verify toggle button exists
+      render(cellResult);
+      const toggleButton = screen.getByRole("button", { name: /inactivar/i });
+      expect(toggleButton).toBeInTheDocument();
     });
 
-    it("toggle button invoca onToggleState con el afiliado al hacer click", () => {
+    it("toggle button invoca onToggleState con el afiliado al hacer click", async () => {
       const onToggleMock = vi.fn();
       const columns = buildAffiliateColumns({
         onToggleState: onToggleMock,
@@ -303,20 +297,23 @@ describe("buildAffiliateColumns", () => {
       });
 
       const actionsColumn = columns.find((col) => col.id === "actions");
+      expect(actionsColumn?.cell).toBeDefined();
 
-      if (actionsColumn?.cell) {
-        const affiliate = createMockAffiliate({ stade: 1, id: 42 });
-        const mockRow = { original: affiliate };
-        const cellResult = (actionsColumn.cell as any)({ row: mockRow });
+      const affiliate = createMockAffiliate({ stade: 1, id: 42 });
+      const mockRow = { original: affiliate };
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
-        // Render and verify toggle button can be clicked
-        render(cellResult);
-        const toggleButton = screen.getByRole("button", { name: /inactivar/i });
-        expect(toggleButton).toBeInTheDocument();
-      }
+      // Render and click the toggle button
+      render(cellResult);
+      const toggleButton = screen.getByRole("button", { name: /inactivar/i });
+      await userEvent.click(toggleButton);
+
+      // Verify the mock was called with the correct affiliate
+      expect(onToggleMock).toHaveBeenCalledWith(affiliate);
+      expect(onToggleMock).toHaveBeenCalledTimes(1);
     });
 
-    it("columna actions renderiza botón carnet cuando carnet='no' y movil tiene 10 dígitos", () => {
+    it("columna actions renderiza botón carnet cuando carnet='no' y movil tiene 10 dígitos", async () => {
       const onSendCarnetMock = vi.fn();
       const columns = buildAffiliateColumns({
         onToggleState: vi.fn(),
@@ -327,19 +324,23 @@ describe("buildAffiliateColumns", () => {
       });
 
       const actionsColumn = columns.find((col) => col.id === "actions");
+      expect(actionsColumn?.cell).toBeDefined();
 
-      if (actionsColumn?.cell) {
-        const affiliate = createMockAffiliate({ carnet: "no", movil: "3001234567" });
-        const mockRow = { original: affiliate };
-        const cellResult = (actionsColumn.cell as any)({ row: mockRow });
+      const affiliate = createMockAffiliate({ carnet: "no", movil: "3001234567", id: 99 });
+      const mockRow = { original: affiliate };
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
-        // Render and verify carnet button exists
-        render(cellResult);
-        const carnetButton = screen.getByRole("button", {
-          name: /enviar carnet por whatsapp/i,
-        });
-        expect(carnetButton).toBeInTheDocument();
-      }
+      // Render and verify carnet button exists
+      render(cellResult);
+      const carnetButton = screen.getByRole("button", {
+        name: /enviar carnet por whatsapp/i,
+      });
+      expect(carnetButton).toBeInTheDocument();
+
+      // Click the carnet button and verify the mock is called with the correct affiliate
+      await userEvent.click(carnetButton);
+      expect(onSendCarnetMock).toHaveBeenCalledWith(affiliate);
+      expect(onSendCarnetMock).toHaveBeenCalledTimes(1);
     });
 
     it("columna actions NO renderiza botón carnet cuando carnet='si'", () => {
@@ -353,19 +354,18 @@ describe("buildAffiliateColumns", () => {
       });
 
       const actionsColumn = columns.find((col) => col.id === "actions");
+      expect(actionsColumn?.cell).toBeDefined();
 
-      if (actionsColumn?.cell) {
-        const affiliate = createMockAffiliate({ carnet: "si", movil: "3001234567" });
-        const mockRow = { original: affiliate };
-        const cellResult = (actionsColumn.cell as any)({ row: mockRow });
+      const affiliate = createMockAffiliate({ carnet: "si", movil: "3001234567" });
+      const mockRow = { original: affiliate };
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
-        // Render and verify carnet button does NOT exist
-        render(cellResult);
-        const carnetButtons = screen.queryAllByRole("button", {
-          name: /enviar carnet por whatsapp/i,
-        });
-        expect(carnetButtons.length).toBe(0);
-      }
+      // Render and verify carnet button does NOT exist
+      render(cellResult);
+      const carnetButtons = screen.queryAllByRole("button", {
+        name: /enviar carnet por whatsapp/i,
+      });
+      expect(carnetButtons.length).toBe(0);
     });
 
     it("columna actions NO renderiza botón carnet cuando movil no cumple /^\\d{10}$/", () => {
@@ -379,20 +379,19 @@ describe("buildAffiliateColumns", () => {
       });
 
       const actionsColumn = columns.find((col) => col.id === "actions");
+      expect(actionsColumn?.cell).toBeDefined();
 
-      if (actionsColumn?.cell) {
-        // Test with invalid movil format (not 10 digits)
-        const affiliate = createMockAffiliate({ carnet: "no", movil: "300123" });
-        const mockRow = { original: affiliate };
-        const cellResult = (actionsColumn.cell as any)({ row: mockRow });
+      // Test with invalid movil format (not 10 digits)
+      const affiliate = createMockAffiliate({ carnet: "no", movil: "300123" });
+      const mockRow = { original: affiliate };
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
-        // Render and verify carnet button does NOT exist
-        render(cellResult);
-        const carnetButtons = screen.queryAllByRole("button", {
-          name: /enviar carnet por whatsapp/i,
-        });
-        expect(carnetButtons.length).toBe(0);
-      }
+      // Render and verify carnet button does NOT exist
+      render(cellResult);
+      const carnetButtons = screen.queryAllByRole("button", {
+        name: /enviar carnet por whatsapp/i,
+      });
+      expect(carnetButtons.length).toBe(0);
     });
 
     it("columna actions renderiza links para Ver y Modificar siempre que hasAccess=true", () => {
@@ -405,19 +404,18 @@ describe("buildAffiliateColumns", () => {
       });
 
       const actionsColumn = columns.find((col) => col.id === "actions");
+      expect(actionsColumn?.cell).toBeDefined();
 
-      if (actionsColumn?.cell) {
-        const affiliate = createMockAffiliate({ id: 5 });
-        const mockRow = { original: affiliate };
-        const cellResult = (actionsColumn.cell as any)({ row: mockRow });
+      const affiliate = createMockAffiliate({ id: 5 });
+      const mockRow = { original: affiliate };
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
-        // Render and verify links exist
-        render(cellResult);
-        const viewLink = screen.getByRole("link", { name: /ver/i });
-        const editLink = screen.getByRole("link", { name: /modificar/i });
-        expect(viewLink).toHaveAttribute("href", "/4dnn1n/affiliates/5");
-        expect(editLink).toHaveAttribute("href", "/4dnn1n/affiliates/5/edit");
-      }
+      // Render and verify links exist
+      render(cellResult);
+      const viewLink = screen.getByRole("link", { name: /ver/i });
+      const editLink = screen.getByRole("link", { name: /modificar/i });
+      expect(viewLink).toHaveAttribute("href", "/4dnn1n/affiliates/5");
+      expect(editLink).toHaveAttribute("href", "/4dnn1n/affiliates/5/edit");
     });
   });
 
