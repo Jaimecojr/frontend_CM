@@ -107,7 +107,7 @@ describe("AffiliateForm", () => {
   describe("visibilidad según mode", () => {
     it("modo 'view': todos los inputs están deshabilitados y no hay botones de acción", () => {
       // Arrange & Act
-      const { container } = renderForm({ isView: true, isEdit: false });
+      const { container } = renderForm({ isView: true, isEdit: false, isCreate: false });
 
       // Assert
       const inputs = container.querySelectorAll("input");
@@ -133,7 +133,7 @@ describe("AffiliateForm", () => {
 
     it("modo 'edit': oculta 'Fecha de Venta' standalone, muestra radios 'Renovar' y 'Carnet Entregado'", () => {
       // Arrange & Act
-      renderForm({ isView: false, isEdit: true });
+      renderForm({ isView: false, isEdit: true, isCreate: false });
 
       // Assert
       expect(screen.queryByText(/fecha de venta/i)).not.toBeInTheDocument();
@@ -145,7 +145,7 @@ describe("AffiliateForm", () => {
   describe("sección de renovación (solo en isEdit)", () => {
     it("wantsRenovation 'no': no muestra el bloque 'Nueva vigencia'", () => {
       // Arrange & Act
-      renderForm({ isEdit: true, wantsRenovation: "no" });
+      renderForm({ isEdit: true, isCreate: false, wantsRenovation: "no" });
 
       // Assert
       expect(screen.queryByText(/nueva vigencia/i)).not.toBeInTheDocument();
@@ -155,6 +155,7 @@ describe("AffiliateForm", () => {
       // Arrange & Act
       renderForm({
         isEdit: true,
+        isCreate: false,
         wantsRenovation: "si",
         renovationDateIni: "2026-01-01",
         renovationValue: "150000",

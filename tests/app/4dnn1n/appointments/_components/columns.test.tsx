@@ -1,5 +1,10 @@
 import { describe, expect, it, vi, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+// This file uses `fireEvent.click` instead of `userEvent.click` (unlike the sibling
+// affiliates/_components/columns.test.tsx). `userEvent` schedules its interactions
+// through real timers internally, which deadlocks once `vi.useFakeTimers()` is active
+// below unless those timers are advanced manually — `fireEvent` dispatches synchronously
+// and sidesteps that entirely. Do not "fix" this for consistency with the sibling file.
 import type { ApiAppointment } from "@/app/4dnn1n/appointments/types";
 import { buildAppointmentColumns } from "@/app/4dnn1n/appointments/_components/columns";
 

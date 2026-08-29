@@ -74,7 +74,7 @@ describe("NewAffiliatePage", () => {
   });
 
   // ──── Step 1: permisos y prefill ────
-  describe("Step 1: permisos y prefill", () => {
+  describe("permisos y prefill", () => {
     it("muestra el mensaje de permisos insuficientes para user.type: 3", () => {
       // Arrange
       mockAuth(3);
@@ -196,7 +196,7 @@ describe("NewAffiliatePage", () => {
   });
 
   // ──── Step 1 (cont.): handleCreate ────
-  describe("Step 1: handleCreate", () => {
+  describe("handleCreate", () => {
     it("sin from: confirma, crea el afiliado, no marca conversión, y redirige a /4dnn1n/affiliates", async () => {
       // Arrange
       mockAuth(1);

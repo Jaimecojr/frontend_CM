@@ -140,7 +140,7 @@ describe("EditAffiliatePage", () => {
   });
 
   // ──── Step 3.1: estados de carga/permisos ────
-  describe("Step 3.1: carga y permisos", () => {
+  describe("carga y permisos", () => {
     it("muestra el FormPageSkeleton mientras authLoading es true, sin renderizar el formulario", async () => {
       // Arrange
       mockAuth(1, true);
@@ -173,7 +173,7 @@ describe("EditAffiliatePage", () => {
   });
 
   // ──── Step 3.2/3.3: caso especial de handleUpdate ────
-  describe("Step 3.2/3.3: handleUpdate y el payload de renovación", () => {
+  describe("handleUpdate y el payload de renovación", () => {
     it("SIN payload.renovation: llama updateAffiliate con 'validity' eliminado y NO llama createRenovation", async () => {
       // Arrange
       mockAuth(1);

@@ -39,7 +39,7 @@ function createMockAffiliate(overrides: Partial<ApiAffiliate> = {}): ApiAffiliat
 
 describe("buildAffiliateColumns", () => {
   // ──── Step 1: Test columns id_card, full_name, movil ────
-  describe("Step 1: Basic columns (id_card, full_name, movil)", () => {
+  describe("Columnas básicas (id_card, full_name, movil)", () => {
     it("retorna columna id_card con accessorKey correcto", () => {
       const columns = buildAffiliateColumns({
         onToggleState: vi.fn(),
@@ -129,7 +129,7 @@ describe("buildAffiliateColumns", () => {
   });
 
   // ──── Step 2: Test state column (badge) ────
-  describe("Step 2: State column badge (Activo/Inactivo)", () => {
+  describe("Badge de la columna state (Activo/Inactivo)", () => {
     it("retorna columna state con id correcto", () => {
       const columns = buildAffiliateColumns({
         onToggleState: vi.fn(),
@@ -143,7 +143,7 @@ describe("buildAffiliateColumns", () => {
       expect(stateColumn).toBeDefined();
     });
 
-    it("state column accessorFn retorna el valor de stade", () => {
+    it("accessorFn de la columna state retorna el valor de stade", () => {
       const columns = buildAffiliateColumns({
         onToggleState: vi.fn(),
         onSendCarnet: vi.fn(),
@@ -163,7 +163,7 @@ describe("buildAffiliateColumns", () => {
       expect((stateColumn as any).accessorFn(affiliateInactive)).toBe(2);
     });
 
-    it("state column cell renders 'Activo' badge con clases verdes para stade=1", () => {
+    it("la celda de la columna state renderiza el badge 'Activo' con clases verdes para stade=1", () => {
       const columns = buildAffiliateColumns({
         onToggleState: vi.fn(),
         onSendCarnet: vi.fn(),
@@ -186,7 +186,7 @@ describe("buildAffiliateColumns", () => {
       expect(badge?.className).toContain("bg-green-100");
     });
 
-    it("state column cell renders 'Inactivo' badge con clases rojas para stade=2", () => {
+    it("la celda de la columna state renderiza el badge 'Inactivo' con clases rojas para stade=2", () => {
       const columns = buildAffiliateColumns({
         onToggleState: vi.fn(),
         onSendCarnet: vi.fn(),
@@ -211,7 +211,7 @@ describe("buildAffiliateColumns", () => {
   });
 
   // ──── Step 3: Test actions column gates ────
-  describe("Step 3: Actions column gates (hasAccess, canToggle, carnet)", () => {
+  describe("Condiciones de la columna actions (hasAccess, canToggle, carnet)", () => {
     it("NO incluye columna actions cuando hasAccess=false", () => {
       const columns = buildAffiliateColumns({
         onToggleState: vi.fn(),
@@ -420,7 +420,7 @@ describe("buildAffiliateColumns", () => {
   });
 
   // ──── Step 4: Type checking ────
-  describe("Column definitions type safety", () => {
+  describe("Seguridad de tipos en las definiciones de columnas", () => {
     it("retorna array de ColumnDef<ApiAffiliate>[]", () => {
       const columns = buildAffiliateColumns({
         onToggleState: vi.fn(),
@@ -437,7 +437,7 @@ describe("buildAffiliateColumns", () => {
       expect(hasAccessorKeyOrId).toBe(true);
     });
 
-    it("columna state has correct meta properties", () => {
+    it("la columna state tiene las propiedades meta correctas", () => {
       const columns = buildAffiliateColumns({
         onToggleState: vi.fn(),
         onSendCarnet: vi.fn(),

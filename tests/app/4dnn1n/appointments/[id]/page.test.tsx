@@ -77,7 +77,7 @@ describe("ViewAppointmentPage", () => {
   });
 
   // ──── Step 3: datos cargados ────
-  describe("Step 3: getAppointment resuelve", () => {
+  describe("getAppointment resuelve", () => {
     it("formatea la fecha, la moneda, y usa el nombre de owner cuando está presente", async () => {
       // Arrange
       mockParams("5");

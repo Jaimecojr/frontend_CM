@@ -99,7 +99,7 @@ describe("EditAppointmentPage", () => {
   });
 
   // ──── Step 4: estados de carga/permisos ────
-  describe("Step 4: carga y permisos", () => {
+  describe("carga y permisos", () => {
     it("muestra el FormPageSkeleton mientras authLoading es true, sin renderizar el formulario", async () => {
       // Arrange
       mockAuth(1, true);
@@ -165,7 +165,7 @@ describe("EditAppointmentPage", () => {
   });
 
   // ──── Step 4: handleSubmit ────
-  describe("Step 4: handleSubmit", () => {
+  describe("handleSubmit", () => {
     it("llama updateAppointment(id, payload) directamente (sin alert.confirm), muestra alert.success y redirige", async () => {
       // Arrange
       mockAuth(1);
@@ -186,10 +186,10 @@ describe("EditAppointmentPage", () => {
       expect(pushMock).toHaveBeenCalledWith("/4dnn1n/appointments");
     });
 
-    // Verified finding (documented in the task report, not fixed here): unlike
-    // `affiliates/[id]/edit/page.tsx`, this page's `handleSubmit` has no
-    // try/catch around `updateAppointment` — a rejection propagates unhandled
-    // out of the `onSubmit` prop instead of surfacing through `alert.error`.
+    // Verified finding (not fixed here): `handleSubmit` in
+    // `src/app/4dnn1n/appointments/[id]/edit/page.tsx` has no try/catch around
+    // `updateAppointment`, so a rejected promise propagates unhandled out of
+    // the `onSubmit` prop instead of surfacing through `alert.error` to the user.
     it("si updateAppointment rechaza, la promesa retornada por onSubmit se propaga sin manejar (sin alert.error, sin redirect)", async () => {
       // Arrange
       mockAuth(1);

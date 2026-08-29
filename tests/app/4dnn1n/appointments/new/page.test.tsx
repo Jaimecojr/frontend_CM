@@ -74,7 +74,7 @@ describe("NewAppointmentPage", () => {
   });
 
   // ──── Step 2: gate de permisos ────
-  describe("Step 2: gate de permisos", () => {
+  describe("gate de permisos", () => {
     it("muestra el mensaje de permisos insuficientes para user.type: 3", () => {
       // Arrange
       mockAuth(3);
@@ -114,7 +114,7 @@ describe("NewAppointmentPage", () => {
   });
 
   // ──── Step 2 (cont.): handleSubmit ────
-  describe("Step 2: handleSubmit", () => {
+  describe("handleSubmit", () => {
     it("crea la cita, muestra alert.success y redirige a /4dnn1n/appointments", async () => {
       // Arrange
       mockAuth(1);

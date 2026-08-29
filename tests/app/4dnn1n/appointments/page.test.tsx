@@ -127,7 +127,7 @@ describe("AppointmentsPage", () => {
   });
 
   // ──── Step 1: mutua exclusión de filtros fecha/período ────
-  describe("Step 1: filtros de fecha/período", () => {
+  describe("filtros de fecha/período", () => {
     it("estado inicial: defaultStade='all' y extraParams={date: undefined, period: 'pending'}", () => {
       // Arrange
       mockAuth(1);
@@ -212,7 +212,7 @@ describe("AppointmentsPage", () => {
   });
 
   // ──── Step 1 (cont.): onDelete ────
-  describe("Step 1: flujo de onDelete", () => {
+  describe("flujo de onDelete", () => {
     it("confirma, elimina la cita, filtra data y decrementa el total en 1", async () => {
       // Arrange
       const appointment = createMockAppointment({ id: 42, name: "Carlos" });

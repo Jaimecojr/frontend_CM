@@ -112,7 +112,7 @@ describe("AffiliatesPage", () => {
   });
 
   // ──── Step 2: Permission gate for "Crear Afiliado" ────
-  describe("Step 2: gate de permisos", () => {
+  describe("gate de permisos", () => {
     it("no renderiza el botón 'Crear Afiliado' cuando el usuario no tiene acceso (type: 3)", () => {
       // Arrange
       mockAuth(3);
@@ -140,7 +140,7 @@ describe("AffiliatesPage", () => {
   });
 
   // ──── Step 3: onSendCarnet flow ────
-  describe("Step 3: flujo de onSendCarnet", () => {
+  describe("flujo de onSendCarnet", () => {
     it("confirma, envía el carnet, actualiza el afiliado a carnet='si' y muestra alert.success", async () => {
       // Arrange
       const affiliate = createMockAffiliate({ id: 7, carnet: "no", movil: "3001234567" });
@@ -212,7 +212,7 @@ describe("AffiliatesPage", () => {
   });
 
   // ──── Step 4: NoteModal wiring ────
-  describe("Step 4: wiring del NoteModal", () => {
+  describe("wiring del NoteModal", () => {
     it("no renderiza el NoteModal cuando no hay noteTarget seleccionado", () => {
       // Arrange
       mockAuth(1);
@@ -224,10 +224,11 @@ describe("AffiliatesPage", () => {
       // Assert
       expect(screen.queryByPlaceholderText(/escribe la observación/i)).not.toBeInTheDocument();
 
-      // NOTA (hallazgo, no es un caso de prueba): el botón que dispara
-      // `onAddNote` (y por lo tanto abriría el NoteModal) está comentado como
-      // dead code en columns.tsx — no hay ninguna interacción real de UI que
-      // permita alcanzarlo. Ver reporte de la tarea para el detalle.
+      // NOTE (finding, not a test case): the button that triggers `onAddNote`
+      // (which would open the NoteModal) is commented out as dead code in
+      // `src/app/4dnn1n/affiliates/_components/columns.tsx`, making the
+      // NoteModal-open-via-onAddNote path unreachable through real UI
+      // interaction — that's why it isn't covered by a test here.
     });
   });
 });

@@ -13,7 +13,7 @@ import {
   getCitiesByDepartment,
 } from "@/app/4dnn1n/appointments/fetch";
 import { apiFetch, csrf } from "@/lib/api";
-import { memCache, TTL_GEO, TTL_CATALOG, TTL_LIST } from "@/lib/memCache";
+import { memCache, TTL_GEO, TTL_CATALOG } from "@/lib/memCache";
 
 vi.mock("@/lib/api", () => ({
   apiFetch: vi.fn(),
