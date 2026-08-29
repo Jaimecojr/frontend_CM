@@ -284,7 +284,7 @@ describe("buildAppointmentColumns", () => {
       const links = container.querySelectorAll("a");
       const buttons = container.querySelectorAll("button");
 
-      expect(links.length).toBeGreaterThan(0);
+      expect(links.length).toBe(1); // Only Ver link visible
       expect(buttons.length).toBe(0); // No delete button when past
     });
 
@@ -310,8 +310,8 @@ describe("buildAppointmentColumns", () => {
       const links = container.querySelectorAll("a");
       const buttons = container.querySelectorAll("button");
 
-      expect(links.length).toBeGreaterThan(0);
-      expect(buttons.length).toBe(0);
+      expect(links.length).toBe(1); // Only Ver link visible
+      expect(buttons.length).toBe(0); // No edit or delete buttons
     });
 
     it("muestra los 3 botones (Ver/Editar/Eliminar) cuando hasAccess es true y la cita es futura", () => {
@@ -361,7 +361,7 @@ describe("buildAppointmentColumns", () => {
       const { container } = render(<>{cellContent}</>);
       const deleteButton = container.querySelector("button");
 
-      expect(deleteButton).toBeDefined();
+      expect(deleteButton).not.toBeNull();
 
       fireEvent.click(deleteButton!);
 
