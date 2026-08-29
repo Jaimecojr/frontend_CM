@@ -150,15 +150,22 @@ describe("affiliates/fetch", () => {
   describe("updateAffiliateState", () => {
     it("llama csrf antes que apiFetch", async () => {
       // Arrange
-      (apiFetch as any).mockResolvedValue({});
-      const csrfMock = csrf as any;
+      const callOrder: string[] = [];
+      (csrf as any).mockImplementation(async () => {
+        callOrder.push("csrf");
+        return undefined;
+      });
+      (apiFetch as any).mockImplementation(async () => {
+        callOrder.push("apiFetch");
+        return {};
+      });
 
       // Act
       await updateAffiliateState(5, 2);
 
       // Assert
-      expect(csrfMock).toHaveBeenCalled();
-      expect(apiFetch).toHaveBeenCalled();
+      expect(callOrder[0]).toBe("csrf");
+      expect(callOrder[1]).toBe("apiFetch");
     });
 
     it("llama apiFetch con método PATCH y body con stade", async () => {
@@ -416,25 +423,32 @@ describe("affiliates/fetch", () => {
   describe("createAffiliate", () => {
     it("llama csrf antes que apiFetch", async () => {
       // Arrange
-      const payload = { name: "Juan", lastname: "Pérez" };
-      (apiFetch as any).mockResolvedValue({});
-      const csrfMock = csrf as any;
+      const callOrder: string[] = [];
+      (csrf as any).mockImplementation(async () => {
+        callOrder.push("csrf");
+        return undefined;
+      });
+      (apiFetch as any).mockImplementation(async () => {
+        callOrder.push("apiFetch");
+        return {};
+      });
+      const payload = { name: "Juan", lastname: "Pérez" } as any;
 
       // Act
-      await createAffiliate(payload as any);
+      await createAffiliate(payload);
 
       // Assert
-      expect(csrfMock).toHaveBeenCalled();
-      expect(apiFetch).toHaveBeenCalled();
+      expect(callOrder[0]).toBe("csrf");
+      expect(callOrder[1]).toBe("apiFetch");
     });
 
     it("llama apiFetch con POST a /api/affiliates", async () => {
       // Arrange
-      const payload = { name: "Juan", lastname: "Pérez" };
+      const payload = { name: "Juan", lastname: "Pérez" } as any;
       (apiFetch as any).mockResolvedValue({});
 
       // Act
-      await createAffiliate(payload as any);
+      await createAffiliate(payload);
 
       // Assert
       expect(apiFetch).toHaveBeenCalledWith("/api/affiliates", {
@@ -458,25 +472,32 @@ describe("affiliates/fetch", () => {
   describe("updateAffiliate", () => {
     it("llama csrf antes que apiFetch", async () => {
       // Arrange
-      const payload = { name: "Juan" };
-      (apiFetch as any).mockResolvedValue({});
-      const csrfMock = csrf as any;
+      const callOrder: string[] = [];
+      (csrf as any).mockImplementation(async () => {
+        callOrder.push("csrf");
+        return undefined;
+      });
+      (apiFetch as any).mockImplementation(async () => {
+        callOrder.push("apiFetch");
+        return {};
+      });
+      const payload = { name: "Juan" } as any;
 
       // Act
-      await updateAffiliate(5, payload as any);
+      await updateAffiliate(5, payload);
 
       // Assert
-      expect(csrfMock).toHaveBeenCalled();
-      expect(apiFetch).toHaveBeenCalled();
+      expect(callOrder[0]).toBe("csrf");
+      expect(callOrder[1]).toBe("apiFetch");
     });
 
     it("llama apiFetch con PATCH a /api/affiliates/{id}", async () => {
       // Arrange
-      const payload = { name: "Juan" };
+      const payload = { name: "Juan" } as any;
       (apiFetch as any).mockResolvedValue({});
 
       // Act
-      await updateAffiliate(5, payload as any);
+      await updateAffiliate(5, payload);
 
       // Assert
       expect(apiFetch).toHaveBeenCalledWith("/api/affiliates/5", {
@@ -501,16 +522,23 @@ describe("affiliates/fetch", () => {
   describe("createRenovation", () => {
     it("llama csrf antes que apiFetch", async () => {
       // Arrange
+      const callOrder: string[] = [];
+      (csrf as any).mockImplementation(async () => {
+        callOrder.push("csrf");
+        return undefined;
+      });
+      (apiFetch as any).mockImplementation(async () => {
+        callOrder.push("apiFetch");
+        return {};
+      });
       const payload = { affiliate_id: 1, date_ini: "2025-01-01", date_end: "2026-01-01", date_payment: "2025-01-01", value: 10000 };
-      (apiFetch as any).mockResolvedValue({});
-      const csrfMock = csrf as any;
 
       // Act
       await createRenovation(payload);
 
       // Assert
-      expect(csrfMock).toHaveBeenCalled();
-      expect(apiFetch).toHaveBeenCalled();
+      expect(callOrder[0]).toBe("csrf");
+      expect(callOrder[1]).toBe("apiFetch");
     });
 
     it("llama apiFetch con POST a /api/renovations", async () => {
@@ -630,15 +658,22 @@ describe("affiliates/fetch", () => {
   describe("createAffiliateNote", () => {
     it("llama csrf antes que apiFetch", async () => {
       // Arrange
-      (apiFetch as any).mockResolvedValue({ data: { id: 1, body: "Nota" } });
-      const csrfMock = csrf as any;
+      const callOrder: string[] = [];
+      (csrf as any).mockImplementation(async () => {
+        callOrder.push("csrf");
+        return undefined;
+      });
+      (apiFetch as any).mockImplementation(async () => {
+        callOrder.push("apiFetch");
+        return { data: { id: 1, body: "Nota" } };
+      });
 
       // Act
       await createAffiliateNote(5, "Nota");
 
       // Assert
-      expect(csrfMock).toHaveBeenCalled();
-      expect(apiFetch).toHaveBeenCalled();
+      expect(callOrder[0]).toBe("csrf");
+      expect(callOrder[1]).toBe("apiFetch");
     });
 
     it("llama apiFetch con POST y body { body }", async () => {
@@ -672,15 +707,22 @@ describe("affiliates/fetch", () => {
   describe("deleteAffiliateNote", () => {
     it("llama csrf antes que apiFetch", async () => {
       // Arrange
-      (apiFetch as any).mockResolvedValue({});
-      const csrfMock = csrf as any;
+      const callOrder: string[] = [];
+      (csrf as any).mockImplementation(async () => {
+        callOrder.push("csrf");
+        return undefined;
+      });
+      (apiFetch as any).mockImplementation(async () => {
+        callOrder.push("apiFetch");
+        return {};
+      });
 
       // Act
       await deleteAffiliateNote(5, 9);
 
       // Assert
-      expect(csrfMock).toHaveBeenCalled();
-      expect(apiFetch).toHaveBeenCalled();
+      expect(callOrder[0]).toBe("csrf");
+      expect(callOrder[1]).toBe("apiFetch");
     });
 
     it("llama apiFetch con DELETE a /api/affiliates/{id}/notes/{noteId}", async () => {
@@ -701,15 +743,22 @@ describe("affiliates/fetch", () => {
   describe("sendCarnet", () => {
     it("llama csrf antes que apiFetch", async () => {
       // Arrange
-      (apiFetch as any).mockResolvedValue({ message: "Enviado" });
-      const csrfMock = csrf as any;
+      const callOrder: string[] = [];
+      (csrf as any).mockImplementation(async () => {
+        callOrder.push("csrf");
+        return undefined;
+      });
+      (apiFetch as any).mockImplementation(async () => {
+        callOrder.push("apiFetch");
+        return { message: "Enviado" };
+      });
 
       // Act
       await sendCarnet(5);
 
       // Assert
-      expect(csrfMock).toHaveBeenCalled();
-      expect(apiFetch).toHaveBeenCalled();
+      expect(callOrder[0]).toBe("csrf");
+      expect(callOrder[1]).toBe("apiFetch");
     });
 
     it("llama apiFetch con POST a /api/affiliates/{id}/carnet", async () => {
@@ -741,15 +790,22 @@ describe("affiliates/fetch", () => {
   describe("markMembershipFormConverted", () => {
     it("llama csrf antes que apiFetch", async () => {
       // Arrange
-      (apiFetch as any).mockResolvedValue({});
-      const csrfMock = csrf as any;
+      const callOrder: string[] = [];
+      (csrf as any).mockImplementation(async () => {
+        callOrder.push("csrf");
+        return undefined;
+      });
+      (apiFetch as any).mockImplementation(async () => {
+        callOrder.push("apiFetch");
+        return {};
+      });
 
       // Act
       await markMembershipFormConverted(5);
 
       // Assert
-      expect(csrfMock).toHaveBeenCalled();
-      expect(apiFetch).toHaveBeenCalled();
+      expect(callOrder[0]).toBe("csrf");
+      expect(callOrder[1]).toBe("apiFetch");
     });
 
     it("llama apiFetch con PATCH a /api/membership-forms/{id}/convert", async () => {
