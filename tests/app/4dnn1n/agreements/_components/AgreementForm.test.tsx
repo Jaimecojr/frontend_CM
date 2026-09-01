@@ -118,7 +118,7 @@ describe("AgreementForm", () => {
       // Act
       await renderForm({
         mode: "edit",
-        initial: { id: 5, city: { id: 3, name: "Medellín", department_id: 7 } } as any,
+        initial: { id: 5, city: { id: 3, name: "Medellín", department_id: 7 } },
       });
 
       // Assert: the department effect picks up `department_id: 7` from `initial.city`
@@ -134,13 +134,21 @@ describe("AgreementForm", () => {
       });
     });
 
-    it("cambiar de departamento manualmente recarga getCitiesByDepartment con el nuevo id y limpia la ciudad seleccionada", async () => {
-      // Arrange: "Antioquia" has one city; "Valle" has none, so switching to it
-      // must clear the previously auto-selected city rather than keep it around.
+    it("cambiar de departamento manualmente recarga getCitiesByDepartment con el nuevo id y reemplaza la ciudad seleccionada", async () => {
+      // Arrange: "Antioquia" and "Valle" have disjoint city lists (no shared
+      // ids), so switching between them can only show the right city if
+      // `form.city_id` itself was updated by the reload — not merely because
+      // the old id doesn't happen to match anything in the new options.
+      // (Asserting an empty display value here would pass even if the
+      // `setForm` call inside the reload effect were dropped by a regression:
+      // SearchableSelect renders "" for a `value` that isn't in `options`
+      // regardless of what that stale value actually is — see
+      // SearchableSelect.tsx:38,102-106. A second, non-empty, disjoint list
+      // makes the assertion depend on the real value the reload wrote.)
       (getDepartments as any).mockResolvedValue(makeDepartments());
       (getCitiesByDepartment as any)
         .mockResolvedValueOnce([{ id: 3, name: "Medellín", department_id: 7 }] as City[])
-        .mockResolvedValueOnce([] as City[]);
+        .mockResolvedValueOnce([{ id: 9, name: "Cali", department_id: 8 }] as City[]);
       await renderForm();
 
       // Act: pick "Antioquia" -> its only city gets auto-selected
@@ -153,12 +161,13 @@ describe("AgreementForm", () => {
       // Act: switch to "Valle"
       await openAndSelect(/^departamento/i, "Valle");
 
-      // Assert: the new department's (empty) city list is requested, and once it
-      // resolves the stale "Medellín" selection — which doesn't belong to
-      // Valle — is cleared instead of being kept.
+      // Assert: the new department's city list is requested, and once it
+      // resolves the field shows Valle's own auto-selected city ("Cali") —
+      // a positive value that could only render if `form.city_id` was
+      // actually updated to `9`, not just "cleared away from 3".
       await waitFor(() => {
         expect(getCitiesByDepartment).toHaveBeenCalledWith(8);
-        expect(getFieldContainer(/^ciudad/i).querySelector("input")).toHaveValue("");
+        expect(getFieldContainer(/^ciudad/i).querySelector("input")).toHaveValue("Cali");
       });
     });
   });
@@ -168,7 +177,7 @@ describe("AgreementForm", () => {
       // Arrange & Act
       const { container } = await renderForm({
         mode: "view",
-        initial: { id: 42, name: "Convenio X" } as any,
+        initial: { id: 42, name: "Convenio X" },
       });
 
       // Assert
@@ -195,7 +204,7 @@ describe("AgreementForm", () => {
 
     it("modo 'edit': muestra 'Código' deshabilitado y los inputs de datos habilitados", async () => {
       // Arrange & Act
-      await renderForm({ mode: "edit", initial: { id: 5, name: "Convenio X" } as any });
+      await renderForm({ mode: "edit", initial: { id: 5, name: "Convenio X" } });
 
       // Assert
       expect(getFieldContainer(/^código/i).querySelector("input")).toBeDisabled();
