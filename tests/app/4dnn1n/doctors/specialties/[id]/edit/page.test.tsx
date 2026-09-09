@@ -81,7 +81,7 @@ describe("EditSpecialtyPage", () => {
     (getSpecialty as any).mockResolvedValue(createMockSpecialty());
   });
 
-  // ──── Step 4: check ordering (loading → dato → permiso, sin authLoading) ────
+  // ──── Step 4: check ordering (loading → data → permission, no authLoading) ────
   describe("orden de checks (loading → dato → permiso, sin authLoading)", () => {
     it("loading: true → muestra FormPageSkeleton con fields=2, sin renderizar el formulario", () => {
       // Arrange
