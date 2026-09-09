@@ -706,7 +706,7 @@ describe("buildSpecialtyDoctorColumns", () => {
       const cellResult = (tarifaColumn!.cell as any)({ row: mockRow });
 
       render(cellResult);
-      // toLocaleString("es-CO") para 150000 produce "150.000"
+      // toLocaleString("es-CO") on 150000 produces "150.000"
       expect(screen.getByText("$150.000")).toBeInTheDocument();
     });
 
@@ -726,8 +726,7 @@ describe("buildSpecialtyDoctorColumns", () => {
       const columns = buildSpecialtyDoctorColumns();
       const tarifaColumn = columns.find((col) => col.id === "tarifa");
 
-      const doctor = createMockDoctor({ value_agreement: 0 });
-      doctor.value_agreement = undefined as any;
+      const doctor = createMockDoctor({ value_agreement: undefined });
       const mockRow = { original: doctor };
       const cellResult = (tarifaColumn!.cell as any)({ row: mockRow });
 
