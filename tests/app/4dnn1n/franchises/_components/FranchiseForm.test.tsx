@@ -376,7 +376,19 @@ describe("FranchiseForm", () => {
         },
       });
 
-      // Assert: view mode renders no action buttons at all (isView -> no Guardar button)
+      // Assert: this is the closest available proxy for `canSubmit`'s
+      // `if (isView) return false` branch, not a direct observation of it.
+      // `canSubmit` has exactly one consumer in the whole component —
+      // `disabled={!canSubmit || saving}` on the Guardar button — and that
+      // button is itself wrapped in a separate `{!isView && (...)}` JSX guard,
+      // so it never renders in view mode regardless of what the memo
+      // computes. That means this assertion would still pass even if the
+      // `isView` branch were deleted from `canSubmit` entirely: there is no
+      // way to force the button to render while `mode="view"` and no other
+      // consumer to observe the memo's value through. Same
+      // unreachable-through-rendering situation as the `alert.warn` branch
+      // documented below (Step 3.4) — asserting the button's absence is the
+      // strongest available evidence for this rule given the current wiring.
       expect(screen.queryByRole("button", { name: /guardar/i })).not.toBeInTheDocument();
     });
   });
