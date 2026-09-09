@@ -123,7 +123,7 @@ describe("DoctorsPage", () => {
 
   // ──── Step 1: initial catalog loading ────
   describe("carga inicial de departamentos y especialidades", () => {
-    it("llama getDepartments() y getSpecialties() al montar", () => {
+    it("llama getDepartments() y getSpecialties() al montar", async () => {
       // Arrange
       mockAuth(1);
       mockServerTable();
@@ -134,6 +134,9 @@ describe("DoctorsPage", () => {
       // Assert
       expect(getDepartments).toHaveBeenCalled();
       expect(getSpecialties).toHaveBeenCalled();
+      // Flush the pending catalog-fetch promises (and the state updates their
+      // `.then` callbacks trigger) inside `act()` before the test ends.
+      await waitFor(() => expect(getSpecialties).toHaveBeenCalled());
     });
 
     it("el datalist de especialidades sólo incluye las que tienen state === 1", async () => {
@@ -163,7 +166,7 @@ describe("DoctorsPage", () => {
 
   // ──── Step 1 (cont.): department → city cascade ────
   describe("filtro de departamento/ciudad", () => {
-    it("sin departamento seleccionado, el select de ciudad está disabled", () => {
+    it("sin departamento seleccionado, el select de ciudad está disabled", async () => {
       // Arrange
       mockAuth(1);
       mockServerTable();
@@ -174,6 +177,9 @@ describe("DoctorsPage", () => {
       // Assert
       expect(screen.getByTitle("Filtrar por Ciudad")).toBeDisabled();
       expect(getCitiesByDepartment).not.toHaveBeenCalled();
+      // Flush the pending catalog-fetch promises (and the state updates their
+      // `.then` callbacks trigger) inside `act()` before the test ends.
+      await waitFor(() => expect(getSpecialties).toHaveBeenCalled());
     });
 
     it("al seleccionar un departamento, invoca getCitiesByDepartment(id) y habilita el select de ciudad", async () => {
@@ -236,7 +242,7 @@ describe("DoctorsPage", () => {
 
   // ──── Step 1 (cont.): hasAccess gate for the "Gestionar Especialidades" button ────
   describe("gate hasAccess para el botón 'Gestionar Especialidades'", () => {
-    it("hasAccess: true (type 1) → botón visible con el href correcto", () => {
+    it("hasAccess: true (type 1) → botón visible con el href correcto", async () => {
       // Arrange
       mockAuth(1);
       mockServerTable();
@@ -247,9 +253,26 @@ describe("DoctorsPage", () => {
       // Assert
       const link = screen.getByRole("link", { name: /gestionar especialidades/i });
       expect(link).toHaveAttribute("href", "/4dnn1n/doctors/specialties");
+      // Flush the pending catalog-fetch promises (and the state updates their
+      // `.then` callbacks trigger) inside `act()` before the test ends.
+      await waitFor(() => expect(getSpecialties).toHaveBeenCalled());
     });
 
-    it("hasAccess: false (type 3) → botón no renderizado", () => {
+    it("hasAccess: true (type 2) → botón también visible", async () => {
+      // Arrange
+      mockAuth(2);
+      mockServerTable();
+
+      // Act
+      render(<DoctorsPage />);
+
+      // Assert
+      const link = screen.getByRole("link", { name: /gestionar especialidades/i });
+      expect(link).toHaveAttribute("href", "/4dnn1n/doctors/specialties");
+      await waitFor(() => expect(getSpecialties).toHaveBeenCalled());
+    });
+
+    it("hasAccess: false (type 3) → botón no renderizado", async () => {
       // Arrange
       mockAuth(3);
       mockServerTable();
@@ -259,12 +282,15 @@ describe("DoctorsPage", () => {
 
       // Assert
       expect(screen.queryByRole("link", { name: /gestionar especialidades/i })).not.toBeInTheDocument();
+      // Flush the pending catalog-fetch promises (and the state updates their
+      // `.then` callbacks trigger) inside `act()` before the test ends.
+      await waitFor(() => expect(getSpecialties).toHaveBeenCalled());
     });
   });
 
   // ──── Step 1 (cont.): state toggle from the actions column ────
   describe("toggle de estado desde la columna de acciones", () => {
-    it("al hacer click en el botón de estado, invoca la función de useOptimisticToggle con el ApiDoctor de la fila", () => {
+    it("al hacer click en el botón de estado, invoca la función de useOptimisticToggle con el ApiDoctor de la fila", async () => {
       // Arrange
       mockAuth(1);
       const doctor = createMockDoctor({ id: 5 });
@@ -280,12 +306,15 @@ describe("DoctorsPage", () => {
 
       // Assert
       expect(toggleFn).toHaveBeenCalledWith(doctor);
+      // Flush the pending catalog-fetch promises (and the state updates their
+      // `.then` callbacks trigger) inside `act()` before the test ends.
+      await waitFor(() => expect(getSpecialties).toHaveBeenCalled());
     });
   });
 
   // ──── Step 1 (cont.): LoadingOverlay = tableProps.loading && isInitialLoad ────
   describe("LoadingOverlay gating (loading && isInitialLoad combinados)", () => {
-    it("loading: true, isInitialLoad: true → isLoading: true", () => {
+    it("loading: true, isInitialLoad: true → isLoading: true", async () => {
       // Arrange
       mockAuth(1);
       mockServerTable({ loading: true, isInitialLoad: true });
@@ -295,9 +324,12 @@ describe("DoctorsPage", () => {
 
       // Assert
       expect(screen.getByTestId("loading-overlay")).toHaveAttribute("data-loading", "true");
+      // Flush the pending catalog-fetch promises (and the state updates their
+      // `.then` callbacks trigger) inside `act()` before the test ends.
+      await waitFor(() => expect(getSpecialties).toHaveBeenCalled());
     });
 
-    it("loading: true, isInitialLoad: false → isLoading: false (no basta con loading solo)", () => {
+    it("loading: true, isInitialLoad: false → isLoading: false (no basta con loading solo)", async () => {
       // Arrange
       mockAuth(1);
       mockServerTable({ loading: true, isInitialLoad: false });
@@ -307,9 +339,10 @@ describe("DoctorsPage", () => {
 
       // Assert
       expect(screen.getByTestId("loading-overlay")).toHaveAttribute("data-loading", "false");
+      await waitFor(() => expect(getSpecialties).toHaveBeenCalled());
     });
 
-    it("loading: false, isInitialLoad: true → isLoading: false", () => {
+    it("loading: false, isInitialLoad: true → isLoading: false", async () => {
       // Arrange
       mockAuth(1);
       mockServerTable({ loading: false, isInitialLoad: true });
@@ -319,11 +352,12 @@ describe("DoctorsPage", () => {
 
       // Assert
       expect(screen.getByTestId("loading-overlay")).toHaveAttribute("data-loading", "false");
+      await waitFor(() => expect(getSpecialties).toHaveBeenCalled());
     });
   });
 
   // ──── fetchFn used with useServerTable ────
-  it("pasa getDoctors como la función de fetch a useServerTable", () => {
+  it("pasa getDoctors como la función de fetch a useServerTable", async () => {
     // Arrange
     mockAuth(1);
     mockServerTable();
@@ -334,5 +368,8 @@ describe("DoctorsPage", () => {
     // Assert
     const calls = (useServerTable as any).mock.calls;
     expect(calls[calls.length - 1][0]).toBe(getDoctors);
+    // Flush the pending catalog-fetch promises (and the state updates their
+    // `.then` callbacks trigger) inside `act()` before the test ends.
+    await waitFor(() => expect(getSpecialties).toHaveBeenCalled());
   });
 });
