@@ -674,16 +674,16 @@ general, no uno específico de franquicias), convierte `type` a `Number`, y filt
 **Decisión de no testear `layout.tsx`:** código idéntico a `counselors/layout.tsx` (mismo wrapper
 presentacional sin lógica propia) — mismo razonamiento de la Tarea 6, documentar en el reporte.
 
-- [ ] **Step 1: Test de las columnas `nit`, `name`, `movil`, `address`, `city`**
+- [x] **Step 1: Test de las columnas `nit`, `name`, `movil`, `address`, `city`**
 
 1. `movil: null` → "-"; `address: null` → "-".
 2. `city: { name: "Barranquilla" }` → `"Barranquilla"`; `city: null` → `"-"`.
 
-- [ ] **Step 2: Test de la columna `state`**
+- [x] **Step 2: Test de la columna `state`**
 
 1. `state: 1` → "Activo"; `state: 2` → "Inactivo" (mismo `1`/`2` que `counselors`).
 
-- [ ] **Step 3: Test de la columna `actions` — el gate `isSuperAdmin` (Eye siempre visible)**
+- [x] **Step 3: Test de la columna `actions` — el gate `isSuperAdmin` (Eye siempre visible)**
 
 **Contexto verificado:** a diferencia de `counselors` (un único gate `hasAccess` que oculta TODA la
 columna `actions`), en `franchises` la columna `actions` **siempre existe** (no hay gate a nivel de
@@ -693,9 +693,9 @@ toggle (`Power`) están condicionados a `isSuperAdmin`.
 1. `isSuperAdmin: false` → sólo el link "Ver" visible.
 2. `isSuperAdmin: true` → los 3 elementos visibles; click en el toggle invoca `onToggleState(u)`.
 
-- [ ] **Step 4: Correr tests y tsc**
+- [x] **Step 4: Correr tests y tsc**
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 **Checkpoint.**
 
@@ -710,12 +710,12 @@ toggle (`Power`) están condicionados a `isSuperAdmin`.
 - Consume `FranchiseForm({ mode, initial?, onSubmit? })`.
 - Mockear `../fetch` (`getCitiesByDepartment`, `getDepartments`) y `@/lib/alert`.
 
-- [ ] **Step 1: Test de carga de catálogos y preselección de departamento**
+- [x] **Step 1: Test de carga de catálogos y preselección de departamento**
 
 Mismo patrón que `AgreementForm` Step 1 (preselección desde `initial.city.department_id`, recarga
 de ciudades al cambiar departamento).
 
-- [ ] **Step 2: Test de `canSubmit` — reglas de contraseña por modo**
+- [x] **Step 2: Test de `canSubmit` — reglas de contraseña por modo**
 
 1. `false` si falta `nit`/`name`/`email`/`user`, `departmentId` o `city_id`.
 2. `false` si `movil` está presente y su longitud no es 10.
@@ -726,7 +726,7 @@ de ciudades al cambiar departamento).
    e igualdad que en `create`.
 5. **Modo `view`:** siempre `false`.
 
-- [ ] **Step 3: Test de `submit` — el payload de contraseña es condicional**
+- [x] **Step 3: Test de `submit` — el payload de contraseña es condicional**
 
 1. Modo `create`, todo válido → `onSubmit` recibe el payload con `password: form.password` incluido
    siempre, y `state: 1` fijo (`isCreate ? 1 : Number(form.state)`, ignora lo que tenga `form.state`
@@ -737,14 +737,14 @@ de ciudades al cambiar departamento).
 4. Si `canSubmit` es `false` al momento de `submit()` → `alert.warn("Faltan datos", "Revisa los
    campos obligatorios (y contraseñas).")`, `onSubmit` NO se llama.
 
-- [ ] **Step 4: Test de visibilidad — campos de contraseña ocultos en `view`**
+- [x] **Step 4: Test de visibilidad — campos de contraseña ocultos en `view`**
 
 1. `mode="view"` → los inputs "Contraseña"/"Repetir contraseña" NO se renderizan en absoluto (a
    diferencia de otros campos que sólo se deshabilitan).
 
-- [ ] **Step 5: Correr tests y tsc**
+- [x] **Step 5: Correr tests y tsc**
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 **Checkpoint.**
 
@@ -764,12 +764,12 @@ de ciudades al cambiar departamento).
   `@/context/AuthContext`, `next/navigation`, `@/lib/alert`, `@/components/data-table/DataTable`
   (stub).
 
-- [ ] **Step 1: Test de `page.tsx` — gate `isSuperAdmin` para el botón "Crear Franquicia"**
+- [x] **Step 1: Test de `page.tsx` — gate `isSuperAdmin` para el botón "Crear Franquicia"**
 
 1. `user.type: 2` → botón no se renderiza.
 2. `user.type: 1` → botón visible, `href="/4dnn1n/franchises/new"`.
 
-- [ ] **Step 2: Tests de `new/page.tsx` — gate SIN redirect (mensaje inline)**
+- [x] **Step 2: Tests de `new/page.tsx` — gate SIN redirect (mensaje inline)**
 
 **Contexto verificado:** a diferencia de `agreements/new` (que redirige con `router.replace` dentro
 de un `useEffect`), esta página verifica el permiso de forma síncrona en el cuerpo del componente y
@@ -782,12 +782,12 @@ retorna un mensaje de error inline si falla — no hay redirección.
 4. `onSubmit`: `alert.confirm` → `onConfirm` llama `createUser(payload)` → éxito → `alert.success` →
    `router.push("/4dnn1n/franchises")`.
 
-- [ ] **Step 3: Tests de `[id]/page.tsx` (vista) — sin gate**
+- [x] **Step 3: Tests de `[id]/page.tsx` (vista) — sin gate**
 
 1. Antes de resolver `getFranchise` → `FormPageSkeleton`.
 2. Resuelto → `FranchiseForm` con `mode="view"`.
 
-- [ ] **Step 4: Tests de `[id]/edit/page.tsx` — orden de checks: permiso ANTES que el dato**
+- [x] **Step 4: Tests de `[id]/edit/page.tsx` — orden de checks: permiso ANTES que el dato**
 
 **Contexto verificado:** el orden real de los `if` en `EditFranchisePage` es
 `authLoading → permiso (mensaje inline) → !user (skeleton)` — es decir, si el usuario no tiene el
@@ -801,9 +801,9 @@ resuelto (no espera a que cargue el dato para mostrar el error de permisos).
 4. `authUser.type: 1`, dato resuelto → formulario con `mode="edit"`.
 5. `onSubmit` exitoso → `alert.success`, `router.push("/4dnn1n/franchises")`.
 
-- [ ] **Step 5: Correr tests y tsc**
+- [x] **Step 5: Correr tests y tsc**
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 **Checkpoint — fin del bloque `franchises`.**
 
@@ -834,7 +834,7 @@ vi.mock("@/lib/memCache", () => ({
 }));
 ```
 
-- [ ] **Step 1: Tests de `getDoctors`**
+- [x] **Step 1: Tests de `getDoctors`**
 
 1. Sin params → `/api/doctors?page=1&per_page=20` (los defaults `page=1`/`per_page=20` siempre se
    incluyen en el query, a diferencia de `getAppointments` de la Fase 1 que los omite si no se
@@ -845,7 +845,7 @@ vi.mock("@/lib/memCache", () => ({
    (fallback completo de `meta` si el backend no la envía, no sólo `res.meta`).
 4. Clave de caché `` `doctors:list:${query}` `` distinta por combinación de params.
 
-- [ ] **Step 2: Tests de `createDoctor`, `updateDoctor`, `deleteDoctor` — doble invalidación**
+- [x] **Step 2: Tests de `createDoctor`, `updateDoctor`, `deleteDoctor` — doble invalidación**
 
 1. `createDoctor(data)` → `csrf()` antes, `apiFetch` `POST` a `/api/doctors`, retorna `res.data`,
    luego invalida AMBOS prefijos: `memCache.invalidatePrefix("doctors:list:")` y
@@ -856,7 +856,7 @@ vi.mock("@/lib/memCache", () => ({
 4. `deleteDoctor(5)` → `csrf()` antes, `apiFetch` `DELETE` a `/api/doctors/5`, misma doble
    invalidación, sin retorno de valor útil (`Promise<void>`).
 
-- [ ] **Step 3: Test de `updateDoctorState` — delega en `updateDoctor` (compone, no reimplementa)**
+- [x] **Step 3: Test de `updateDoctorState` — delega en `updateDoctor` (compone, no reimplementa)**
 
 **Contexto verificado:** `updateDoctorState(id, state)` llama `csrf()` y luego `updateDoctor(id, { state })`
 directamente (no arma su propia llamada a `apiFetch`) — esto significa que `csrf()` termina
@@ -868,9 +868,9 @@ llamada cuenta por separado).
    `JSON.stringify({ state: 2 })` (el mismo camino que `updateDoctor`), confirmando que no hay una
    ruta HTTP separada para el cambio de estado.
 
-- [ ] **Step 4: Correr tests y tsc**
+- [x] **Step 4: Correr tests y tsc**
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 **Checkpoint.**
 
@@ -888,13 +888,13 @@ llamada cuenta por separado).
 **Contexto verificado:** mismo patrón de mock que la Tarea 13, pero el prefijo invalidado es
 `"specialties:"` (uno solo, no dos como en `doctors/fetch.ts`).
 
-- [ ] **Step 1: Tests de `getSpecialties` y `getSpecialty`**
+- [x] **Step 1: Tests de `getSpecialties` y `getSpecialty`**
 
 1. `getSpecialties()` → `/api/specialties`, clave de caché `"specialties:all"`, retorna
    `res.data ?? []`.
 2. `getSpecialty(3)` → `/api/specialties/3`, sin caché, retorna `res.data`.
 
-- [ ] **Step 2: Tests de `createSpecialty`, `updateSpecialty`, `deleteSpecialty`**
+- [x] **Step 2: Tests de `createSpecialty`, `updateSpecialty`, `deleteSpecialty`**
 
 1. `createSpecialty({ name: "Pediatría", state: 1 })` → `csrf()` antes, `apiFetch` `POST` a
    `/api/specialties`, retorna `res.data`, luego `memCache.invalidatePrefix("specialties:")`.
@@ -903,14 +903,14 @@ llamada cuenta por separado).
 3. `deleteSpecialty(3)` → `csrf()` antes, `apiFetch` `DELETE` a `/api/specialties/3`, misma
    invalidación.
 
-- [ ] **Step 3: Test de `updateSpecialtyState` — mismo patrón de composición que `updateDoctorState`**
+- [x] **Step 3: Test de `updateSpecialtyState` — mismo patrón de composición que `updateDoctorState`**
 
 1. `updateSpecialtyState(3, 0)` → termina llamando `apiFetch` `PUT` a `/api/specialties/3` con body
    `JSON.stringify({ state: 0 })` (delega en `updateSpecialty(id, { state })`, no ruta HTTP propia).
 
-- [ ] **Step 4: Correr tests y tsc**
+- [x] **Step 4: Correr tests y tsc**
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 **Checkpoint.**
 
@@ -926,19 +926,19 @@ llamada cuenta por separado).
 - Consume `buildDoctorColumns({ onToggleState, hasAccess })` y `buildSpecialtyDoctorColumns()` (sin
   parámetros) — ambos exportados por el mismo archivo.
 
-- [ ] **Step 1: Test de `buildDoctorColumns` — columnas `full_name`, `specialty`, `phones`, `city`**
+- [x] **Step 1: Test de `buildDoctorColumns` — columnas `full_name`, `specialty`, `phones`, `city`**
 
 1. `specialty: { name: "Cardiología" }` → `"Cardiología"`; `specialty: undefined` → `"-"`.
 2. `phones` (accessorFn compuesto): con `phone`, `movil` y `email` todos presentes, la celda
    muestra las 3 líneas ("Tel: ...", "Cel: ...", el email); con los 3 vacíos, muestra `"-"`.
 
-- [ ] **Step 2: Test de `buildDoctorColumns` — columna `state` y `actions`**
+- [x] **Step 2: Test de `buildDoctorColumns` — columna `state` y `actions`**
 
 1. `state: 1` → "Activo"; `state: 2` → "Inactivo".
 2. `hasAccess: false` → sin columna `actions`.
 3. `hasAccess: true` → Eye/Pencil/Power presentes; click en Power invoca `onToggleState(d)`.
 
-- [ ] **Step 3: Test de `buildSpecialtyDoctorColumns` — SIN columna `state` ni `actions`**
+- [x] **Step 3: Test de `buildSpecialtyDoctorColumns` — SIN columna `state` ni `actions`**
 
 **Contexto verificado:** esta función no recibe parámetros y siempre retorna las mismas 5 columnas
 (`full_name`, `secretary_name`, `phones`, `city`, `tarifa`) — a diferencia de `buildDoctorColumns`,
@@ -949,9 +949,9 @@ NUNCA incluye una columna de estado ni de acciones, sin importar el rol del usua
 2. Columna `tarifa`: `value_agreement: 150000` → celda muestra `"$150.000"`; `value_agreement: 0`
    o `undefined` → `"$0"` (usa `Number(row.original.value_agreement || 0)`).
 
-- [ ] **Step 4: Correr tests y tsc**
+- [x] **Step 4: Correr tests y tsc**
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 **Checkpoint.**
 
@@ -965,20 +965,20 @@ NUNCA incluye una columna de estado ni de acciones, sin importar el rol del usua
 **Interfaces:**
 - Consume `buildSpecialtyColumns({ onToggleState, hasAccess })` → `ColumnDef<ApiSpecialty>[]`.
 
-- [ ] **Step 1: Test de la columna `name` y `state`**
+- [x] **Step 1: Test de la columna `name` y `state`**
 
 1. `state: 1` → "Activo"; `state: 0` → "Inactivo" (recordar: especialidades usa `1`/`0`, igual que
    `agreements`, distinto de `doctors`/`counselors`/`franchises` que usan `1`/`2`).
 
-- [ ] **Step 2: Test de la columna `actions`**
+- [x] **Step 2: Test de la columna `actions`**
 
 1. `hasAccess: false` → sin columna `actions`.
 2. `hasAccess: true` → Eye apunta a `/4dnn1n/doctors/specialties/{id}`, Pencil a
    `/4dnn1n/doctors/specialties/{id}/edit`; click en Power invoca `onToggleState(s)`.
 
-- [ ] **Step 3: Correr tests y tsc**
+- [x] **Step 3: Correr tests y tsc**
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 **Checkpoint.**
 
@@ -995,7 +995,7 @@ NUNCA incluye una columna de estado ni de acciones, sin importar el rol del usua
   reutiliza el `fetch.ts` de `counselors` para geografía, NO tiene su propio `getDepartments`) y
   `../specialties/fetch` (`getSpecialties`).
 
-- [ ] **Step 1: Test de carga y filtrado de especialidades**
+- [x] **Step 1: Test de carga y filtrado de especialidades**
 
 **Contexto verificado:** el filtro es `s.state === 1 || (currentSpecId && s.id === currentSpecId)`
 — muestra las especialidades activas MÁS la especialidad actual del médico aunque esté inactiva
@@ -1006,7 +1006,7 @@ NUNCA incluye una columna de estado ni de acciones, sin importar el rol del usua
 2. `initial.specialty_id: 2` (la inactiva) → AMBAS quedan en las opciones (la inactiva se conserva
    porque coincide con `currentSpecId`).
 
-- [ ] **Step 2: Test de `canSubmit` — todos los campos son obligatorios en este formulario**
+- [x] **Step 2: Test de `canSubmit` — todos los campos son obligatorios en este formulario**
 
 **Contexto verificado:** a diferencia de `CounselorForm`/`FranchiseForm` (donde `phone`/`movil`/
 `address` son opcionales), en `DoctorForm` **todos** son obligatorios: `name`, `lastname`,
@@ -1018,18 +1018,18 @@ NUNCA incluye una columna de estado ni de acciones, sin importar el rol del usua
 3. `false` si `movil.length !== 10`.
 4. `true` sólo con los 9 campos completos, `value_agreement >= 10000` y `movil` de 10 dígitos.
 
-- [ ] **Step 3: Test de mensajes de error (`valueAgreementError`, `movilError`)**
+- [x] **Step 3: Test de mensajes de error (`valueAgreementError`, `movilError`)**
 
 1. `value_agreement: "5000"` → "El valor debe ser mayor o igual a 10.000".
 2. `movil: "30012"` → "El celular debe tener exactamente 10 dígitos".
 
-- [ ] **Step 4: Test de `submit`**
+- [x] **Step 4: Test de `submit`**
 
 1. Payload: `{ name, lastname, email: email||null, phone, movil, address, secretary_name, value_agreement: Number(...)||0, specialty_id: Number(...), city_id: Number(...), state: Number(state)===2?2:1 }`.
 
-- [ ] **Step 5: Correr tests y tsc**
+- [x] **Step 5: Correr tests y tsc**
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 **Checkpoint.**
 
@@ -1050,12 +1050,12 @@ el `state` inicial (`initial ? initial.state : 1`). Es un `<form onSubmit={...}>
 `e.preventDefault()`, a diferencia de todos los demás formularios de esta fase que usan un botón
 `type="button"` con `onClick`. No tiene botón "Limpiar".
 
-- [ ] **Step 1: Test de texto del botón según `initial`**
+- [x] **Step 1: Test de texto del botón según `initial`**
 
 1. Sin `initial` → botón "Crear Especialidad".
 2. Con `initial` → botón "Guardar Cambios".
 
-- [ ] **Step 2: Test de `canSubmit` y el submit del `<form>`**
+- [x] **Step 2: Test de `canSubmit` y el submit del `<form>`**
 
 1. `name` vacío o sólo espacios (`"   "`) → `canSubmit: false` (usa `form.name.trim().length > 0`).
 2. Disparar el evento `submit` del formulario (`fireEvent.submit`, no click en un botón separado)
@@ -1064,14 +1064,14 @@ el `state` inicial (`initial ? initial.state : 1`). Es un `<form onSubmit={...}>
 3. Con `name: "  Cardiología  "` válido → `onSubmit` recibe `{ name: "Cardiología", state: Number(form.state) }`
    (recortado con `.trim()`).
 
-- [ ] **Step 3: Test del estado `loading`**
+- [x] **Step 3: Test del estado `loading`**
 
 1. `loading: true` → el botón muestra el ícono `Loader2` (girando) en vez de `Save`, y está
    deshabilitado junto con el input de nombre.
 
-- [ ] **Step 4: Correr tests y tsc**
+- [x] **Step 4: Correr tests y tsc**
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 **Checkpoint.**
 
@@ -1092,7 +1092,7 @@ el `state` inicial (`initial ? initial.state : 1`). Es un `<form onSubmit={...}>
   `@/hooks/useOptimisticToggle`, `@/context/AuthContext`, `next/navigation`, `@/lib/alert`,
   `@/components/data-table/DataTable` (stub).
 
-- [ ] **Step 1: Test de `page.tsx` — filtros avanzados (departamento/ciudad/especialidad)**
+- [x] **Step 1: Test de `page.tsx` — filtros avanzados (departamento/ciudad/especialidad)**
 
 1. Al montar, `getDepartments()` y `getSpecialties()` se llaman; las especialidades mostradas en el
    `<datalist>` sólo incluyen las de `state === 1` (filtradas en la propia página, no en
@@ -1108,7 +1108,7 @@ el `state` inicial (`initial ? initial.state : 1`). Es un `<form onSubmit={...}>
 5. `LoadingOverlay` recibe `isLoading = tableProps.loading && isInitialLoad` (verificar ambas
    condiciones combinadas, no sólo `loading`).
 
-- [ ] **Step 2: Tests de `new/page.tsx` — gate inline (mismo patrón que `franchises/new`)**
+- [x] **Step 2: Tests de `new/page.tsx` — gate inline (mismo patrón que `franchises/new`)**
 
 1. `authLoading: true` → `null`.
 2. `authLoading: false, user.type: 3` → mensaje "No tienes permisos suficientes para acceder a esta
@@ -1117,7 +1117,7 @@ el `state` inicial (`initial ? initial.state : 1`). Es un `<form onSubmit={...}>
 3. `handleSubmit`: `try/finally` con `loading` state; llama `createDoctor(data)` → éxito →
    `alert.success` → `router.push("/4dnn1n/doctors")`; falla → `alert.error(...)`.
 
-- [ ] **Step 3: Tests de `[id]/page.tsx` — orden de checks: dato ANTES que permiso**
+- [x] **Step 3: Tests de `[id]/page.tsx` — orden de checks: dato ANTES que permiso**
 
 **Contexto verificado — orden real, distinto al de `franchises/[id]/edit`:**
 `loading → skeleton; !initialData → error div; authLoading → null; permiso → error div`. El check
@@ -1130,7 +1130,7 @@ de permisos ocurre DESPUÉS de que el dato termine de cargar (o falle), no antes
 4. Dato cargado, `user.type: 3` → mensaje de permisos.
 5. Dato cargado, `user.type: 1` → `DoctorForm` con `mode="view"`.
 
-- [ ] **Step 4: Tests de `[id]/edit/page.tsx` — mismo orden que `[id]/page.tsx`, sin manejo de
+- [x] **Step 4: Tests de `[id]/edit/page.tsx` — mismo orden que `[id]/page.tsx`, sin manejo de
   `loading` en `handleSubmit`**
 
 1. Mismo orden de checks que el Step 3.
@@ -1138,9 +1138,9 @@ de permisos ocurre DESPUÉS de que el dato termine de cargar (o falle), no antes
    de `new/page.tsx`) — sólo `try/catch` simple; éxito → `alert.success` → `router.push`; falla →
    `alert.error(...)`.
 
-- [ ] **Step 5: Correr tests y tsc**
+- [x] **Step 5: Correr tests y tsc**
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 **Checkpoint.**
 
@@ -1163,7 +1163,7 @@ de permisos ocurre DESPUÉS de que el dato termine de cargar (o falle), no antes
   `@/hooks/useServerTable`, `@/context/AuthContext`, `next/navigation`, `@/lib/alert`,
   `@/components/data-table/DataTable` (stub).
 
-- [ ] **Step 1: Test de `page.tsx` — loading sin `LoadingOverlay`**
+- [x] **Step 1: Test de `page.tsx` — loading sin `LoadingOverlay`**
 
 **Contexto verificado:** esta página NO usa el componente `LoadingOverlay` (a diferencia de todas
 las demás páginas de listado de esta fase) — mientras `loading` es `true`, retorna directamente
@@ -1175,12 +1175,12 @@ las demás páginas de listado de esta fase) — mientras `loading` es `true`, r
    independientemente de `hasAccess`.
 3. `hasAccess: true` → botón "Crear Especialidad" visible.
 
-- [ ] **Step 2: Tests de `new/page.tsx` — mismo gate inline `type !== 1 && !== 2` que `doctors/new`**
+- [x] **Step 2: Tests de `new/page.tsx` — mismo gate inline `type !== 1 && !== 2` que `doctors/new`**
 
 1. Igual patrón que la Tarea 19 Step 2 (mensaje inline, sin redirect).
 2. `handleSubmit` con `loading` state try/finally, llama `createSpecialty(data)`.
 
-- [ ] **Step 3: Tests de `[id]/page.tsx` (`SpecialtyViewPage`) — orden distinto: skeleton depende
+- [x] **Step 3: Tests de `[id]/page.tsx` (`SpecialtyViewPage`) — orden distinto: skeleton depende
   SÓLO del dato, permiso se evalúa después**
 
 **Contexto verificado:** el orden es `!specialty → skeleton propio (no FormPageSkeleton); !hasAccess → mensaje de permisos`. Esta página además monta un `useServerTable(getDoctors, { defaultStade: "1", extraParams: { specialty_id } })` para mostrar los médicos de esa especialidad, usando
@@ -1193,7 +1193,7 @@ las demás páginas de listado de esta fase) — mientras `loading` es `true`, r
    de la especialidad, y la tabla de médicos usa `enableStateFilter={false}` (sin filtro de estado
    en esta vista anidada).
 
-- [ ] **Step 4: Tests de `[id]/edit/page.tsx` — gate SIN `authLoading`**
+- [x] **Step 4: Tests de `[id]/edit/page.tsx` — gate SIN `authLoading`**
 
 **Contexto verificado:** a diferencia de `doctors/[id]/edit`, esta página calcula `hasAccess`
 directamente desde `useAuth()` sin esperar ningún estado de `authLoading` — el orden es
@@ -1204,9 +1204,9 @@ directamente desde `useAuth()` sin esperar ningún estado de `authLoading` — e
 2. Dato cargado, `hasAccess: false` → "No tienes permisos para acceder a esta página."
 3. `handleSubmit` con `saving` state try/finally, llama `updateSpecialty(id, data)`.
 
-- [ ] **Step 5: Correr tests y tsc**
+- [x] **Step 5: Correr tests y tsc**
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 **Checkpoint — fin del bloque `doctors` + `specialties`.**
 
