@@ -87,8 +87,8 @@ describe("MembershipFormsPage", () => {
     vi.clearAllMocks();
   });
 
-  describe("onDelete: optimistic update and error-path reversion", () => {
-    it("runs setData/setMeta synchronously inside onConfirm, before deleteMembershipForm resolves", async () => {
+  describe("onDelete: actualización optimista y reversión en error", () => {
+    it("ejecuta setData/setMeta de forma síncrona dentro de onConfirm, antes de que deleteMembershipForm resuelva", async () => {
       // Arrange
       const form = createMockMembershipForm({ id: 7 });
       const { setData, setMeta } = mockServerTable([form]);
@@ -132,7 +132,7 @@ describe("MembershipFormsPage", () => {
       });
     });
 
-    it("shows alert.success with the expected copy once deleteMembershipForm resolves", async () => {
+    it("muestra alert.success con el texto esperado una vez deleteMembershipForm resuelve", async () => {
       // Arrange
       const form = createMockMembershipForm({ id: 3 });
       mockServerTable([form]);
@@ -152,7 +152,7 @@ describe("MembershipFormsPage", () => {
       );
     });
 
-    it("re-appends the deleted form to the end of the list and shows alert.error when deleteMembershipForm rejects", async () => {
+    it("reagrega la solicitud eliminada al final de la lista y muestra alert.error cuando deleteMembershipForm rechaza", async () => {
       // Arrange
       const existing = createMockMembershipForm({ id: 1, name: "Existing" });
       const form = createMockMembershipForm({ id: 9, name: "Ana" });
@@ -182,7 +182,7 @@ describe("MembershipFormsPage", () => {
       expect(alert.success).not.toHaveBeenCalled();
     });
 
-    it("does not call deleteMembershipForm nor setData/setMeta when the confirmation is cancelled", async () => {
+    it("no llama a deleteMembershipForm ni a setData/setMeta cuando se cancela la confirmación", async () => {
       // Arrange
       const form = createMockMembershipForm({ id: 4 });
       const { setData, setMeta } = mockServerTable([form]);
