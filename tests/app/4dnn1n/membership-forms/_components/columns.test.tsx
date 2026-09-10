@@ -26,14 +26,19 @@ describe("buildMembershipFormColumns", () => {
   // ──── Step 1: Test columns full_name, phone, city, seller, date ────
   describe("Columnas básicas (full_name, phone, city, seller, date)", () => {
     it("retorna columna full_name con id correcto", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
+      // Act
       const fullNameColumn = columns.find((col) => col.id === "full_name");
+
+      // Assert
       expect(fullNameColumn).toBeDefined();
       expect(fullNameColumn?.header).toBe("Nombre");
     });
 
     it("columna full_name renderiza nombre y apellido concatenados", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
       const fullNameColumn = columns.find((col) => col.id === "full_name");
@@ -41,21 +46,29 @@ describe("buildMembershipFormColumns", () => {
 
       const form = createMockMembershipForm({ name: "Juan", lastname: "García" });
       const mockRow = { original: form };
-      const cellResult = (fullNameColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (fullNameColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       expect(screen.getByText("Juan García")).toBeInTheDocument();
     });
 
     it("retorna columna phone con accessorKey correcto", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
+      // Act
       const phoneColumn = columns.find((col) => (col as any).accessorKey === "phone");
+
+      // Assert
       expect(phoneColumn).toBeDefined();
       expect(phoneColumn?.header).toBe("Celular");
     });
 
     it("columna phone renderiza el número de teléfono", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
       const phoneColumn = columns.find((col) => (col as any).accessorKey === "phone");
@@ -63,21 +76,29 @@ describe("buildMembershipFormColumns", () => {
 
       const form = createMockMembershipForm({ phone: "3109876543" });
       const mockRow = { original: form };
-      const cellResult = (phoneColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (phoneColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       expect(screen.getByText("3109876543")).toBeInTheDocument();
     });
 
     it("retorna columna city con id correcto", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
+      // Act
       const cityColumn = columns.find((col) => col.id === "city");
+
+      // Assert
       expect(cityColumn).toBeDefined();
       expect(cityColumn?.header).toBe("Ciudad");
     });
 
     it("columna city renderiza el nombre de la ciudad cuando existe", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
       const cityColumn = columns.find((col) => col.id === "city");
@@ -85,13 +106,17 @@ describe("buildMembershipFormColumns", () => {
 
       const form = createMockMembershipForm({ city: { id: 2, name: "Cali" } });
       const mockRow = { original: form };
-      const cellResult = (cityColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (cityColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       expect(screen.getByText("Cali")).toBeInTheDocument();
     });
 
     it("columna city renderiza '-' cuando city es null", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
       const cityColumn = columns.find((col) => col.id === "city");
@@ -99,21 +124,29 @@ describe("buildMembershipFormColumns", () => {
 
       const form = createMockMembershipForm({ city: null });
       const mockRow = { original: form };
-      const cellResult = (cityColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (cityColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       expect(screen.getByText("-")).toBeInTheDocument();
     });
 
     it("retorna columna seller con accessorKey correcto", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
+      // Act
       const sellerColumn = columns.find((col) => (col as any).accessorKey === "seller");
+
+      // Assert
       expect(sellerColumn).toBeDefined();
       expect(sellerColumn?.header).toBe("Asesor");
     });
 
     it("columna seller renderiza el nombre del asesor", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
       const sellerColumn = columns.find((col) => (col as any).accessorKey === "seller");
@@ -121,21 +154,29 @@ describe("buildMembershipFormColumns", () => {
 
       const form = createMockMembershipForm({ seller: "María López" });
       const mockRow = { original: form };
-      const cellResult = (sellerColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (sellerColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       expect(screen.getByText("María López")).toBeInTheDocument();
     });
 
     it("retorna columna date con accessorKey correcto", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
+      // Act
       const dateColumn = columns.find((col) => (col as any).accessorKey === "date");
+
+      // Assert
       expect(dateColumn).toBeDefined();
       expect(dateColumn?.header).toBe("Fecha solicitud");
     });
 
     it("columna date formatea la fecha YYYY-MM-DD a DD/MM/YYYY usando split manual", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
       const dateColumn = columns.find((col) => (col as any).accessorKey === "date");
@@ -143,13 +184,17 @@ describe("buildMembershipFormColumns", () => {
 
       const form = createMockMembershipForm({ date: "2026-03-05" });
       const mockRow = { original: form };
-      const cellResult = (dateColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (dateColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       expect(screen.getByText("05/03/2026")).toBeInTheDocument();
     });
 
     it("columna date renderiza '-' cuando date es vacío o undefined", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
       const dateColumn = columns.find((col) => (col as any).accessorKey === "date");
@@ -157,13 +202,17 @@ describe("buildMembershipFormColumns", () => {
 
       const form = createMockMembershipForm({ date: "" });
       const mockRow = { original: form };
-      const cellResult = (dateColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (dateColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       expect(screen.getByText("-")).toBeInTheDocument();
     });
 
     it("columna date maneja correctamente diferentes fechas válidas", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
       const dateColumn = columns.find((col) => (col as any).accessorKey === "date");
@@ -171,9 +220,12 @@ describe("buildMembershipFormColumns", () => {
 
       const form = createMockMembershipForm({ date: "2025-12-25" });
       const mockRow = { original: form };
-      const cellResult = (dateColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (dateColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       expect(screen.getByText("25/12/2025")).toBeInTheDocument();
     });
   });
@@ -181,20 +233,18 @@ describe("buildMembershipFormColumns", () => {
   // ──── Step 2: Test actions column without permission gates ────
   describe("Columna actions (sin gates de permisos)", () => {
     it("retorna columna actions con id correcto", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
+      // Act
       const actionsColumn = columns.find((col) => col.id === "actions");
-      expect(actionsColumn).toBeDefined();
-    });
 
-    it("columna actions siempre está presente independientemente de permisos", () => {
-      const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
-
-      const actionsColumn = columns.find((col) => col.id === "actions");
+      // Assert
       expect(actionsColumn).toBeDefined();
     });
 
     it("columna actions renderiza link UserPlus que apunta a '/4dnn1n/affiliates/new?from={id}'", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
       const actionsColumn = columns.find((col) => col.id === "actions");
@@ -202,15 +252,19 @@ describe("buildMembershipFormColumns", () => {
 
       const form = createMockMembershipForm({ id: 42 });
       const mockRow = { original: form };
-      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const createAffiliateLink = screen.getByRole("link", { name: /crear afiliado/i });
       expect(createAffiliateLink).toBeInTheDocument();
       expect(createAffiliateLink).toHaveAttribute("href", "/4dnn1n/affiliates/new?from=42");
     });
 
     it("link UserPlus apunta a la URL correcta con diferentes IDs", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
       const actionsColumn = columns.find((col) => col.id === "actions");
@@ -218,14 +272,18 @@ describe("buildMembershipFormColumns", () => {
 
       const form = createMockMembershipForm({ id: 789 });
       const mockRow = { original: form };
-      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const createAffiliateLink = screen.getByRole("link", { name: /crear afiliado/i });
       expect(createAffiliateLink).toHaveAttribute("href", "/4dnn1n/affiliates/new?from=789");
     });
 
     it("columna actions renderiza botón Trash2 (Eliminar solicitud)", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
       const actionsColumn = columns.find((col) => col.id === "actions");
@@ -233,14 +291,18 @@ describe("buildMembershipFormColumns", () => {
 
       const form = createMockMembershipForm({ id: 5 });
       const mockRow = { original: form };
-      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const deleteButton = screen.getByRole("button", { name: /eliminar solicitud/i });
       expect(deleteButton).toBeInTheDocument();
     });
 
     it("botón Trash2 invoca onDelete con la solicitud al hacer click", async () => {
+      // Arrange
       const onDeleteMock = vi.fn();
       const columns = buildMembershipFormColumns({ onDelete: onDeleteMock });
 
@@ -249,17 +311,20 @@ describe("buildMembershipFormColumns", () => {
 
       const form = createMockMembershipForm({ id: 15, name: "Ana" });
       const mockRow = { original: form };
-      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
       render(cellResult);
       const deleteButton = screen.getByRole("button", { name: /eliminar solicitud/i });
       await userEvent.click(deleteButton);
 
+      // Assert
       expect(onDeleteMock).toHaveBeenCalledWith(form);
       expect(onDeleteMock).toHaveBeenCalledTimes(1);
     });
 
     it("ambos botones de acciones están siempre presentes (sin condiciones de permisos)", () => {
+      // Arrange
       const onDeleteMock = vi.fn();
       const columns = buildMembershipFormColumns({ onDelete: onDeleteMock });
 
@@ -268,9 +333,12 @@ describe("buildMembershipFormColumns", () => {
 
       const form = createMockMembershipForm({ id: 10 });
       const mockRow = { original: form };
-      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const createAffiliateLink = screen.getByRole("link", { name: /crear afiliado/i });
       const deleteButton = screen.getByRole("button", { name: /eliminar solicitud/i });
 
@@ -279,9 +347,13 @@ describe("buildMembershipFormColumns", () => {
     });
 
     it("la columna actions tiene las propiedades meta correctas", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
+      // Act
       const actionsColumn = columns.find((col) => col.id === "actions");
+
+      // Assert
       expect(actionsColumn?.meta).toEqual({ stickyRight: true });
     });
   });
@@ -289,8 +361,10 @@ describe("buildMembershipFormColumns", () => {
   // ──── Step 3: Type checking ────
   describe("Seguridad de tipos en las definiciones de columnas", () => {
     it("retorna array de ColumnDef<ApiMembershipForm>[]", () => {
+      // Arrange
       const columns = buildMembershipFormColumns({ onDelete: vi.fn() });
 
+      // Assert
       expect(Array.isArray(columns)).toBe(true);
       expect(columns.length).toBeGreaterThan(0);
       const hasAccessorKeyOrId =

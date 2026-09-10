@@ -21,14 +21,19 @@ describe("buildAllyColumns", () => {
   // ──── Step 1: Test position, image, and url columns ────
   describe("Columnas básicas (position, image, url)", () => {
     it("retorna columna position con accessorKey correcto", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
+      // Act
       const positionColumn = columns.find((col) => (col as any).accessorKey === "position");
+
+      // Assert
       expect(positionColumn).toBeDefined();
       expect(positionColumn?.header).toBe("Pos.");
     });
 
     it("columna position renderiza la posición centrada con fuente media", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
       const positionColumn = columns.find((col) => (col as any).accessorKey === "position");
@@ -36,13 +41,17 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly({ position: 3 });
       const mockRow = { original: ally };
-      const cellResult = (positionColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (positionColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       expect(screen.getByText("3")).toBeInTheDocument();
     });
 
     it("columna position maneja diferentes valores de posición", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
       const positionColumn = columns.find((col) => (col as any).accessorKey === "position");
@@ -50,21 +59,29 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly({ position: 42 });
       const mockRow = { original: ally };
-      const cellResult = (positionColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (positionColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       expect(screen.getByText("42")).toBeInTheDocument();
     });
 
     it("retorna columna image con id correcto", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
+      // Act
       const imageColumn = columns.find((col) => col.id === "image");
+
+      // Assert
       expect(imageColumn).toBeDefined();
       expect(imageColumn?.header).toBe("Imagen");
     });
 
     it("columna image renderiza img con src usando API_URL y path de storage", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
       const imageColumn = columns.find((col) => col.id === "image");
@@ -72,15 +89,19 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly({ image: "allies/banner.jpg" });
       const mockRow = { original: ally };
-      const cellResult = (imageColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (imageColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const img = screen.getByRole("img", { name: /banner aliado/i });
       expect(img).toBeInTheDocument();
       expect(img).toHaveAttribute("src", expect.stringContaining("/storage/allies/banner.jpg"));
     });
 
     it("columna image usa API_URL fallback (http://localhost:8000) cuando NEXT_PUBLIC_API_URL no está definido", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
       const imageColumn = columns.find((col) => col.id === "image");
@@ -88,14 +109,18 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly({ image: "allies/test.jpg" });
       const mockRow = { original: ally };
-      const cellResult = (imageColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (imageColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const img = screen.getByRole("img", { name: /banner aliado/i });
       expect(img.getAttribute("src")).toMatch(/http:\/\/localhost:8000\/storage\/allies\/test\.jpg/);
     });
 
     it("columna image tiene alt text descriptivo", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
       const imageColumn = columns.find((col) => col.id === "image");
@@ -103,22 +128,30 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly();
       const mockRow = { original: ally };
-      const cellResult = (imageColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (imageColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const img = screen.getByAltText("banner aliado");
       expect(img).toBeInTheDocument();
     });
 
     it("retorna columna url con accessorKey correcto", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
+      // Act
       const urlColumn = columns.find((col) => (col as any).accessorKey === "url");
+
+      // Assert
       expect(urlColumn).toBeDefined();
       expect(urlColumn?.header).toBe("URL");
     });
 
     it("columna url renderiza un link con href apuntando a ally.url", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
       const urlColumn = columns.find((col) => (col as any).accessorKey === "url");
@@ -126,14 +159,18 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly({ url: "https://aliado.com" });
       const mockRow = { original: ally };
-      const cellResult = (urlColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (urlColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const link = screen.getByRole("link", { name: /aliado\.com/i });
       expect(link).toHaveAttribute("href", "https://aliado.com");
     });
 
     it("columna url tiene target='_blank' para abrir en nueva pestaña", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
       const urlColumn = columns.find((col) => (col as any).accessorKey === "url");
@@ -141,14 +178,18 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly({ url: "https://example.com" });
       const mockRow = { original: ally };
-      const cellResult = (urlColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (urlColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const link = screen.getByRole("link", { name: /example\.com/i });
       expect(link).toHaveAttribute("target", "_blank");
     });
 
     it("columna url tiene rel='noopener noreferrer' para seguridad", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
       const urlColumn = columns.find((col) => (col as any).accessorKey === "url");
@@ -156,14 +197,18 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly({ url: "https://partner.org" });
       const mockRow = { original: ally };
-      const cellResult = (urlColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (urlColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const link = screen.getByRole("link", { name: /partner\.org/i });
       expect(link).toHaveAttribute("rel", "noopener noreferrer");
     });
 
     it("columna url muestra el texto del URL tal como está en ally.url", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
       const urlColumn = columns.find((col) => (col as any).accessorKey === "url");
@@ -172,13 +217,17 @@ describe("buildAllyColumns", () => {
       const testUrl = "https://very-long-url-example.com/with/path/structure";
       const ally = createMockAlly({ url: testUrl });
       const mockRow = { original: ally };
-      const cellResult = (urlColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (urlColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       expect(screen.getByText(testUrl)).toBeInTheDocument();
     });
 
     it("columna url usa el mismo URL para href y texto mostrado", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
       const urlColumn = columns.find((col) => (col as any).accessorKey === "url");
@@ -186,9 +235,12 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly({ url: "https://test-consistency.io" });
       const mockRow = { original: ally };
-      const cellResult = (urlColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (urlColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const link = screen.getByRole("link", { name: /test-consistency\.io/i });
       expect(link).toHaveAttribute("href", "https://test-consistency.io");
       expect(link.textContent).toBe("https://test-consistency.io");
@@ -198,20 +250,18 @@ describe("buildAllyColumns", () => {
   // ──── Step 2: Test actions column without permission gates ────
   describe("Columna actions (sin gates de permisos)", () => {
     it("retorna columna actions con id correcto", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
+      // Act
       const actionsColumn = columns.find((col) => col.id === "actions");
-      expect(actionsColumn).toBeDefined();
-    });
 
-    it("columna actions siempre está presente independientemente de permisos", () => {
-      const columns = buildAllyColumns({ onDelete: vi.fn() });
-
-      const actionsColumn = columns.find((col) => col.id === "actions");
+      // Assert
       expect(actionsColumn).toBeDefined();
     });
 
     it("columna actions renderiza link Pencil que apunta a '/4dnn1n/content/allies/{id}/edit'", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
       const actionsColumn = columns.find((col) => col.id === "actions");
@@ -219,15 +269,19 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly({ id: 7 });
       const mockRow = { original: ally };
-      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const editLink = screen.getByRole("link", { name: /editar aliado/i });
       expect(editLink).toBeInTheDocument();
       expect(editLink).toHaveAttribute("href", "/4dnn1n/content/allies/7/edit");
     });
 
     it("link Pencil apunta a la URL correcta con diferentes IDs", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
       const actionsColumn = columns.find((col) => col.id === "actions");
@@ -235,14 +289,18 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly({ id: 123 });
       const mockRow = { original: ally };
-      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const editLink = screen.getByRole("link", { name: /editar aliado/i });
       expect(editLink).toHaveAttribute("href", "/4dnn1n/content/allies/123/edit");
     });
 
     it("columna actions renderiza botón Trash2 (Eliminar aliado)", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
       const actionsColumn = columns.find((col) => col.id === "actions");
@@ -250,14 +308,18 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly({ id: 5 });
       const mockRow = { original: ally };
-      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const deleteButton = screen.getByRole("button", { name: /eliminar aliado/i });
       expect(deleteButton).toBeInTheDocument();
     });
 
     it("botón Trash2 invoca onDelete con el aliado al hacer click", async () => {
+      // Arrange
       const onDeleteMock = vi.fn();
       const columns = buildAllyColumns({ onDelete: onDeleteMock });
 
@@ -266,17 +328,20 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly({ id: 15, url: "https://ally-test.com" });
       const mockRow = { original: ally };
-      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
       render(cellResult);
       const deleteButton = screen.getByRole("button", { name: /eliminar aliado/i });
       await userEvent.click(deleteButton);
 
+      // Assert
       expect(onDeleteMock).toHaveBeenCalledWith(ally);
       expect(onDeleteMock).toHaveBeenCalledTimes(1);
     });
 
     it("ambos botones de acciones están siempre presentes (sin condiciones de permisos)", () => {
+      // Arrange
       const onDeleteMock = vi.fn();
       const columns = buildAllyColumns({ onDelete: onDeleteMock });
 
@@ -285,9 +350,12 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly({ id: 10 });
       const mockRow = { original: ally };
-      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
       render(cellResult);
+
+      // Assert
       const editLink = screen.getByRole("link", { name: /editar aliado/i });
       const deleteButton = screen.getByRole("button", { name: /eliminar aliado/i });
 
@@ -296,13 +364,18 @@ describe("buildAllyColumns", () => {
     });
 
     it("la columna actions tiene las propiedades meta correctas (stickyRight)", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
+      // Act
       const actionsColumn = columns.find((col) => col.id === "actions");
+
+      // Assert
       expect(actionsColumn?.meta).toEqual({ stickyRight: true });
     });
 
     it("botón Trash2 invoca onDelete múltiples veces cuando se hace click más de una vez", async () => {
+      // Arrange
       const onDeleteMock = vi.fn();
       const columns = buildAllyColumns({ onDelete: onDeleteMock });
 
@@ -311,14 +384,16 @@ describe("buildAllyColumns", () => {
 
       const ally = createMockAlly({ id: 20 });
       const mockRow = { original: ally };
-      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
 
+      // Act
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
       render(cellResult);
       const deleteButton = screen.getByRole("button", { name: /eliminar aliado/i });
 
       await userEvent.click(deleteButton);
       await userEvent.click(deleteButton);
 
+      // Assert
       expect(onDeleteMock).toHaveBeenCalledTimes(2);
       expect(onDeleteMock).toHaveBeenNthCalledWith(1, ally);
       expect(onDeleteMock).toHaveBeenNthCalledWith(2, ally);
@@ -328,8 +403,10 @@ describe("buildAllyColumns", () => {
   // ──── Step 3: Type checking ────
   describe("Seguridad de tipos en las definiciones de columnas", () => {
     it("retorna array de ColumnDef<ApiAlly>[]", () => {
+      // Arrange
       const columns = buildAllyColumns({ onDelete: vi.fn() });
 
+      // Assert
       expect(Array.isArray(columns)).toBe(true);
       expect(columns.length).toBeGreaterThan(0);
       const hasAccessorKeyOrId =
