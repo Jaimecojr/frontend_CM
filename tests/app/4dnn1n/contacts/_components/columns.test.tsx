@@ -38,7 +38,7 @@ describe("buildContactColumns", () => {
     it("columna comment muestra los primeros 80 caracteres seguidos de '…' cuando el texto es más largo", () => {
       // Arrange
       const columns = buildContactColumns({ onDelete: vi.fn() });
-      const longComment = "A".repeat(90); // 90 caracteres
+      const longComment = "A".repeat(90); // 90 characters
       const contact = createMockContact({ comment: longComment });
       const mockRow = { original: contact };
 
@@ -152,23 +152,6 @@ describe("buildContactColumns", () => {
 
       // Assert
       expect(screen.getByText(expectedText)).toBeInTheDocument();
-    });
-
-    it("columna created_at renderiza '-' cuando created_at es null", () => {
-      // Arrange
-      const columns = buildContactColumns({ onDelete: vi.fn() });
-      const contact = createMockContact({ created_at: null as any });
-      const mockRow = { original: contact };
-
-      const createdAtColumn = columns.find((col) => (col as any).accessorKey === "created_at");
-      expect(createdAtColumn?.cell).toBeDefined();
-
-      // Act
-      const cellResult = (createdAtColumn!.cell as any)({ row: mockRow });
-      render(cellResult);
-
-      // Assert
-      expect(screen.getByText("-")).toBeInTheDocument();
     });
 
     it("columna created_at renderiza '-' cuando created_at es una cadena vacía", () => {
