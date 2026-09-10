@@ -69,7 +69,7 @@ describe("contacts/fetch", () => {
       );
     });
 
-    it("no declara ni agraga parámetro stade (a diferencia de membership-forms)", async () => {
+    it("no declara ni agrega parámetro stade (a diferencia de membership-forms)", async () => {
       // Arrange
       const mockResponse = {
         data: [],

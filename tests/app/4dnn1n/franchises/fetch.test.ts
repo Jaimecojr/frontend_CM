@@ -7,7 +7,6 @@ import {
   createUser,
   updateFranchise,
   updateFranchiseState,
-  FranchiseType,
   type ApiFranchise,
   type CreateFranchisePayload,
   type UpdateFranchisePayload,

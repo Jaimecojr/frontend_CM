@@ -155,7 +155,7 @@ describe("DoctorForm", () => {
   });
 
   describe("canSubmit: todos los campos son obligatorios", () => {
-    it("es false mientras falte cualquiera de los 9 campos requeridos, y true sólo con todos completos", async () => {
+    it("es false mientras falte cualquiera de los 10 campos requeridos, y true sólo con todos completos", async () => {
       // Arrange
       (getSpecialties as any).mockResolvedValue([{ id: 1, name: "Cardiología", state: 1 }]);
       (getDepartments as any).mockResolvedValue(makeDepartments());
@@ -215,7 +215,7 @@ describe("DoctorForm", () => {
       });
       expect(saveButton).toBeDisabled();
 
-      // Act & Assert: + value_agreement -> all 9 fields complete
+      // Act & Assert: + value_agreement -> all 10 fields complete
       fireEvent.change(getFieldContainer(/^valor convenio/i).querySelector("input")!, {
         target: { value: "150000" },
       });
