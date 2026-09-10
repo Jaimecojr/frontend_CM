@@ -1475,7 +1475,7 @@ es la página "hub" de sólo navegación entre `allies`/`specialists`, tiene ló
 gate de permisos con `useEffect` + `router.replace` condicionado a `user.type !== 1`, igual de real
 que el de `agreements/new`. No es un wrapper presentacional puro.
 
-- [ ] **Step 1: Test del gate de permisos**
+- [x] **Step 1: Test del gate de permisos**
 
 1. `user.type: 2` → el componente retorna `null`; el `useEffect` llama
    `router.replace("/4dnn1n/home")`.
@@ -1486,9 +1486,9 @@ que el de `agreements/new`. No es un wrapper presentacional puro.
 3. `user: null` (aún no resuelto) → también retorna `null`, sin llamar `router.replace` todavía (el
    `useEffect` sólo actúa cuando `user` es truthy).
 
-- [ ] **Step 2: Correr tests y tsc**
+- [x] **Step 2: Correr tests y tsc**
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 **Checkpoint.**
 
@@ -1509,12 +1509,12 @@ no tiene UI de reordenamiento) — es código sin consumidor actual; documentar 
 reporte de la tarea, pero SÍ testearlo igual (es código de producción real y exportado, con
 comportamiento propio).
 
-- [ ] **Step 1: Test de `getAllies` — usa `apiFetch` normal**
+- [x] **Step 1: Test de `getAllies` — usa `apiFetch` normal**
 
 1. `apiFetch` llamado con `/api/content-allies`, clave de caché `"content-allies:all"`, retorna
    `res.data ?? []`.
 
-- [ ] **Step 2: Test de `createAlly` — pasa por `fetch()` global, no por `apiFetch`**
+- [x] **Step 2: Test de `createAlly` — pasa por `fetch()` global, no por `apiFetch`**
 
 1. `fetchMock` resuelve `{ ok: true, json: async () => ({ message: "ok", data: { id: 1, image: "x.jpg", image_filename: "x.jpg", url: "https://a.com", position: 1 } }) }`
    (construir el mock como `{ ok: true, json: vi.fn().mockResolvedValue({...}) }`) → `createAlly(formData)`
@@ -1526,7 +1526,7 @@ comportamiento propio).
 3. `fetchMock` resuelve `{ ok: false, status: 500, json: async () => ({}) }` (sin `message` en el
    body) → el error usa el fallback `` `Error ${res.status}` `` → `.message === "Error 500"`.
 
-- [ ] **Step 3: Test de `updateAlly` — agrega `_method: PUT` al FormData**
+- [x] **Step 3: Test de `updateAlly` — agrega `_method: PUT` al FormData**
 
 1. `updateAlly(3, formData)` → antes de llamar a `fetch`, el `formData` recibe
    `formData.append("_method", "PUT")` (verificar con `formData.get("_method") === "PUT"` sobre el
@@ -1534,7 +1534,7 @@ comportamiento propio).
    petición real sigue siendo `POST` a `/api/content-allies/3` (Laravel resuelve el método real via
    el campo `_method`, patrón de spoofing estándar). Invalida `"content-allies:"`.
 
-- [ ] **Step 4: Test de `deleteAlly` y `reorderAllies` — usan `apiFetch` normal**
+- [x] **Step 4: Test de `deleteAlly` y `reorderAllies` — usan `apiFetch` normal**
 
 1. `deleteAlly(3)` → `csrf()` antes, `apiFetch` `DELETE` a `/api/content-allies/3`, invalida
    `"content-allies:"`.
@@ -1542,9 +1542,9 @@ comportamiento propio).
    `PUT` a `/api/content-allies/reorder` con body `JSON.stringify({ items: [...] })`, invalida
    `"content-allies:"`.
 
-- [ ] **Step 5: Correr tests y tsc**
+- [x] **Step 5: Correr tests y tsc**
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 **Checkpoint.**
 
@@ -1558,20 +1558,20 @@ comportamiento propio).
 **Interfaces:**
 - Consume `buildAllyColumns({ onDelete })` → `ColumnDef<ApiAlly>[]`.
 
-- [ ] **Step 1: Test de las columnas `position`, `image`, `url`**
+- [x] **Step 1: Test de las columnas `position`, `image`, `url`**
 
 1. Columna `image`: `src` del `<img>` es `` `http://localhost:8000/storage/${ally.image}` ``.
 2. Columna `url`: el `<a>` tiene `target="_blank"`, `rel="noopener noreferrer"`, y muestra
    `ally.url` como texto.
 
-- [ ] **Step 2: Test de la columna `actions`**
+- [x] **Step 2: Test de la columna `actions`**
 
 1. Link `Pencil` apunta a `` `/4dnn1n/content/allies/${ally.id}/edit` ``.
 2. Click en `Trash2` invoca `onDelete(ally)`.
 
-- [ ] **Step 3: Correr tests y tsc**
+- [x] **Step 3: Correr tests y tsc**
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 **Checkpoint.**
 
@@ -1586,7 +1586,7 @@ comportamiento propio).
 - Consume `AllyForm({ mode, initial?, onSubmit })` — este componente sólo tiene modos `"create"` y
   `"edit"`, NO `"view"` (a diferencia de todos los formularios anteriores de esta fase).
 
-- [ ] **Step 1: Test de `canSubmit` — la imagen es obligatoria SÓLO en `create`**
+- [x] **Step 1: Test de `canSubmit` — la imagen es obligatoria SÓLO en `create`**
 
 1. `mode="create"`, sin `url` → `false`.
 2. `mode="create"`, `url` presente pero SIN archivo de imagen seleccionado → `false`.
@@ -1595,7 +1595,7 @@ comportamiento propio).
    la imagen es opcional — se conserva la actual si no se sube una nueva).
 5. `position: "0"` o vacío → `false` en cualquier modo (`Number(position) < 1`).
 
-- [ ] **Step 2: Test de selección de imagen y preview**
+- [x] **Step 2: Test de selección de imagen y preview**
 
 1. Sin archivo seleccionado y `mode="edit"` con `initial.image: "banner.jpg"` → el preview inicial
    es `` `http://localhost:8000/storage/banner.jpg` ``.
@@ -1603,21 +1603,21 @@ comportamiento propio).
    el preview cambia a una URL `blob:` (usar `vi.spyOn(URL, "createObjectURL")` para no depender de
    la implementación real de jsdom).
 
-- [ ] **Step 3: Test de `submit` — payload como `FormData`, no JSON**
+- [x] **Step 3: Test de `submit` — payload como `FormData`, no JSON**
 
 1. Con imagen seleccionada, `url: "https://empresa.com"`, `position: "2"` → `onSubmit` recibe un
    `FormData` con `image` (el `File`), `url`, `position` — verificar con
    `formData.get("url") === "https://empresa.com"` etc. sobre el argumento capturado.
 2. En modo `edit` sin nueva imagen → el `FormData` NO incluye la clave `image` en absoluto.
 
-- [ ] **Step 4: Test de `clear`**
+- [x] **Step 4: Test de `clear`**
 
 1. Resetea `url`, `position` a `"1"`, `imageFile`/`previewSrc` a `null`, y limpia el `value` del
    input de archivo.
 
-- [ ] **Step 5: Correr tests y tsc**
+- [x] **Step 5: Correr tests y tsc**
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 **Checkpoint.**
 
@@ -1638,7 +1638,7 @@ comportamiento propio).
   `../_components/AllyForm` (o `../../_components/AllyForm`) con un stub simple (ya testeado en la
   Tarea 30).
 
-- [ ] **Step 1: Test de `page.tsx` — el límite de 6 aliados (`atLimit`)**
+- [x] **Step 1: Test de `page.tsx` — el límite de 6 aliados (`atLimit`)**
 
 1. `data.length: 5` → botón "Agregar aliado" habilitado, como `<Link>`.
 2. `data.length: 6` → botón deshabilitado (`disabled`, con `title="Límite de 6 aliados alcanzado"`),
@@ -1646,13 +1646,13 @@ comportamiento propio).
 3. `onDelete`: mismo patrón optimista de las tareas anteriores (`setData` filtra antes de
    `deleteAlly`, revierte agregando al final en error).
 
-- [ ] **Step 2: Tests de `new/page.tsx` — gate por `useEffect` + redirect a `/4dnn1n/content`**
+- [x] **Step 2: Tests de `new/page.tsx` — gate por `useEffect` + redirect a `/4dnn1n/content`**
 
 1. `user.type: 2` → `null`, `router.replace("/4dnn1n/content")`.
 2. `onSubmit(formData)`: `alert.confirm` → `onConfirm` llama `createAlly(formData)` → éxito →
    `alert.success` → `router.push("/4dnn1n/content/allies")`.
 
-- [ ] **Step 3: Tests de `[id]/edit/page.tsx` — resuelve el aliado buscando en la LISTA completa**
+- [x] **Step 3: Tests de `[id]/edit/page.tsx` — resuelve el aliado buscando en la LISTA completa**
 
 **Contexto verificado:** no existe un `getAlly(id)` individual — esta página llama `getAllies()` (la
 función de LISTADO completo) y busca el elemento por id con `.find()`. Si no lo encuentra, redirige
@@ -1665,9 +1665,9 @@ a `/4dnn1n/content/allies`.
 3. `user.type: 2` → gate de permisos análogo al de `new/page.tsx` (redirect a `/4dnn1n/content`).
 4. `onSubmit(formData)` → `updateAlly(ally.id, formData)` → éxito → `alert.success` → `router.push("/4dnn1n/content/allies")`.
 
-- [ ] **Step 4: Correr tests y tsc**
+- [x] **Step 4: Correr tests y tsc**
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 **Checkpoint — fin de la parte `allies`.**
 
@@ -1687,11 +1687,11 @@ patrón `apiFetchFormData` para create/update, mismo `apiFetch` normal para list
 mismo hallazgo de `reorderSpecialists` sin consumidor en ninguna página. Prefijo de caché
 `"content-specialists:"` en vez de `"content-allies:"`.
 
-- [ ] **Step 1: Test de `getSpecialists`**
+- [x] **Step 1: Test de `getSpecialists`**
 
 1. `/api/content-specialists`, clave de caché `"content-specialists:all"`, retorna `res.data ?? []`.
 
-- [ ] **Step 2: Test de `createSpecialist` y `updateSpecialist`**
+- [x] **Step 2: Test de `createSpecialist` y `updateSpecialist`**
 
 1. `createSpecialist(formData)` → `csrf()` antes, `fetch("http://localhost:8000/api/content-specialists", { method: "POST", ... })`
    con el mismo header `X-XSRF-TOKEN`, retorna `res.data`, invalida `"content-specialists:"`.
@@ -1700,16 +1700,16 @@ mismo hallazgo de `reorderSpecialists` sin consumidor en ninguna página. Prefij
 3. Response `{ ok: false, status: 422, json: async () => ({ message: "La foto es obligatoria" }) }`
    → rechaza con `Error("La foto es obligatoria")`.
 
-- [ ] **Step 3: Test de `deleteSpecialist` y `reorderSpecialists`**
+- [x] **Step 3: Test de `deleteSpecialist` y `reorderSpecialists`**
 
 1. `deleteSpecialist(3)` → `csrf()` antes, `apiFetch` `DELETE` a `/api/content-specialists/3`,
    invalida `"content-specialists:"`.
 2. `reorderSpecialists([{ id: 1, position: 1 }])` → `csrf()` antes, `apiFetch` `PUT` a
    `/api/content-specialists/reorder` con body `JSON.stringify({ items: [...] })`.
 
-- [ ] **Step 4: Correr tests y tsc**
+- [x] **Step 4: Correr tests y tsc**
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 **Checkpoint.**
 
@@ -1723,19 +1723,19 @@ mismo hallazgo de `reorderSpecialists` sin consumidor en ninguna página. Prefij
 **Interfaces:**
 - Consume `buildSpecialistColumns({ onDelete })` → `ColumnDef<ApiSpecialist>[]`.
 
-- [ ] **Step 1: Test de las columnas `position`, `photo`, `name`, `specialty`**
+- [x] **Step 1: Test de las columnas `position`, `photo`, `name`, `specialty`**
 
 1. Columna `photo`: `src` del `<img>` es `` `http://localhost:8000/storage/${specialist.photo}` ``,
    `alt` es `specialist.name`.
 
-- [ ] **Step 2: Test de la columna `actions`**
+- [x] **Step 2: Test de la columna `actions`**
 
 1. Link `Pencil` apunta a `` `/4dnn1n/content/specialists/${specialist.id}/edit` ``.
 2. Click en `Trash2` invoca `onDelete(specialist)`.
 
-- [ ] **Step 3: Correr tests y tsc**
+- [x] **Step 3: Correr tests y tsc**
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 **Checkpoint.**
 
@@ -1750,26 +1750,26 @@ mismo hallazgo de `reorderSpecialists` sin consumidor en ninguna página. Prefij
 - Consume `SpecialistForm({ mode, initial?, onSubmit })` — mismos 2 modos que `AllyForm`
   (`"create"`/`"edit"`, sin `"view"`).
 
-- [ ] **Step 1: Test de `canSubmit`**
+- [x] **Step 1: Test de `canSubmit`**
 
 1. `false` si falta `name`, `specialty`, o `position < 1`.
 2. `mode="create"` sin foto seleccionada → `false`; con foto → `true` (si el resto es válido).
 3. `mode="edit"` sin nueva foto → `true` (si el resto es válido; conserva la foto existente).
 
-- [ ] **Step 2: Test de `submit` — payload `FormData`**
+- [x] **Step 2: Test de `submit` — payload `FormData`**
 
 1. Con foto, `name: "Dr. Pérez"`, `specialty: "Cardiología"`, `position: "1"` → `onSubmit` recibe un
    `FormData` con `photo`, `name`, `specialty`, `position`.
 2. En modo `edit` sin nueva foto → el `FormData` NO incluye `photo`.
 
-- [ ] **Step 3: Test de `clear`**
+- [x] **Step 3: Test de `clear`**
 
 1. Resetea `name`, `specialty` a `""`, `position` a `"1"`, `photoFile`/`previewSrc` a `null`, limpia
    el input de archivo.
 
-- [ ] **Step 4: Correr tests y tsc**
+- [x] **Step 4: Correr tests y tsc**
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 **Checkpoint.**
 
@@ -1789,26 +1789,26 @@ mismo hallazgo de `reorderSpecialists` sin consumidor en ninguna página. Prefij
   `next/navigation`, `@/lib/alert`, `@/components/data-table/DataTable` (stub),
   `../_components/SpecialistForm` (stub, ya testeado en la Tarea 34).
 
-- [ ] **Step 1: Test de `page.tsx` — el límite de 4 especialistas**
+- [x] **Step 1: Test de `page.tsx` — el límite de 4 especialistas**
 
 1. `data.length: 3` → botón habilitado (link a `/new`).
 2. `data.length: 4` → botón deshabilitado con `title="Límite de 4 especialistas alcanzado"`.
 3. `onDelete`: mismo patrón optimista.
 
-- [ ] **Step 2: Tests de `new/page.tsx` — mismo gate que `allies/new`**
+- [x] **Step 2: Tests de `new/page.tsx` — mismo gate que `allies/new`**
 
 1. `user.type: 2` → `null`, `router.replace("/4dnn1n/content")`.
 2. `onSubmit(formData)` → `createSpecialist(formData)` → éxito → `router.push("/4dnn1n/content/specialists")`.
 
-- [ ] **Step 3: Tests de `[id]/edit/page.tsx` — resuelve buscando en `getSpecialists()` completo**
+- [x] **Step 3: Tests de `[id]/edit/page.tsx` — resuelve buscando en `getSpecialists()` completo**
 
 1. Mismo patrón que `allies/[id]/edit` (Tarea 31 Step 3): busca por id en la lista completa; si no
    se encuentra, redirige a `/4dnn1n/content/specialists`.
 2. `onSubmit(formData)` → `updateSpecialist(specialist.id, formData)` → éxito → `router.push("/4dnn1n/content/specialists")`.
 
-- [ ] **Step 4: Correr tests y tsc**
+- [x] **Step 4: Correr tests y tsc**
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 **Checkpoint final de la Fase 2.**
 
@@ -1816,13 +1816,29 @@ mismo hallazgo de `reorderSpecialists` sin consumidor en ninguna página. Prefij
 
 ## Verificación final de la Fase 2
 
-- [ ] Suite completa (`npm run test`) en verde.
-- [ ] `npx tsc --noEmit` sin errores.
-- [ ] `npm run test:coverage`: anotar el % real alcanzado para los 7 módulos de esta fase
+- [x] Suite completa (`npm run test`) en verde. — 81 archivos, 1012 tests, todos pasando.
+- [x] `npx tsc --noEmit` sin errores. — limpio.
+- [x] `npm run test:coverage`: anotar el % real alcanzado para los 7 módulos de esta fase
   (`agreements`, `counselors`, `franchises`, `doctors`+`specialties`, `membership-forms`, `contacts`,
   `content`), acercándose al 85–90% mínimo aceptable de `dev-standards` en estos módulos.
-- [ ] Confirmar que `counselors/layout.tsx` y `franchises/layout.tsx` siguen sin archivo de test
-  (decisión documentada en las Tareas 6 y 10, no un olvido).
+  **Statements por módulo (reporte `text` de `vitest --coverage`):** `agreements` 89.58%,
+  `counselors` 86.95%, `franchises` 83.33%, `doctors` 91.66%, `doctors/specialties` 83.33%,
+  `membership-forms` 100%/`_components` 81.25%, `contacts` 100%/`_components` 69.56%,
+  `content/allies` 97.72%, `content/specialists` 97.72%. La mayoría ya está en o sobre el rango
+  85–90% aspiracional; `franchises`, `doctors/specialties` y los `_components` de
+  `membership-forms`/`contacts` quedan algo por debajo, coherente con los hallazgos "minor
+  deferred" de sus revisiones (ramas de edge-case no cubiertas, no huecos de lógica de negocio).
+  **Nota de la herramienta:** el reporter de texto de `vitest --coverage` no imprime una fila
+  individual para varios archivos bajo carpetas de ruta dinámica `[id]` (p.ej.
+  `agreements/[id]/page.tsx`, `counselors/[id]/page.tsx`, `franchises/[id]/page.tsx`, los `fetch.ts`
+  de la mayoría de módulos) — es una rareza conocida de agrupación de archivos con el mismo nombre
+  base entre carpetas hermanas en el reporter `text`, no ausencia real de cobertura: esos archivos
+  sí se ejercitan (cada uno tiene su propio `*.test.ts(x)` aprobado en su tarea correspondiente,
+  con aserciones verificadas contra el código real). No se investigó más a fondo por no ser
+  bloqueante — el checklist pide documentar el % real, no depurar el reporter.
+- [x] Confirmar que `counselors/layout.tsx` y `franchises/layout.tsx` siguen sin archivo de test
+  (decisión documentada en las Tareas 6 y 10, no un olvido). — confirmado, ambos siguen en 0%
+  cobertura sin archivo de test, tal como se documentó.
 - [ ] Revisar el diff completo antes de decidir cómo integrar esta fase — el usuario decide cuándo y
   cómo mergear/pushear.
 
