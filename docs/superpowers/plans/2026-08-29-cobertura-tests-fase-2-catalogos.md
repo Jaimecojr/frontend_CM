@@ -1231,7 +1231,7 @@ vi.mock("@/lib/memCache", () => ({
 }));
 ```
 
-- [ ] **Step 1: Tests de `getMembershipForms` — el parámetro `stade` declarado pero sin efecto**
+- [x] **Step 1: Tests de `getMembershipForms` — el parámetro `stade` declarado pero sin efecto**
 
 **Hallazgo verificado, no es un bug a corregir en este plan:** el tipo de parámetros acepta `stade?: string`, pero la función nunca lo lee al construir el query string — sólo usa `search`,
 `page`, `per_page`. Escribir un test que confirme esto explícitamente (para que quede documentado
@@ -1245,7 +1245,7 @@ como comportamiento real, no un olvido de quien lea el código después).
 5. Clave de caché `` `membership-forms:list:${query}` `` (con `query` incluyendo el `?` cuando hay
    params, string vacío cuando no hay).
 
-- [ ] **Step 2: Tests de `getMembershipForm`, `deleteMembershipForm`, `markMembershipFormConverted`**
+- [x] **Step 2: Tests de `getMembershipForm`, `deleteMembershipForm`, `markMembershipFormConverted`**
 
 1. `getMembershipForm(5)` → `/api/membership-forms/5`, sin caché, retorna `res.data`.
 2. `deleteMembershipForm(5)` → `csrf()` antes, `apiFetch` `DELETE` a `/api/membership-forms/5`, luego
@@ -1253,9 +1253,9 @@ como comportamiento real, no un olvido de quien lea el código después).
 3. `markMembershipFormConverted(5)` → `csrf()` antes, `apiFetch` `PATCH` a
    `/api/membership-forms/5/convert`, misma invalidación de caché.
 
-- [ ] **Step 3: Correr tests y tsc**
+- [x] **Step 3: Correr tests y tsc**
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 **Checkpoint.**
 
@@ -1269,13 +1269,13 @@ como comportamiento real, no un olvido de quien lea el código después).
 **Interfaces:**
 - Consume `buildMembershipFormColumns({ onDelete })` → `ColumnDef<ApiMembershipForm>[]`.
 
-- [ ] **Step 1: Test de las columnas `full_name`, `phone`, `city`, `seller`, `date`**
+- [x] **Step 1: Test de las columnas `full_name`, `phone`, `city`, `seller`, `date`**
 
 1. `date: "2026-03-05"` → celda muestra `"05/03/2026"` (split manual sobre el string `"YYYY-MM-DD"`,
    sin usar `Date`/`Intl`).
 2. `date: ""` o ausente → celda muestra `"-"`.
 
-- [ ] **Step 2: Test de la columna `actions` — sin gate (siempre visible)**
+- [x] **Step 2: Test de la columna `actions` — sin gate (siempre visible)**
 
 **Contexto verificado:** a diferencia de todas las columnas `actions` anteriores, esta NO recibe
 ningún flag de permisos (`hasAccess`/`canManage`) — siempre incluye ambos botones para cualquier
@@ -1284,9 +1284,9 @@ usuario que vea la tabla.
 1. El link `UserPlus` ("Crear afiliado") apunta a `` `/4dnn1n/affiliates/new?from=${form.id}` ``.
 2. Click en el botón `Trash2` invoca `onDelete(form)` con la solicitud de la fila.
 
-- [ ] **Step 3: Correr tests y tsc**
+- [x] **Step 3: Correr tests y tsc**
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 **Checkpoint.**
 
@@ -1310,7 +1310,7 @@ de la Tarea 21 de que `stade`/`search` no se usan realmente para este listado de
 tampoco vía esta página — aunque `search` sí se soporta en `fetch.ts`, esta página simplemente no
 expone la UI para usarlo).
 
-- [ ] **Step 1: Test de `onDelete` — actualización optimista y reversión en error**
+- [x] **Step 1: Test de `onDelete` — actualización optimista y reversión en error**
 
 1. Confirmar (`alert.confirm` con `onConfirm` ejecutándose) → dentro de `onConfirm`: `setData` filtra
    la solicitud eliminada y `setMeta` decrementa `total` en 1, ANTES de que
@@ -1323,9 +1323,9 @@ expone la UI para usarlo).
 4. Cancelar la confirmación (`alert.confirm` resuelve `false` sin invocar `onConfirm`) →
    `deleteMembershipForm` NO se llama, `setData`/`setMeta` no se llaman.
 
-- [ ] **Step 2: Correr tests y tsc**
+- [x] **Step 2: Correr tests y tsc**
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 **Checkpoint — fin del bloque `membership-forms`.**
 
@@ -1356,7 +1356,7 @@ vi.mock("@/lib/memCache", () => ({
 }));
 ```
 
-- [ ] **Step 1: Tests de `getContacts`**
+- [x] **Step 1: Tests de `getContacts`**
 
 1. Sin params → `/api/contacts` (sin `?`).
 2. `{ search: "ana", page: 1, per_page: 20 }` → `/api/contacts?search=ana&page=1&per_page=20` (SIN
@@ -1365,15 +1365,15 @@ vi.mock("@/lib/memCache", () => ({
 3. Retorna `{ data: res.data ?? [], meta: res.meta }`.
 4. Clave de caché `` `contacts:list:${query}` ``.
 
-- [ ] **Step 2: Tests de `getContact` y `deleteContact`**
+- [x] **Step 2: Tests de `getContact` y `deleteContact`**
 
 1. `getContact(5)` → `/api/contacts/5`, sin caché, retorna `res.data`.
 2. `deleteContact(5)` → `csrf()` antes, `apiFetch` `DELETE` a `/api/contacts/5`, luego
    `memCache.invalidatePrefix("contacts:list:")`.
 
-- [ ] **Step 3: Correr tests y tsc**
+- [x] **Step 3: Correr tests y tsc**
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 **Checkpoint.**
 
@@ -1387,12 +1387,12 @@ vi.mock("@/lib/memCache", () => ({
 **Interfaces:**
 - Consume `buildContactColumns({ onDelete })` → `ColumnDef<ApiContact>[]`.
 
-- [ ] **Step 1: Test de la columna `comment` — truncado a 80 caracteres**
+- [x] **Step 1: Test de la columna `comment` — truncado a 80 caracteres**
 
 1. `comment` con 90 caracteres → celda muestra los primeros 80 seguidos de `"…"`.
 2. `comment` con 50 caracteres → se muestra completo, sin `"…"`.
 
-- [ ] **Step 2: Test de la columna `created_at` — formateo vía `Date`, no split de string**
+- [x] **Step 2: Test de la columna `created_at` — formateo vía `Date`, no split de string**
 
 **Contexto verificado:** a diferencia de `membership-forms` (que hace `split("-")` manual sobre un
 string `"YYYY-MM-DD"`), esta columna construye un objeto `Date` real a partir de `created_at`
@@ -1403,14 +1403,14 @@ string `"YYYY-MM-DD"`), esta columna construye un objeto `Date` real a partir de
    entorno de test — comparar contra `` `${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}` `` construido con el mismo `new Date(...)`).
 2. `created_at` ausente/falsy → `"-"`.
 
-- [ ] **Step 3: Test de la columna `actions` — sin gate, igual que `membership-forms`**
+- [x] **Step 3: Test de la columna `actions` — sin gate, igual que `membership-forms`**
 
 1. Link `Eye` apunta a `` `/4dnn1n/contacts/${contact.id}` ``.
 2. Click en `Trash2` invoca `onDelete(contact)`.
 
-- [ ] **Step 4: Correr tests y tsc**
+- [x] **Step 4: Correr tests y tsc**
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 **Checkpoint.**
 
@@ -1427,7 +1427,7 @@ string `"YYYY-MM-DD"`), esta columna construye un objeto `Date` real a partir de
 - Mockear `./fetch` (o `../fetch`), `@/hooks/useServerTable`, `next/navigation`, `@/lib/alert`,
   `@/components/data-table/DataTable` (stub).
 
-- [ ] **Step 1: Test de `page.tsx` — `useServerTable` sin opciones**
+- [x] **Step 1: Test de `page.tsx` — `useServerTable` sin opciones**
 
 **Contexto verificado:** a diferencia de `membership-forms/page.tsx` (que pasa
 `{ defaultStade: "all" }`), esta página invoca `useServerTable(getContacts)` sin segundo argumento —
@@ -1439,7 +1439,7 @@ un segundo argumento).
 1. `onDelete`: mismo patrón optimista que `membership-forms` Step 1 (filtrar de `setData`,
    decrementar `setMeta`, revertir con `setData(prev => [...prev, contact])` en error).
 
-- [ ] **Step 2: Test de `[id]/page.tsx` — `formatDate` local (duplicado del de `columns.tsx`)**
+- [x] **Step 2: Test de `[id]/page.tsx` — `formatDate` local (duplicado del de `columns.tsx`)**
 
 1. Mientras `loading` → skeleton con clases `animate-pulse` (propio de este archivo, no
    `FormPageSkeleton`).
@@ -1451,9 +1451,9 @@ un segundo argumento).
    directamente (SIN actualización optimista de una lista, ya que esta vista no maneja un array) →
    éxito → `alert.success` → `router.push("/4dnn1n/contacts")`.
 
-- [ ] **Step 3: Correr tests y tsc**
+- [x] **Step 3: Correr tests y tsc**
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 **Checkpoint — fin del bloque `contacts`.**
 
