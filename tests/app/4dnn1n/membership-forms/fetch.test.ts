@@ -78,7 +78,7 @@ describe("membership-forms/fetch", () => {
       };
       (apiFetch as any).mockResolvedValue(mockResponse);
 
-      // Act - primer call sin params
+      // Act - first call with no params
       await getMembershipForms();
       const urlSinParams = (apiFetch as any).mock.calls[0][0];
 
@@ -86,7 +86,7 @@ describe("membership-forms/fetch", () => {
       vi.clearAllMocks();
       (apiFetch as any).mockResolvedValue(mockResponse);
 
-      // Act - segundo call solo con stade
+      // Act - second call with only stade
       await getMembershipForms({ stade: "1" });
       const urlConStade = (apiFetch as any).mock.calls[0][0];
 
