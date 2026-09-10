@@ -21,6 +21,171 @@ function createMockContact(overrides: Partial<ApiContact> = {}): ApiContact {
 }
 
 describe("buildContactColumns", () => {
+  // ──── Step 0: Test columns name, email, city, phone, subject ────
+  describe("Columnas básicas (name, email, city, phone, subject)", () => {
+    it("retorna columna name con accessorKey correcto", () => {
+      // Arrange
+      const columns = buildContactColumns({ onDelete: vi.fn() });
+
+      // Act
+      const nameColumn = columns.find((col) => (col as any).accessorKey === "name");
+
+      // Assert
+      expect(nameColumn).toBeDefined();
+      expect(nameColumn?.header).toBe("Nombre");
+    });
+
+    it("columna name renderiza el nombre del contacto", () => {
+      // Arrange
+      const columns = buildContactColumns({ onDelete: vi.fn() });
+      const contact = createMockContact({ name: "Ana García" });
+      const mockRow = { original: contact };
+
+      const nameColumn = columns.find((col) => (col as any).accessorKey === "name");
+      expect(nameColumn?.cell).toBeDefined();
+
+      // Act
+      const cellResult = (nameColumn!.cell as any)({ row: mockRow });
+      render(cellResult);
+
+      // Assert
+      expect(screen.getByText("Ana García")).toBeInTheDocument();
+    });
+
+    it("retorna columna email con accessorKey correcto", () => {
+      // Arrange
+      const columns = buildContactColumns({ onDelete: vi.fn() });
+
+      // Act
+      const emailColumn = columns.find((col) => (col as any).accessorKey === "email");
+
+      // Assert
+      expect(emailColumn).toBeDefined();
+      expect(emailColumn?.header).toBe("Correo");
+    });
+
+    it("columna email renderiza el correo del contacto", () => {
+      // Arrange
+      const columns = buildContactColumns({ onDelete: vi.fn() });
+      const contact = createMockContact({ email: "ana@example.com" });
+      const mockRow = { original: contact };
+
+      const emailColumn = columns.find((col) => (col as any).accessorKey === "email");
+      expect(emailColumn?.cell).toBeDefined();
+
+      // Act
+      const cellResult = (emailColumn!.cell as any)({ row: mockRow });
+      render(cellResult);
+
+      // Assert
+      expect(screen.getByText("ana@example.com")).toBeInTheDocument();
+    });
+
+    it("retorna columna city con id correcto", () => {
+      // Arrange
+      const columns = buildContactColumns({ onDelete: vi.fn() });
+
+      // Act
+      const cityColumn = columns.find((col) => col.id === "city");
+
+      // Assert
+      expect(cityColumn).toBeDefined();
+      expect(cityColumn?.header).toBe("Ciudad");
+    });
+
+    it("columna city renderiza el nombre de la ciudad cuando existe", () => {
+      // Arrange
+      const columns = buildContactColumns({ onDelete: vi.fn() });
+      const contact = createMockContact({ city: { id: 2, name: "Cali" } });
+      const mockRow = { original: contact };
+
+      const cityColumn = columns.find((col) => col.id === "city");
+      expect(cityColumn?.cell).toBeDefined();
+
+      // Act
+      const cellResult = (cityColumn!.cell as any)({ row: mockRow });
+      render(cellResult);
+
+      // Assert
+      expect(screen.getByText("Cali")).toBeInTheDocument();
+    });
+
+    it("columna city renderiza '-' cuando city es null", () => {
+      // Arrange
+      const columns = buildContactColumns({ onDelete: vi.fn() });
+      const contact = createMockContact({ city: null });
+      const mockRow = { original: contact };
+
+      const cityColumn = columns.find((col) => col.id === "city");
+      expect(cityColumn?.cell).toBeDefined();
+
+      // Act
+      const cellResult = (cityColumn!.cell as any)({ row: mockRow });
+      render(cellResult);
+
+      // Assert
+      expect(screen.getByText("-")).toBeInTheDocument();
+    });
+
+    it("retorna columna phone con accessorKey correcto", () => {
+      // Arrange
+      const columns = buildContactColumns({ onDelete: vi.fn() });
+
+      // Act
+      const phoneColumn = columns.find((col) => (col as any).accessorKey === "phone");
+
+      // Assert
+      expect(phoneColumn).toBeDefined();
+      expect(phoneColumn?.header).toBe("Teléfono");
+    });
+
+    it("columna phone renderiza el número de teléfono", () => {
+      // Arrange
+      const columns = buildContactColumns({ onDelete: vi.fn() });
+      const contact = createMockContact({ phone: "3109876543" });
+      const mockRow = { original: contact };
+
+      const phoneColumn = columns.find((col) => (col as any).accessorKey === "phone");
+      expect(phoneColumn?.cell).toBeDefined();
+
+      // Act
+      const cellResult = (phoneColumn!.cell as any)({ row: mockRow });
+      render(cellResult);
+
+      // Assert
+      expect(screen.getByText("3109876543")).toBeInTheDocument();
+    });
+
+    it("retorna columna subject con accessorKey correcto", () => {
+      // Arrange
+      const columns = buildContactColumns({ onDelete: vi.fn() });
+
+      // Act
+      const subjectColumn = columns.find((col) => (col as any).accessorKey === "subject");
+
+      // Assert
+      expect(subjectColumn).toBeDefined();
+      expect(subjectColumn?.header).toBe("Asunto");
+    });
+
+    it("columna subject renderiza el asunto del mensaje", () => {
+      // Arrange
+      const columns = buildContactColumns({ onDelete: vi.fn() });
+      const contact = createMockContact({ subject: "Consulta sobre afiliación" });
+      const mockRow = { original: contact };
+
+      const subjectColumn = columns.find((col) => (col as any).accessorKey === "subject");
+      expect(subjectColumn?.cell).toBeDefined();
+
+      // Act
+      const cellResult = (subjectColumn!.cell as any)({ row: mockRow });
+      render(cellResult);
+
+      // Assert
+      expect(screen.getByText("Consulta sobre afiliación")).toBeInTheDocument();
+    });
+  });
+
   // ──── Step 1: Test comment column truncation ────
   describe("Columna comment (truncado a 80 caracteres)", () => {
     it("retorna columna comment con accessorKey correcto", () => {
@@ -223,17 +388,6 @@ describe("buildContactColumns", () => {
   // ──── Step 3: Test actions column without permission gates ────
   describe("Columna actions (sin gates de permisos)", () => {
     it("retorna columna actions con id correcto", () => {
-      // Arrange
-      const columns = buildContactColumns({ onDelete: vi.fn() });
-
-      // Act
-      const actionsColumn = columns.find((col) => col.id === "actions");
-
-      // Assert
-      expect(actionsColumn).toBeDefined();
-    });
-
-    it("columna actions siempre está presente independientemente de permisos", () => {
       // Arrange
       const columns = buildContactColumns({ onDelete: vi.fn() });
 
