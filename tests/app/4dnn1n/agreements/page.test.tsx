@@ -69,7 +69,7 @@ describe("AgreementsPage", () => {
     vi.clearAllMocks();
   });
 
-  // ──── Step 1: gates de canView/canManage y el botón de crear ────
+  // ──── Step 1: canView/canManage gates and the create button ────
   describe("gate de permisos para el botón 'Crear Convenio'", () => {
     it("user.type: 3 → no renderiza el botón (toolbarActions es null)", () => {
       // Arrange
@@ -109,7 +109,7 @@ describe("AgreementsPage", () => {
     });
   });
 
-  // ──── Step 2: updateFn con resolución por ref ────
+  // ──── Step 2: updateFn resolved by ref ────
   describe("updateFn pasado a useOptimisticToggle (resolución por ref)", () => {
     it("resuelve el convenio completo desde data por id y llama updateAgreementState con ese objeto", async () => {
       // Arrange

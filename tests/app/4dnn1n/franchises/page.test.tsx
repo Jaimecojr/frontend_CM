@@ -72,7 +72,7 @@ describe("FranchisePage", () => {
     (useOptimisticToggle as any).mockReturnValue(vi.fn());
   });
 
-  // ──── Step 1: gate isSuperAdmin para el botón "Crear Franquicia" ────
+  // ──── Step 1: isSuperAdmin gate for the "Crear Franquicia" button ────
   describe("gate isSuperAdmin para el botón 'Crear Franquicia'", () => {
     it("user.type: 2 → no renderiza el botón (toolbarActions vacío)", () => {
       // Arrange
@@ -100,7 +100,7 @@ describe("FranchisePage", () => {
     });
   });
 
-  // ──── Step 1 (cont.): click en el botón de toggle de una fila ────
+  // ──── Step 1 (cont.): click on a row's toggle button ────
   describe("toggle de estado desde la columna de acciones", () => {
     it("al hacer click en el botón de estado, invoca la función de useOptimisticToggle con el ApiFranchise de la fila", () => {
       // Arrange

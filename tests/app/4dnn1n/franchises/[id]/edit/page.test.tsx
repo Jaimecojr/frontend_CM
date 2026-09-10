@@ -96,7 +96,7 @@ describe("EditFranchisePage", () => {
     (getFranchise as any).mockResolvedValue(createMockFranchise());
   });
 
-  // ──── Step 4: orden permiso ANTES que el dato ────
+  // ──── Step 4: permission check runs BEFORE the data check ────
   describe("gate de permisos (orden: authLoading → permiso → dato)", () => {
     it("authLoading: true → no renderiza nada (retorna null)", () => {
       // Arrange

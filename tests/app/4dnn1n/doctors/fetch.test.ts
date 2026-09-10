@@ -65,8 +65,7 @@ describe("doctors/fetch", () => {
         specialty_id: 2,
       });
 
-      // Assert
-      // stade se traduce a state en el query string
+      // Assert: all query params are forwarded, including state translated from stade
       expect(apiFetch).toHaveBeenCalledWith(
         expect.stringContaining("page=1")
       );
@@ -104,6 +103,7 @@ describe("doctors/fetch", () => {
       // Assert
       const callUrl = (apiFetch as any).mock.calls[0][0];
       expect(callUrl).toContain("state=1");
+      // stade is translated to state in the query string, never forwarded as-is
       expect(callUrl).not.toContain("stade=1");
     });
 

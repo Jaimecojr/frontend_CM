@@ -69,7 +69,7 @@ describe("NewAgreementPage", () => {
     (useRouter as any).mockReturnValue({ replace: replaceMock, push: pushMock });
   });
 
-  // ──── Step 3: gate por useEffect + redirect ────
+  // ──── Step 3: gate via useEffect + redirect ────
   describe("gate de permisos", () => {
     it("user.type: 3 → no renderiza el formulario (retorna null) y redirige vía router.replace", async () => {
       // Arrange
@@ -94,6 +94,20 @@ describe("NewAgreementPage", () => {
       // Assert
       expect(await screen.findByTestId("agreement-form")).toHaveAttribute("data-mode", "create");
       expect(replaceMock).not.toHaveBeenCalled();
+    });
+
+    it("user: null (aún no resuelto por AuthContext) → no renderiza el formulario y NO redirige", async () => {
+      // Arrange
+      (useAuth as any).mockReturnValue({ user: null, loading: true, isLoggingOut: false });
+
+      // Act
+      const { container } = render(<NewAgreementPage />);
+
+      // Assert
+      expect(screen.queryByTestId("agreement-form")).not.toBeInTheDocument();
+      expect(container).toBeEmptyDOMElement();
+      expect(replaceMock).not.toHaveBeenCalled();
+      expect(pushMock).not.toHaveBeenCalled();
     });
   });
 

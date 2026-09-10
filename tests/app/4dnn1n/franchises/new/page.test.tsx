@@ -77,7 +77,7 @@ describe("NewUserPage", () => {
     (useRouter as any).mockReturnValue({ replace: replaceMock, push: pushMock });
   });
 
-  // ──── Step 2: gate síncrono sin redirect (mensaje inline) ────
+  // ──── Step 2: synchronous gate with no redirect (inline message) ────
   describe("gate de permisos (chequeo síncrono, sin router.replace/push)", () => {
     it("loading: true → no renderiza nada (retorna null)", () => {
       // Arrange

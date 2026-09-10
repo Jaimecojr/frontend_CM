@@ -57,7 +57,7 @@ describe("ViewCounselorPage", () => {
     vi.clearAllMocks();
   });
 
-  // ──── Step 3: sin gate de permisos ────
+  // ──── Step 3: no permission gate ────
   it("muestra FormPageSkeleton mientras getCounselor no ha resuelto, sin renderizar el formulario", () => {
     // Arrange
     mockParams("5");

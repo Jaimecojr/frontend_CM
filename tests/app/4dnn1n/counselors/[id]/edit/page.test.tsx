@@ -85,7 +85,7 @@ describe("EditCounselorPage", () => {
     (useRouter as any).mockReturnValue({ replace: vi.fn(), push: pushMock });
   });
 
-  // ──── Step 4: sin gate de permisos y skeleton ────
+  // ──── Step 4: no permission gate, and skeleton ────
   it("muestra FormPageSkeleton mientras getCounselor no ha resuelto, sin renderizar el formulario", () => {
     // Arrange
     mockParams("5");

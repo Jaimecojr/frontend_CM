@@ -69,7 +69,7 @@ describe("NewCounselorPage", () => {
     (useRouter as any).mockReturnValue({ replace: vi.fn(), push: pushMock });
   });
 
-  // ──── Step 2: sin gate de permisos ────
+  // ──── Step 2: no permission gate ────
   it("renderiza el formulario directamente, sin verificar user.type", () => {
     // Act
     render(<NewCounselorPage />);

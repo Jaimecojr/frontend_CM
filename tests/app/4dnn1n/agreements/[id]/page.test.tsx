@@ -54,7 +54,7 @@ describe("ViewAgreementPage", () => {
     vi.clearAllMocks();
   });
 
-  // ──── Step 4: sin gate de permisos ────
+  // ──── Step 4: no permission gate ────
   it("muestra FormPageSkeleton mientras getAgreement no ha resuelto, sin renderizar el formulario", () => {
     // Arrange
     mockParams("5");

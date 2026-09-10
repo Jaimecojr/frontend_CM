@@ -73,7 +73,7 @@ describe("CounselorsPage", () => {
     (useOptimisticToggle as any).mockReturnValue(vi.fn());
   });
 
-  // ──── Step 1: gate de hasAccess para el botón "Crear Asesor" ────
+  // ──── Step 1: hasAccess gate for the "Crear Asesor" button ────
   describe("gate de hasAccess para el botón 'Crear Asesor'", () => {
     it("user.type: 3 → no renderiza el botón (toolbarActions vacío)", () => {
       // Arrange
@@ -114,7 +114,7 @@ describe("CounselorsPage", () => {
     });
   });
 
-  // ──── Step 1 (cont.): click en el botón de toggle de una fila ────
+  // ──── Step 1 (cont.): click on a row's toggle button ────
   describe("toggle de estado desde la columna de acciones", () => {
     it("al hacer click en el botón de estado, invoca la función de useOptimisticToggle con el ApiCounselor de la fila", () => {
       // Arrange
