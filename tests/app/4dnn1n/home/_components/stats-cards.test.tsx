@@ -95,10 +95,11 @@ describe("StatsCards", () => {
       mockAuth({ user: { id: 1, name: "Test", email: "test@test.com", user: "test", type: 1 } });
 
       // Act
-      render(<StatsCards />);
+      const { container } = render(<StatsCards />);
 
       // Assert: "Afiliados activos" is not in the DOM (StatsCardsSkeleton is showing instead)
       expect(screen.queryByText("Afiliados activos")).not.toBeInTheDocument();
+      expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
     });
 
     it("al resolver getDashboardStats, el texto 'Afiliados activos' aparece", async () => {

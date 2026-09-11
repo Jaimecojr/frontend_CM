@@ -59,10 +59,11 @@ describe("TodayAppointmentsCard", () => {
       (getTodayAppointments as any).mockReturnValue(new Promise(() => {}));
 
       // Act
-      render(<TodayAppointmentsCard />);
+      const { container } = render(<TodayAppointmentsCard />);
 
       // Assert
       expect(screen.queryByText("Citas pendientes del día")).not.toBeInTheDocument();
+      expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
     });
 
     it("al resolver con lista vacía, muestra el título y el mensaje de lista vacía", async () => {

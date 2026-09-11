@@ -31,6 +31,12 @@ describe("home/fetch", () => {
     // module-scoped `csrfPromise` (see home/fetch.ts) instead of inheriting
     // one already resolved/rejected by a previous test.
     vi.resetModules();
+    // `vi.resetModules()` does not clear mock call history, so without this
+    // the `memCache.get` spy (and any other mock) keeps accumulating calls
+    // across every test in this file — assertions like
+    // `expect(memCache.get).toHaveBeenCalledWith(...)` would then only prove
+    // the call happened somewhere in the file's run, not in the current test.
+    vi.clearAllMocks();
   });
 
   afterEach(() => {

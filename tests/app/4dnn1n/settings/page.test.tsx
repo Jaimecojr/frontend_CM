@@ -17,23 +17,29 @@ vi.mock("@/lib/alert", () => ({
 
 // `SettingForm` already has dedicated coverage; this stub exposes a button
 // that invokes `onSubmit` with a fixed payload so `handleSubmit` can be
-// exercised without any of the form's own field/validation logic.
+// exercised without any of the form's own field/validation logic. It also
+// renders `initial.wa_api_version` into a `data-testid` element so tests can
+// prove the page actually re-rendered with the state `setSetting` updated to,
+// rather than only asserting side effects (alert calls) around the update.
 vi.mock("@/app/4dnn1n/settings/_components/SettingForm", () => ({
-  default: ({ onSubmit }: any) => (
-    <button
-      data-testid="submit-stub"
-      onClick={() =>
-        onSubmit({
-          wa_api_version: "v20.0",
-          wa_phone_number_id: "1",
-          wa_bearer_token: "t",
-          wa_template_name: "tpl",
-          wa_appointment_template_name: "",
-        })
-      }
-    >
-      submit-stub
-    </button>
+  default: ({ initial, onSubmit }: any) => (
+    <>
+      <div data-testid="current-wa-api-version">{initial.wa_api_version}</div>
+      <button
+        data-testid="submit-stub"
+        onClick={() =>
+          onSubmit({
+            wa_api_version: "v20.0",
+            wa_phone_number_id: "1",
+            wa_bearer_token: "t",
+            wa_template_name: "tpl",
+            wa_appointment_template_name: "",
+          })
+        }
+      >
+        submit-stub
+      </button>
+    </>
   ),
 }));
 
@@ -110,6 +116,9 @@ describe("SettingsPage", () => {
       render(<SettingsPage />);
       await waitFor(() => expect(screen.getByTestId("submit-stub")).toBeInTheDocument());
 
+      // Assert: before submit, the stub reflects the initial fixture's value
+      expect(screen.getByTestId("current-wa-api-version")).toHaveTextContent("v18.0");
+
       // Act
       await userEvent.click(screen.getByTestId("submit-stub"));
 
@@ -132,6 +141,11 @@ describe("SettingsPage", () => {
       // The stub still renders after the state update, confirming the page
       // did not throw and `setting` remains non-null (re-fed as `initial`).
       expect(screen.getByTestId("submit-stub")).toBeInTheDocument();
+      // Assert: `setSetting(res.data)` actually updated state — the stub now
+      // reflects the `updateSetting` mock's resolved `data.wa_api_version`,
+      // proving the page unwraps the `{message, data}` envelope rather than
+      // storing it as-is.
+      expect(screen.getByTestId("current-wa-api-version")).toHaveTextContent("v20.0");
     });
 
     it("cuando updateSetting rechaza, llama alert.error y no muestra alert.success", async () => {

@@ -56,10 +56,11 @@ describe("ExpiringTodayCard", () => {
       (getExpiringToday as any).mockReturnValue(new Promise(() => {}));
 
       // Act
-      render(<ExpiringTodayCard />);
+      const { container } = render(<ExpiringTodayCard />);
 
       // Assert
       expect(screen.queryByText("Contratos que vencen hoy")).not.toBeInTheDocument();
+      expect(container.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
     });
 
     it("al resolver con lista vacía, muestra el título con la fecha y el mensaje de lista vacía", async () => {
