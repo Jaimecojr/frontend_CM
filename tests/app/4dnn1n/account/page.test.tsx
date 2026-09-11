@@ -204,8 +204,15 @@ describe("AccountPage", () => {
       const cancelButton = screen.getByRole("button", { name: /cancelar/i });
       expect(cancelButton).toBeInTheDocument();
 
-      // Act: type something then collapse again
+      // Act: type something and trigger a validation error, then collapse
       await userEvent.type(current, "abc123");
+      await userEvent.type(newPassword, "abc");
+      await userEvent.type(confirm, "xyz");
+      await userEvent.click(screen.getByRole("button", { name: /actualizar contraseña/i }));
+      expect(
+        await screen.findByText("La contraseña debe tener al menos 6 caracteres."),
+      ).toBeInTheDocument();
+      expect(screen.getByText("Las contraseñas no coinciden.")).toBeInTheDocument();
       await userEvent.click(cancelButton);
 
       // Assert: form gone, placeholder text back
@@ -216,9 +223,14 @@ describe("AccountPage", () => {
       ).toBeInTheDocument();
       expect(getPasswordInputs(container).current).toBeUndefined();
 
-      // Act: expand again — fields must be reset (empty), not carrying the previous value
+      // Act: expand again — fields and passwordErrors must be reset, not carrying the
+      // previous value/errors in either direction of the toggle.
       await userEvent.click(screen.getByRole("button", { name: /cambiar contraseña/i }));
       expect(getPasswordInputs(container).current).toHaveValue("");
+      expect(
+        screen.queryByText("La contraseña debe tener al menos 6 caracteres."),
+      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Las contraseñas no coinciden.")).not.toBeInTheDocument();
     });
 
     it("muestra error de longitud mínima cuando newPassword tiene menos de 6 caracteres", async () => {
@@ -328,10 +340,10 @@ describe("AccountPage", () => {
       ).toBeInTheDocument();
     });
 
-    it("cuando changePassword rechaza con errors.current_password, fija passwordErrors.current y no llama alert.error", async () => {
+    it("cuando changePassword rechaza con errors.current_password como array, fija passwordErrors.current al primer elemento y no llama alert.error", async () => {
       // Arrange
       (changePassword as any).mockRejectedValue({
-        data: { errors: { current_password: ["Contraseña actual incorrecta."] } },
+        data: { errors: { current_password: ["Contraseña actual incorrecta.", "otro mensaje"] } },
       });
       const { container } = await expandPasswordSection();
       const { current, newPassword, confirm } = getPasswordInputs(container);
@@ -344,6 +356,25 @@ describe("AccountPage", () => {
 
       // Assert
       expect(await screen.findByText("Contraseña actual incorrecta.")).toBeInTheDocument();
+      expect(alert.error).not.toHaveBeenCalled();
+    });
+
+    it("cuando changePassword rechaza con errors.current_password como string plano, fija passwordErrors.current con String(fieldErr)", async () => {
+      // Arrange
+      (changePassword as any).mockRejectedValue({
+        data: { errors: { current_password: "mensaje plano" } },
+      });
+      const { container } = await expandPasswordSection();
+      const { current, newPassword, confirm } = getPasswordInputs(container);
+      await userEvent.type(current, "malapass");
+      await userEvent.type(newPassword, "nueva123");
+      await userEvent.type(confirm, "nueva123");
+
+      // Act
+      await userEvent.click(screen.getByRole("button", { name: /actualizar contraseña/i }));
+
+      // Assert
+      expect(await screen.findByText("mensaje plano")).toBeInTheDocument();
       expect(alert.error).not.toHaveBeenCalled();
     });
 
