@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { renderHook } from "@testing-library/react";
 import { useClickOutside } from "@/hooks/use-click-outside";
 
@@ -11,6 +11,11 @@ describe("useClickOutside", () => {
     document.body.appendChild(container);
     outside = document.createElement("div");
     document.body.appendChild(outside);
+  });
+
+  afterEach(() => {
+    container.remove();
+    outside.remove();
   });
 
   it("invoca el callback cuando el mousedown ocurre fuera del elemento referenciado", () => {

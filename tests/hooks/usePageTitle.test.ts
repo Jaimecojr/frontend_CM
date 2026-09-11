@@ -4,7 +4,10 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 
 describe("usePageTitle", () => {
   it("establece document.title con el sufijo del panel", () => {
-    // Arrange & Act
+    // Arrange
+    // (no extra setup needed)
+
+    // Act
     renderHook(() => usePageTitle("Afiliados"));
 
     // Assert

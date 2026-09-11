@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, afterEach } from "vitest";
+import { describe, expect, it, vi, afterEach, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useClientTable } from "@/hooks/useClientTable";
 import { alert } from "@/lib/alert";
@@ -15,6 +15,13 @@ vi.mock("@/lib/getApiErrorMessage", () => ({
 type Row = { id: number };
 
 describe("useClientTable", () => {
+  beforeEach(() => {
+    // Call history for the `@/lib/alert` and `@/lib/getApiErrorMessage` mocks
+    // otherwise leaks across tests (they're plain vi.fn()s from a vi.mock
+    // factory, not spies, so restoreAllMocks alone does not clear them).
+    vi.clearAllMocks();
+  });
+
   afterEach(() => {
     vi.restoreAllMocks();
     vi.useRealTimers();
@@ -62,29 +69,35 @@ describe("useClientTable", () => {
     expect(result.current.data).toEqual([{ id: 9 }]);
   });
 
-  it("no actualiza data ni loading si el componente se desmonta antes de que fetchFn resuelva", async () => {
+  it("no invoca alert.error cuando el componente se desmonta antes de que fetchFn rechace", async () => {
     // Arrange
+    // A React state setter called after unmount is silently dropped by React itself
+    // (it never applies to the unmounted fiber), so asserting on `result.current`
+    // here would pass even if the `cancelled` guard were deleted from the hook —
+    // it wouldn't actually exercise the guard. `alert.error` is a plain mock with
+    // no such special-cased unmount behavior: it is called only if the `if
+    // (!cancelled)` check inside the `.catch()` handler lets it through. That
+    // makes it an effect we can use to prove the guard itself is what prevents it.
     vi.useFakeTimers();
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    const error = new Error("network down");
     const fetchFn = vi.fn(
       () =>
-        new Promise<Row[]>((resolve) => {
-          setTimeout(() => resolve([{ id: 1 }]), 1000);
+        new Promise<Row[]>((_resolve, reject) => {
+          setTimeout(() => reject(error), 1000);
         }),
     );
+    vi.mocked(getApiErrorMessage).mockReturnValue("mensaje traducido");
 
-    const { result, unmount } = renderHook(() => useClientTable(fetchFn));
+    const { unmount } = renderHook(() => useClientTable(fetchFn));
 
-    // Act
+    // Act: unmount (which flips `cancelled` to true via the effect cleanup)
+    // before the rejection fires, then let the pending timer run out.
     unmount();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1000);
     });
 
     // Assert
-    expect(consoleErrorSpy).not.toHaveBeenCalled();
-    // The last snapshot of result.current before unmount must remain untouched.
-    expect(result.current.data).toEqual([]);
-    expect(result.current.loading).toBe(true);
+    expect(alert.error).not.toHaveBeenCalled();
   });
 });
