@@ -116,11 +116,16 @@ type DropdownTriggerProps = React.HTMLAttributes<HTMLButtonElement> & {
   children: React.ReactNode;
 };
 
-export function DropdownTrigger({ children, className }: DropdownTriggerProps) {
+export function DropdownTrigger({
+  children,
+  className,
+  ...rest
+}: DropdownTriggerProps) {
   const { handleOpen, isOpen } = useDropdownContext();
 
   return (
     <button
+      {...rest}
       className={className}
       onClick={handleOpen}
       aria-expanded={isOpen}

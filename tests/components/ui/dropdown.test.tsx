@@ -183,5 +183,23 @@ describe("Dropdown", () => {
       // Assert: indirectly verifies handleClose ran setIsOpen(false)
       expect(screen.queryByRole("menu")).not.toBeInTheDocument();
     });
+
+    it("reenvía props adicionales (ej. aria-label) al elemento button renderizado", () => {
+      // Arrange & Act: DropdownTrigger must forward any prop it doesn't own itself
+      // (className/children) so consumers like the notification bell keep an
+      // accessible name.
+      render(
+        <Dropdown isOpen={false} setIsOpen={() => {}}>
+          <DropdownTrigger aria-label="View Notifications">
+            <span>Bell</span>
+          </DropdownTrigger>
+        </Dropdown>,
+      );
+
+      // Assert
+      expect(
+        screen.getByRole("button", { name: "View Notifications" }),
+      ).toBeInTheDocument();
+    });
   });
 });

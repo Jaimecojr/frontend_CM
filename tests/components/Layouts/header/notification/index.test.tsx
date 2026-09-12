@@ -17,14 +17,12 @@ const EXAMPLE_TITLES = [
   "Roman Joined the Team!",
 ];
 
-// DropdownTrigger (see src/components/ui/dropdown.tsx) destructures only
-// `children`/`className` from its props and drops any other attribute — the
-// `aria-label="View Notifications"` passed by Notification never reaches the
-// rendered <button>, so it has no accessible name. It is still the only
-// <button> in this component's tree (DropdownContent only renders <Link>s),
-// so a plain role query is unambiguous.
+// DropdownTrigger (see src/components/ui/dropdown.tsx) forwards any extra
+// prop (aria-label included) onto the rendered <button>, so the
+// `aria-label="View Notifications"` passed by Notification reaches the DOM
+// and gives the bell button its accessible name.
 function getTrigger() {
-  return screen.getByRole("button");
+  return screen.getByRole("button", { name: "View Notifications" });
 }
 
 function openDropdown() {
@@ -37,6 +35,16 @@ describe("Notification", () => {
   });
 
   describe("Paso 1: estado inicial", () => {
+    it("expone aria-label='View Notifications' en el trigger para accesibilidad", () => {
+      // Arrange & Act
+      render(<Notification />);
+
+      // Assert
+      expect(
+        screen.getByRole("button", { name: "View Notifications" }),
+      ).toBeInTheDocument();
+    });
+
     it("muestra el punto rojo (isDotVisible) junto al icono de campana", () => {
       // Arrange & Act
       render(<Notification />);
