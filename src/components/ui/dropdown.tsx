@@ -112,7 +112,12 @@ export function DropdownContent({
   );
 }
 
-type DropdownTriggerProps = React.HTMLAttributes<HTMLButtonElement> & {
+// Omit the attributes the component itself sets after spreading `rest` onto
+// the button, so callers can't pass them expecting them to take effect.
+type DropdownTriggerProps = Omit<
+  React.HTMLAttributes<HTMLButtonElement>,
+  "onClick" | "aria-expanded" | "aria-haspopup" | "data-state"
+> & {
   children: React.ReactNode;
 };
 
