@@ -2,7 +2,15 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 
 vi.mock("next/image", () => ({
-  default: ({ alt, ...props }: { alt: string; [key: string]: unknown }) => (
+  default: ({
+    alt,
+    fill: _fill,
+    priority: _priority,
+    unoptimized: _unoptimized,
+    loader: _loader,
+    quality: _quality,
+    ...props
+  }: { alt: string; [key: string]: unknown }) => (
     // eslint-disable-next-line jsx-a11y/alt-text
     <img alt={alt} {...props} />
   ),
