@@ -335,7 +335,7 @@ export default function ContactenosPage() {
             >
               <div className="space-y-5">
                 {/* reCAPTCHA */}
-                <div>
+                <div id="captcha">
                   <p className="block text-sm font-medium text-[#64748B] mb-2">
                     Verificación de seguridad
                   </p>

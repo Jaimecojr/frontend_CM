@@ -454,7 +454,7 @@ describe("AfiliacioPage (formulario público de afiliación)", () => {
       expect(scrollCalls[0].id).toBe("privacy");
     });
 
-    it("si el captcha expira, el único error es el suyo y no hay desplazamiento (ese id no existe en el DOM)", async () => {
+    it("si el captcha expira, el único error es el suyo y desplaza hasta el bloque del reCAPTCHA", async () => {
       // Arrange: todo válido salvo el captcha, que expira
       await renderPage();
       await fillValidForm();
@@ -468,7 +468,10 @@ describe("AfiliacioPage (formulario público de afiliación)", () => {
       // Assert
       expect(await screen.findByText("Por favor completa el reCAPTCHA.")).toBeInTheDocument();
       expect(screen.queryByText("El nombre es requerido.")).not.toBeInTheDocument();
-      expect(scrollCalls).toHaveLength(0);
+      expect(scrollCalls[0]).toEqual({
+        id: "captcha",
+        options: { behavior: "smooth", block: "center" },
+      });
       expect(csrfMock).not.toHaveBeenCalled();
     });
 
