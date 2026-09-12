@@ -8,7 +8,6 @@ type ToolbarProps = ComponentProps<typeof DataTableToolbar>;
 function renderToolbar(props: Partial<ToolbarProps> = {}) {
   const onSearchChange = vi.fn<(v: string) => void>();
   const onPageSizeChange = vi.fn<(size: number) => void>();
-  const onStateFilterChange = vi.fn<(v: string) => void>();
 
   const utils = render(
     <DataTableToolbar
@@ -25,7 +24,7 @@ function renderToolbar(props: Partial<ToolbarProps> = {}) {
     />,
   );
 
-  return { onSearchChange, onPageSizeChange, onStateFilterChange, ...utils };
+  return { onSearchChange, onPageSizeChange, ...utils };
 }
 
 /** El selector de tamaño de página es el único `combobox` cuando no hay filtro de estado. */
