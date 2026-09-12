@@ -28,6 +28,7 @@ vi.mock("@/components/web/LegalModal", () => ({
 }));
 
 const fetchMock = vi.fn<typeof fetch>();
+const originalFetch = global.fetch;
 
 function mockResponse(ok: boolean, data: unknown): Response {
   return {
@@ -44,6 +45,7 @@ describe("Footer", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    global.fetch = originalFetch;
   });
 
   describe("Paso 1: Carga y filtro de franquicias", () => {

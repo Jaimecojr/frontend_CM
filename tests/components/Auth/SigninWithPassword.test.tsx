@@ -26,6 +26,7 @@ function buildFetchResponse(overrides: { ok: boolean; json: () => Promise<unknow
 
 describe("SigninWithPassword", () => {
   const originalLocation = window.location;
+  const originalFetch = global.fetch;
   let fetchMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
@@ -49,6 +50,7 @@ describe("SigninWithPassword", () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
+    global.fetch = originalFetch;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (window as any).location = originalLocation;
   });
