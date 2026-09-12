@@ -13,7 +13,7 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       include: ["src/**/*.{ts,tsx}"],
-      thresholds: { lines: 0, branches: 0, functions: 0, statements: 0 },
+      thresholds: { lines: 85, branches: 80, functions: 75, statements: 85 },
     },
   },
   resolve: {
