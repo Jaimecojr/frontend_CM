@@ -157,7 +157,7 @@ describe("AuthContext", () => {
       expect(window.location.href).toBe("/auth/sign-in");
     });
 
-    it("limpia el usuario y redirige incluso si csrf() o logout() rechazan, y registra el error", async () => {
+    it("limpia el usuario y redirige incluso si csrf() rechaza, y registra el error", async () => {
       // Arrange
       mockedGetAuthUser.mockResolvedValue(testUser);
       const error = new Error("csrf failed");

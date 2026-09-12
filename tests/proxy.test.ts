@@ -43,8 +43,9 @@ describe("proxy", () => {
 
   describe("rutas fuera de /4dnn1n", () => {
     it("deja pasar /web sin importar la cookie auth_hint", () => {
-      // Arrange
-      const req = buildRequest("/web", { withAuthHint: false });
+      // Arrange: con cookie presente, para cubrir el otro estado posible junto
+      // con el caso sin cookie que prueba /auth/sign-in más abajo.
+      const req = buildRequest("/web", { withAuthHint: true });
 
       // Act
       const res = proxy(req);
