@@ -414,7 +414,7 @@ describe("ContactenosPage (formulario público de contacto)", () => {
       // Arrange
       await renderPage();
 
-      // Assert: estado inicial
+      // Assert: initial state
       expect(screen.getByText("0 caracteres")).toBeInTheDocument();
 
       // Act
@@ -470,10 +470,10 @@ describe("ContactenosPage (formulario público de contacto)", () => {
       // Arrange
       await renderPage();
 
-      // Assert: estado inicial
+      // Assert: initial state
       expect(getSubmitButton()).toBeDisabled();
 
-      // Act & Assert: cada requisito por separado no alcanza
+      // Act & Assert: each requirement on its own is not enough
       fireEvent.click(getPrivacyCheckbox());
       expect(getSubmitButton()).toBeDisabled();
       fireEvent.click(getTermsCheckbox());
