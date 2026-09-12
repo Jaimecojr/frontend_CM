@@ -119,13 +119,12 @@ describe("Header", () => {
       render(<Header />);
 
       // Assert: distinctive markers of each real child, not stubs.
-      // Notification's trigger is meant to carry aria-label="View Notifications", but
-      // DropdownTrigger (src/components/ui/dropdown.tsx) destructures only
-      // children/className and drops every other prop, so the attribute never reaches
-      // the DOM (a real finding, out of scope for this test task) — its unread-dot
-      // indicator is used instead as the distinctive marker that the real component
-      // rendered.
-      expect(document.querySelector(".bg-red-light")).toBeInTheDocument();
+      // Notification's trigger carries aria-label="View Notifications", forwarded to the
+      // DOM by DropdownTrigger (src/components/ui/dropdown.tsx), so it can be queried by
+      // accessible name directly instead of reaching for an incidental UI detail.
+      expect(
+        screen.getByRole("button", { name: "View Notifications" }),
+      ).toBeInTheDocument();
       expect(screen.getByText("jperez")).toBeInTheDocument();
     });
   });
