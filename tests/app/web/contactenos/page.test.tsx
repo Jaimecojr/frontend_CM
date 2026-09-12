@@ -483,14 +483,14 @@ describe("ContactenosPage (formulario público de contacto)", () => {
     });
 
     it("si el captcha expira, el único error es el suyo y desplaza hasta el bloque del reCAPTCHA", async () => {
-      // Arrange: todo válido salvo el captcha, que expira
+      // Arrange: everything valid except the captcha, which expires
       await renderPage();
       await fillValidForm();
       fireEvent.click(screen.getByTestId("recaptcha-expire"));
       scrollCalls.length = 0;
       expect(getSubmitButton()).toBeDisabled();
 
-      // Act: el botón queda bloqueado, así que el submit se dispara desde el form
+      // Act: the button stays disabled, so the submit is fired from the form
       fireEvent.submit(getForm());
 
       // Assert
@@ -536,7 +536,7 @@ describe("ContactenosPage (formulario público de contacto)", () => {
         recaptcha_token: "captcha-token",
       });
 
-      // Assert: csrf() ocurre antes del POST
+      // Assert: csrf() happens before the POST
       const postCallIndex = fetchMock.mock.calls.findIndex(([input]) =>
         urlOf(input).endsWith("/api/public/contact"),
       );
@@ -610,19 +610,19 @@ describe("ContactenosPage (formulario público de contacto)", () => {
       const loadingButton = await screen.findByRole("button", { name: /Enviando mensaje/ });
       expect(loadingButton).toBeDisabled();
 
-      // Cleanup: se resuelve para no dejar promesas colgadas entre tests
+      // Cleanup: resolve it so no promise is left hanging between tests
       resolvePost(jsonResponse(true, {}));
       await screen.findByText("¡Mensaje Enviado!");
     });
 
     it("'Enviar otro mensaje' vuelve al formulario reseteado (llama a resetForm())", async () => {
-      // Arrange: a diferencia de afiliarse (que resetea los campos inline sin
-      // tocar el captcha), esta página tiene una función resetForm() dedicada
-      // que sí incluye `recaptchaRef.current?.reset()` en su cuerpo. En la
-      // práctica ese reset es un no-op en este flujo: la pantalla de éxito no
-      // renderiza el <ReCAPTCHA>, así que al desmontarse React deja
-      // `recaptchaRef.current` en null antes de que resetForm() se ejecute.
-      // Se deja documentado aquí (0 llamadas) en vez de asumir que se invoca.
+      // Arrange: unlike afiliarse (which resets the fields inline without
+      // touching the captcha), this page has a dedicated resetForm()
+      // function that does include `recaptchaRef.current?.reset()` in its
+      // body. In practice that reset is a no-op in this flow: the success
+      // screen doesn't render the <ReCAPTCHA>, so on unmount React sets
+      // `recaptchaRef.current` to null before resetForm() runs.
+      // Documented here (0 calls) instead of assuming it gets invoked.
       await renderPage();
       await fillValidForm();
       fireEvent.click(getSubmitButton());
@@ -667,7 +667,7 @@ describe("ContactenosPage (formulario público de contacto)", () => {
       expect(recaptchaResetMock).toHaveBeenCalledTimes(1);
       expect(getSubmitButton()).toBeDisabled();
 
-      // Assert: al volver a resolver el captcha el envío se rehabilita
+      // Assert: solving the captcha again re-enables the submit
       fireEvent.click(screen.getByTestId("recaptcha-stub"));
       expect(getSubmitButton()).not.toBeDisabled();
     });

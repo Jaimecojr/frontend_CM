@@ -27,7 +27,7 @@ function renderToolbar(props: Partial<ToolbarProps> = {}) {
   return { onSearchChange, onPageSizeChange, ...utils };
 }
 
-/** El selector de tamaño de página es el único `combobox` cuando no hay filtro de estado. */
+/** The page-size selector is the only `combobox` when there is no state filter. */
 function getPageSizeSelect() {
   return screen.getByRole("combobox") as HTMLSelectElement;
 }

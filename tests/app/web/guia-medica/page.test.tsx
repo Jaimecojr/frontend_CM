@@ -175,7 +175,7 @@ describe("GuiaMedicaPage (directorio médico público)", () => {
     });
 
     it("mientras carga muestra 6 tarjetas esqueleto", async () => {
-      // Arrange: la respuesta de médicos queda pendiente para observar el loading
+      // Arrange: the doctors response stays pending so the loading state can be observed
       let resolveDoctors!: (response: Response) => void;
       doctorsResponse = () =>
         new Promise<Response>((resolve) => {
@@ -188,7 +188,7 @@ describe("GuiaMedicaPage (directorio médico público)", () => {
       // Assert
       expect(container.querySelectorAll(".animate-pulse")).toHaveLength(6);
 
-      // Cleanup: se resuelve para no dejar promesas colgadas entre tests
+      // Cleanup: resolve it so no promise is left hanging between tests
       resolveDoctors(jsonResponse(true, { data: [], meta: defaultDoctorsMeta(0) }));
       await screen.findByText("No se encontraron médicos con esos filtros.");
     });
@@ -238,14 +238,15 @@ describe("GuiaMedicaPage (directorio médico público)", () => {
   /* ── Paso 2 ── */
   describe("Paso 2: filtros — cascada y reset de página", () => {
     it("escribir en el buscador dispara un fetch nuevo por cada tecleo de forma inmediata (sin debounce) y resetea la página", async () => {
-      // Arrange: se llega hasta la página 2 con temporizadores reales, igual que
-      // el resto de la suite. Los fake timers sólo se activan justo antes de
-      // teclear (ver bloque Act más abajo): así se puede afirmar, sin depender
-      // de `waitFor` (que espera hasta ~1000ms reales y por tanto toleraría un
-      // debounce), que el fetch ocurre sin que se adelante ningún temporizador.
-      // Mismo enfoque de rigor que el test de debounce de DataTable
-      // (tests/components/data-table/DataTable.test.tsx), adaptado a que aquí
-      // lo que se demuestra es la AUSENCIA de un `setTimeout` alrededor del fetch.
+      // Arrange: get to page 2 with real timers, like the rest of the suite.
+      // Fake timers are only enabled right before typing (see the Act block
+      // below): that way it can be asserted, without relying on `waitFor`
+      // (which waits up to ~1000ms real time and would therefore tolerate a
+      // debounce), that the fetch happens without advancing any timer.
+      // Same rigor as DataTable's debounce test
+      // (tests/components/data-table/DataTable.test.tsx), adapted so that
+      // what's being demonstrated here is the ABSENCE of a `setTimeout`
+      // around the fetch.
       doctorsResponse = async () =>
         jsonResponse(true, {
           data: [buildDoctor()],
@@ -259,9 +260,9 @@ describe("GuiaMedicaPage (directorio médico público)", () => {
       // Act & Assert
       vi.useFakeTimers();
       try {
-        // Si el fetch dependiera de un `setTimeout(..., 300)` (debounce), esta
-        // llamada quedaría pendiente de un timer simulado que nunca se adelanta
-        // en este test, y la aserción de abajo fallaría de inmediato.
+        // If the fetch depended on a `setTimeout(..., 300)` (debounce), this
+        // call would be left pending on a simulated timer that never advances
+        // in this test, and the assertion below would fail immediately.
         fireEvent.change(getSearchInput(), { target: { value: "A" } });
         expect(doctorsCalls().length).toBe(callsBefore + 1);
         const firstSearchCall = lastDoctorsCall();
@@ -274,13 +275,13 @@ describe("GuiaMedicaPage (directorio médico público)", () => {
         expect(secondSearchCall.get("search")).toBe("An");
         expect(secondSearchCall.get("page")).toBe("1");
 
-        // No debe quedar ningún temporizador pendiente (p. ej. un debounce)
-        // esperando disparar el fetch.
+        // No timer (e.g. a debounce) should be left pending waiting to
+        // trigger the fetch.
         expect(vi.getTimerCount()).toBe(0);
 
-        // Cleanup: drena la promesa del último fetch (no depende de timers,
-        // sólo de la cola de microtasks) para no dejarla resolviendo fuera de
-        // act() una vez terminado el test.
+        // Cleanup: drain the last fetch's promise (it doesn't depend on
+        // timers, only on the microtask queue) so it isn't left resolving
+        // outside act() once the test has finished.
         await act(async () => {
           await Promise.resolve();
           await Promise.resolve();
@@ -492,8 +493,8 @@ describe("GuiaMedicaPage (directorio médico público)", () => {
     });
 
     it("en la última página Siguiente queda deshabilitado", async () => {
-      // Arrange: la deshabilitación compara el `page` interno (no meta.current_page)
-      // contra meta.last_page, así que hay que avanzar de verdad hasta la última página.
+      // Arrange: the disabling compares the internal `page` (not meta.current_page)
+      // against meta.last_page, so we need to actually advance to the last page.
       doctorsResponse = async () =>
         jsonResponse(true, {
           data: [buildDoctor()],

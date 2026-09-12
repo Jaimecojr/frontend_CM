@@ -4,8 +4,8 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/data-table/DataTable";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Fixtures: columnas mínimas y genéricas — esta suite prueba el componente
-// reutilizable, no las columnas de ningún módulo de negocio.
+// Fixtures: minimal, generic columns — this suite tests the reusable
+// component, not the columns of any business module.
 // ─────────────────────────────────────────────────────────────────────────────
 type Row = { id: number; name: string; state: number };
 
@@ -42,7 +42,7 @@ function getSearchInput() {
   return screen.getByPlaceholderText("Buscar...");
 }
 
-/** Texto normalizado del resumen "Página X de N" (los números viven en `<span>` aparte). */
+/** Normalized text of the "Página X de N" summary (the numbers live in a separate `<span>`). */
 function resumenPagina() {
   return screen
     .getByText(/Página/)
@@ -50,7 +50,7 @@ function resumenPagina() {
     .trim();
 }
 
-/** Cuenta las filas realmente pintadas en el `<tbody>` (incluye las de esqueleto). */
+/** Counts the rows actually rendered in the `<tbody>` (includes skeleton rows). */
 function contarFilas(container: HTMLElement) {
   return container.querySelectorAll("tbody tr").length;
 }
@@ -78,11 +78,11 @@ describe("DataTable", () => {
       // Act
       fireEvent.change(getSearchInput(), { target: { value: "ana" } });
 
-      // Assert: el texto ya está en el input pero el filtro todavía no se aplicó
+      // Assert: the text is already in the input but the filter hasn't applied yet
       expect(container.querySelector("svg.animate-spin")).toBeInTheDocument();
       expect(screen.getByText("Bruno Díaz")).toBeInTheDocument();
 
-      // Act: un milisegundo antes del límite del debounce nada debe cambiar todavía
+      // Act: one millisecond before the debounce threshold, nothing should change yet
       act(() => {
         vi.advanceTimersByTime(299);
       });
@@ -91,7 +91,7 @@ describe("DataTable", () => {
       expect(container.querySelector("svg.animate-spin")).toBeInTheDocument();
       expect(screen.getByText("Bruno Díaz")).toBeInTheDocument();
 
-      // Act: el milisegundo 300 dispara el debounce
+      // Act: millisecond 300 triggers the debounce
       act(() => {
         vi.advanceTimersByTime(1);
       });
@@ -170,7 +170,7 @@ describe("DataTable", () => {
         />,
       );
 
-      // Assert: el filtro ya está aplicado y el spinner lo controla el padre
+      // Assert: the filter is already applied and the parent controls the spinner
       expect(screen.getByText("Ana Gómez")).toBeInTheDocument();
       expect(screen.queryByText("Bruno Díaz")).not.toBeInTheDocument();
       expect(container.querySelector("svg.animate-spin")).toBeInTheDocument();
@@ -198,7 +198,7 @@ describe("DataTable", () => {
         />,
       );
 
-      // Assert: los datos llegan ya filtrados desde el padre, el componente no vuelve a filtrar
+      // Assert: the data arrives already filtered from the parent, the component doesn't re-filter
       expect(screen.getByTitle("Estado")).toHaveValue("1");
       for (const persona of personas) {
         expect(screen.getByText(persona.name)).toBeInTheDocument();

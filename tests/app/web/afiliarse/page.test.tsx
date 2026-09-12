@@ -395,8 +395,8 @@ describe("AfiliacioPage (formulario público de afiliación)", () => {
   /* ── Paso 3 ── */
   describe("Paso 3: validaciones del formulario", () => {
     it("con el formulario vacío muestra el mensaje exacto de cada regla y no envía nada", async () => {
-      // Arrange: el botón está deshabilitado sin captcha ni checkboxes, así que
-      // se dispara el submit del form para ejercitar todas las reglas a la vez.
+      // Arrange: the button is disabled without captcha or checkboxes, so the
+      // form's submit is fired directly to exercise all the rules at once.
       await renderPage();
 
       // Act
@@ -455,14 +455,14 @@ describe("AfiliacioPage (formulario público de afiliación)", () => {
     });
 
     it("si el captcha expira, el único error es el suyo y desplaza hasta el bloque del reCAPTCHA", async () => {
-      // Arrange: todo válido salvo el captcha, que expira
+      // Arrange: everything valid except the captcha, which expires
       await renderPage();
       await fillValidForm();
       fireEvent.click(screen.getByTestId("recaptcha-expire"));
       scrollCalls.length = 0;
       expect(getSubmitButton()).toBeDisabled();
 
-      // Act: el botón queda bloqueado, así que el submit se dispara desde el form
+      // Act: the button stays disabled, so the submit is fired from the form
       fireEvent.submit(getForm());
 
       // Assert
@@ -517,7 +517,7 @@ describe("AfiliacioPage (formulario público de afiliación)", () => {
       // Act
       fireEvent.change(cedulaInput, { target: { value: "10.940-00abc0000" } });
 
-      // Assert: 11 dígitos, sin el truncado a 10 que sí aplica el celular
+      // Assert: 11 digits, without the truncation to 10 that does apply to the phone
       expect(cedulaInput.value).toBe("10940000000");
     });
 
@@ -554,10 +554,10 @@ describe("AfiliacioPage (formulario público de afiliación)", () => {
       // Arrange
       await renderPage();
 
-      // Assert: estado inicial
+      // Assert: initial state
       expect(getSubmitButton()).toBeDisabled();
 
-      // Act & Assert: cada requisito por separado no alcanza
+      // Act & Assert: each requirement on its own is not enough
       fireEvent.click(getPrivacyCheckbox());
       expect(getSubmitButton()).toBeDisabled();
       fireEvent.click(getTermsCheckbox());
@@ -603,7 +603,7 @@ describe("AfiliacioPage (formulario público de afiliación)", () => {
         recaptcha_token: "captcha-token",
       });
 
-      // Assert: csrf() ocurre antes del POST
+      // Assert: csrf() happens before the POST
       const postCallIndex = fetchMock.mock.calls.findIndex(([input]) =>
         urlOf(input).endsWith("/api/public/affiliate-request"),
       );
@@ -692,7 +692,7 @@ describe("AfiliacioPage (formulario público de afiliación)", () => {
       const loadingButton = await screen.findByRole("button", { name: /Enviando solicitud/ });
       expect(loadingButton).toBeDisabled();
 
-      // Cleanup: se resuelve para no dejar promesas colgadas entre tests
+      // Cleanup: resolve it so no promise is left hanging between tests
       resolvePost(jsonResponse(true, {}));
       await screen.findByText("¡Solicitud Enviada!");
     });
@@ -745,7 +745,7 @@ describe("AfiliacioPage (formulario público de afiliación)", () => {
       expect(recaptchaResetMock).toHaveBeenCalledTimes(1);
       expect(getSubmitButton()).toBeDisabled();
 
-      // Assert: al volver a resolver el captcha el envío se rehabilita
+      // Assert: solving the captcha again re-enables the submit
       fireEvent.click(screen.getByTestId("recaptcha-stub"));
       expect(getSubmitButton()).not.toBeDisabled();
     });
