@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import GuiaMedicaPage from "@/app/web/guia-medica/page";
 import type { ApiDoctor } from "@/app/4dnn1n/doctors/fetch";
 import type { Department, City } from "@/types/geo";
@@ -237,8 +237,15 @@ describe("GuiaMedicaPage (directorio médico público)", () => {
 
   /* ── Paso 2 ── */
   describe("Paso 2: filtros — cascada y reset de página", () => {
-    it("escribir en el buscador dispara un fetch nuevo por cada tecleo (sin debounce) y resetea la página", async () => {
-      // Arrange: se ubica en la página 2 antes de tocar el buscador
+    it("escribir en el buscador dispara un fetch nuevo por cada tecleo de forma inmediata (sin debounce) y resetea la página", async () => {
+      // Arrange: se llega hasta la página 2 con temporizadores reales, igual que
+      // el resto de la suite. Los fake timers sólo se activan justo antes de
+      // teclear (ver bloque Act más abajo): así se puede afirmar, sin depender
+      // de `waitFor` (que espera hasta ~1000ms reales y por tanto toleraría un
+      // debounce), que el fetch ocurre sin que se adelante ningún temporizador.
+      // Mismo enfoque de rigor que el test de debounce de DataTable
+      // (tests/components/data-table/DataTable.test.tsx), adaptado a que aquí
+      // lo que se demuestra es la AUSENCIA de un `setTimeout` alrededor del fetch.
       doctorsResponse = async () =>
         jsonResponse(true, {
           data: [buildDoctor()],
@@ -249,19 +256,39 @@ describe("GuiaMedicaPage (directorio médico público)", () => {
       await waitFor(() => expect(lastDoctorsCall().get("page")).toBe("2"));
       const callsBefore = doctorsCalls().length;
 
-      // Act: dos teclas seguidas, cada una debe generar su propia llamada
-      fireEvent.change(getSearchInput(), { target: { value: "A" } });
-      await waitFor(() => expect(doctorsCalls().length).toBe(callsBefore + 1));
-      fireEvent.change(getSearchInput(), { target: { value: "An" } });
-      await waitFor(() => expect(doctorsCalls().length).toBe(callsBefore + 2));
+      // Act & Assert
+      vi.useFakeTimers();
+      try {
+        // Si el fetch dependiera de un `setTimeout(..., 300)` (debounce), esta
+        // llamada quedaría pendiente de un timer simulado que nunca se adelanta
+        // en este test, y la aserción de abajo fallaría de inmediato.
+        fireEvent.change(getSearchInput(), { target: { value: "A" } });
+        expect(doctorsCalls().length).toBe(callsBefore + 1);
+        const firstSearchCall = lastDoctorsCall();
+        expect(firstSearchCall.get("search")).toBe("A");
+        expect(firstSearchCall.get("page")).toBe("1");
 
-      // Assert: cada letra generó su propia llamada (no hay debounce) y la página vuelve a 1
-      const firstSearchCall = doctorsCalls()[callsBefore];
-      const secondSearchCall = doctorsCalls()[callsBefore + 1];
-      expect(firstSearchCall.get("search")).toBe("A");
-      expect(firstSearchCall.get("page")).toBe("1");
-      expect(secondSearchCall.get("search")).toBe("An");
-      expect(secondSearchCall.get("page")).toBe("1");
+        fireEvent.change(getSearchInput(), { target: { value: "An" } });
+        expect(doctorsCalls().length).toBe(callsBefore + 2);
+        const secondSearchCall = lastDoctorsCall();
+        expect(secondSearchCall.get("search")).toBe("An");
+        expect(secondSearchCall.get("page")).toBe("1");
+
+        // No debe quedar ningún temporizador pendiente (p. ej. un debounce)
+        // esperando disparar el fetch.
+        expect(vi.getTimerCount()).toBe(0);
+
+        // Cleanup: drena la promesa del último fetch (no depende de timers,
+        // sólo de la cola de microtasks) para no dejarla resolviendo fuera de
+        // act() una vez terminado el test.
+        await act(async () => {
+          await Promise.resolve();
+          await Promise.resolve();
+          await Promise.resolve();
+        });
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it("al elegir un departamento pide sus ciudades, resetea la página y habilita el select de ciudad", async () => {
