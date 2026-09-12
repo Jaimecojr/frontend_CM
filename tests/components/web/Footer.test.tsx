@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { Footer } from "@/components/web/Footer";
 
 vi.mock("next/image", () => ({
@@ -61,6 +61,26 @@ describe("Footer", () => {
       expect(screen.queryByText(/Sede Sin Dirección/i)).not.toBeInTheDocument();
     });
 
+    it("cuando la franquicia tiene address pero city es null, usa franchise.name como etiqueta (Title Case)", async () => {
+      // Arrange
+      fetchMock.mockResolvedValue(
+        mockResponse(true, {
+          data: [
+            { id: 3, name: "sede móvil", address: "carrera 5", city: null },
+          ],
+        })
+      );
+
+      // Act
+      render(<Footer />);
+
+      // Assert
+      await waitFor(() => {
+        expect(screen.getByText("Sede Móvil:")).toBeInTheDocument();
+      });
+      expect(screen.getByText("Carrera 5")).toBeInTheDocument();
+    });
+
     it("cuando fetch rechaza, franchises queda vacío y el resto del footer se renderiza igual", async () => {
       // Arrange
       fetchMock.mockRejectedValue(new Error("network error"));
@@ -101,9 +121,13 @@ describe("Footer", () => {
       fetchMock.mockResolvedValue(mockResponse(true, { data: [] }));
     });
 
-    it("click en 'Aviso de Privacidad' renderiza LegalModal con type='privacy'", () => {
+    it("click en 'Aviso de Privacidad' renderiza LegalModal con type='privacy'", async () => {
       // Arrange
       render(<Footer />);
+      // Flush the pending getActiveFranchises().then(setFranchises) update
+      // triggered by render, before this test's own state updates, so React
+      // doesn't warn about an update outside act() landing after the test.
+      await waitFor(() => {});
 
       // Act
       fireEvent.click(screen.getByText("Aviso de Privacidad"));
@@ -113,9 +137,10 @@ describe("Footer", () => {
       expect(modal).toHaveAttribute("data-type", "privacy");
     });
 
-    it("click en 'Términos y Condiciones' renderiza LegalModal con type='terms'", () => {
+    it("click en 'Términos y Condiciones' renderiza LegalModal con type='terms'", async () => {
       // Arrange
       render(<Footer />);
+      await waitFor(() => {});
 
       // Act
       fireEvent.click(screen.getByText("Términos y Condiciones"));
@@ -125,9 +150,10 @@ describe("Footer", () => {
       expect(modal).toHaveAttribute("data-type", "terms");
     });
 
-    it("cerrar el modal (onClose) hace que legalModal vuelva a null y el modal desaparezca", () => {
+    it("cerrar el modal (onClose) hace que legalModal vuelva a null y el modal desaparezca", async () => {
       // Arrange
       render(<Footer />);
+      await waitFor(() => {});
       fireEvent.click(screen.getByText("Aviso de Privacidad"));
       expect(screen.getByTestId("legal-modal")).toBeInTheDocument();
 
@@ -140,7 +166,7 @@ describe("Footer", () => {
   });
 
   describe("Paso 3: Copyright", () => {
-    it("muestra el año actual en el texto de copyright", () => {
+    it("muestra el año actual en el texto de copyright", async () => {
       // Arrange
       // Local-time constructor (year, month, day, hour) avoids the UTC
       // midnight boundary gotcha of `new Date("2026-01-01")`, which can
@@ -151,6 +177,15 @@ describe("Footer", () => {
 
       // Act
       render(<Footer />);
+      // Flush the pending getActiveFranchises().then(setFranchises) update
+      // before asserting, so it doesn't land after the test finishes.
+      // `waitFor` polls via setTimeout, which never fires under fake timers
+      // unless advanced, so use advanceTimersByTimeAsync instead to drain
+      // the microtask queue, wrapped in act() so the resulting setFranchises
+      // state update is not flagged as happening outside a test's act scope.
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(0);
+      });
 
       // Assert
       expect(screen.getByText(/2026 Contacto Médico/)).toBeInTheDocument();
