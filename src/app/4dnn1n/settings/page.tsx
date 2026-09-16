@@ -6,17 +6,21 @@ import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { alert } from "@/lib/alert";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import { useAuth } from "@/context/AuthContext";
 
 import { getSetting, updateSetting, type ApiSetting } from "./fetch";
 import SettingForm from "./_components/SettingForm";
 
 export default function SettingsPage() {
   usePageTitle("Configuración");
+  const { user: authUser, loading: authLoading } = useAuth();
 
   const [setting, setSetting] = useState<ApiSetting | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authUser?.type !== 1) return;
+
     (async () => {
       try {
         const data = await getSetting();
@@ -27,7 +31,7 @@ export default function SettingsPage() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [authUser]);
 
   const handleSubmit = async (payload: Omit<ApiSetting, "id">) => {
     if (!setting) return;
@@ -39,6 +43,15 @@ export default function SettingsPage() {
       await alert.error("Error", getApiErrorMessage(err));
     }
   };
+
+  if (authLoading) return null;
+  if (authUser?.type !== 1) {
+    return (
+      <div className="flex h-64 items-center justify-center p-6 text-red-500 font-medium">
+        No tienes permisos suficientes para acceder a esta vista.
+      </div>
+    );
+  }
 
   return (
     <>

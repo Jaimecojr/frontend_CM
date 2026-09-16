@@ -3,6 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import SettingsPage from "@/app/4dnn1n/settings/page";
 import { getSetting, updateSetting, type ApiSetting } from "@/app/4dnn1n/settings/fetch";
+import { useAuth } from "@/context/AuthContext";
 import { alert } from "@/lib/alert";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
@@ -11,9 +12,19 @@ import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 // dedicated coverage.
 vi.mock("@/app/4dnn1n/settings/fetch", () => ({ getSetting: vi.fn(), updateSetting: vi.fn() }));
 
+vi.mock("@/context/AuthContext", () => ({ useAuth: vi.fn() }));
+
 vi.mock("@/lib/alert", () => ({
   alert: { confirm: vi.fn(), success: vi.fn(), error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
+
+function mockAuth(type: number | null, loading = false) {
+  (useAuth as any).mockReturnValue({
+    user: type === null ? null : { id: 1, type },
+    loading,
+    isLoggingOut: false,
+  });
+}
 
 // `SettingForm` already has dedicated coverage; this stub exposes a button
 // that invokes `onSubmit` with a fixed payload so `handleSubmit` can be
@@ -58,6 +69,32 @@ function makeSetting(overrides: Partial<ApiSetting> = {}): ApiSetting {
 describe("SettingsPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAuth(1);
+  });
+
+  describe("gate de permisos", () => {
+    it("mientras el auth está cargando, no renderiza el título ni el mensaje de permisos", () => {
+      mockAuth(null, true);
+
+      render(<SettingsPage />);
+
+      expect(screen.queryByText("Configuración Global")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("No tienes permisos suficientes para acceder a esta vista."),
+      ).not.toBeInTheDocument();
+      expect(getSetting).not.toHaveBeenCalled();
+    });
+
+    it("si el usuario no es super admin (type !== 1), muestra el mensaje de permisos y no llama getSetting", () => {
+      mockAuth(2);
+
+      render(<SettingsPage />);
+
+      expect(
+        screen.getByText("No tienes permisos suficientes para acceder a esta vista."),
+      ).toBeInTheDocument();
+      expect(getSetting).not.toHaveBeenCalled();
+    });
   });
 
   describe("ciclo de carga", () => {
