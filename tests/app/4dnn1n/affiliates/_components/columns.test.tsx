@@ -313,6 +313,31 @@ describe("buildAffiliateColumns", () => {
       expect(onToggleMock).toHaveBeenCalledTimes(1);
     });
 
+    it("botón 'Agregar nota' invoca onAddNote con el afiliado al hacer click", async () => {
+      const onAddNoteMock = vi.fn();
+      const columns = buildAffiliateColumns({
+        onToggleState: vi.fn(),
+        onSendCarnet: vi.fn(),
+        onAddNote: onAddNoteMock,
+        hasAccess: true,
+        canToggle: false,
+      });
+
+      const actionsColumn = columns.find((col) => col.id === "actions");
+      expect(actionsColumn?.cell).toBeDefined();
+
+      const affiliate = createMockAffiliate({ id: 42 });
+      const mockRow = { original: affiliate };
+      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
+
+      render(cellResult);
+      const addNoteButton = screen.getByRole("button", { name: /agregar nota/i });
+      await userEvent.click(addNoteButton);
+
+      expect(onAddNoteMock).toHaveBeenCalledWith(affiliate);
+      expect(onAddNoteMock).toHaveBeenCalledTimes(1);
+    });
+
     it("columna actions renderiza botón carnet cuando carnet='no' y movil tiene 10 dígitos", async () => {
       const onSendCarnetMock = vi.fn();
       const columns = buildAffiliateColumns({
