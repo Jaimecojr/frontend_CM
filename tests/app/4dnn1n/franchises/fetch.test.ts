@@ -12,10 +12,20 @@ import {
   type UpdateFranchisePayload,
 } from "@/app/4dnn1n/franchises/fetch";
 import { apiFetch, csrf } from "@/lib/api";
+import { memCache, TTL_GEO, TTL_CATALOG } from "@/lib/memCache";
 
 vi.mock("@/lib/api", () => ({
   apiFetch: vi.fn(),
   csrf: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@/lib/memCache", () => ({
+  memCache: {
+    get: vi.fn((key, ttl, fn) => fn()),
+    invalidatePrefix: vi.fn(),
+  },
+  TTL_GEO: 1800000,
+  TTL_CATALOG: 300000,
 }));
 
 describe("franchises/fetch", () => {
@@ -100,6 +110,17 @@ describe("franchises/fetch", () => {
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe(2);
     });
+
+    it("usa clave de caché 'franchises:all' con TTL_CATALOG", async () => {
+      // Arrange
+      (apiFetch as any).mockResolvedValue({ data: [] });
+
+      // Act
+      await getFranchises();
+
+      // Assert
+      expect(memCache.get).toHaveBeenCalledWith("franchises:all", TTL_CATALOG, expect.any(Function));
+    });
   });
 
   // ──── Step 2: Tests for getFranchise, getDepartments, getCitiesByDepartment ────
@@ -144,6 +165,17 @@ describe("franchises/fetch", () => {
       // Assert
       expect(result).toEqual(mockFranchise);
     });
+
+    it("no pasa por memCache", async () => {
+      // Arrange
+      (apiFetch as any).mockResolvedValue({ data: {} });
+
+      // Act
+      await getFranchise(7);
+
+      // Assert
+      expect(memCache.get).not.toHaveBeenCalled();
+    });
   });
 
   describe("getDepartments", () => {
@@ -174,18 +206,15 @@ describe("franchises/fetch", () => {
       expect(result).toEqual([]);
     });
 
-    it("retorna datos sin pasar por memCache", async () => {
+    it("usa clave de caché 'departments' con TTL_GEO", async () => {
       // Arrange
-      const mockDepts = [{ id: 1, name: "Bogotá" }];
-      (apiFetch as any).mockResolvedValue({ data: mockDepts });
+      (apiFetch as any).mockResolvedValue({ data: [] });
 
       // Act
-      const result = await getDepartments();
+      await getDepartments();
 
       // Assert
-      expect(result).toEqual(mockDepts);
-      // No memCache import in this file — verify via absence of cache handling
-      expect(apiFetch).toHaveBeenCalledTimes(1);
+      expect(memCache.get).toHaveBeenCalledWith("departments", TTL_GEO, expect.any(Function));
     });
   });
 
@@ -226,6 +255,31 @@ describe("franchises/fetch", () => {
 
       // Assert
       expect(apiFetch).toHaveBeenCalledWith("/api/departments/15/cities");
+    });
+
+    it("usa clave de caché 'cities:{departmentId}' con TTL_GEO", async () => {
+      // Arrange
+      (apiFetch as any).mockResolvedValue({ data: [] });
+
+      // Act
+      await getCitiesByDepartment(7);
+
+      // Assert
+      expect(memCache.get).toHaveBeenCalledWith("cities:7", TTL_GEO, expect.any(Function));
+    });
+
+    it("genera claves de caché distintas para departamentos diferentes", async () => {
+      // Arrange
+      (apiFetch as any).mockResolvedValue({ data: [] });
+
+      // Act
+      await getCitiesByDepartment(7);
+      await getCitiesByDepartment(15);
+
+      // Assert
+      const calls = (memCache.get as any).mock.calls;
+      expect(calls[0][0]).toBe("cities:7");
+      expect(calls[1][0]).toBe("cities:15");
     });
   });
 
@@ -299,6 +353,25 @@ describe("franchises/fetch", () => {
       // Assert
       const callArgs = (apiFetch as any).mock.calls[0];
       expect(callArgs[1].body).toBe(JSON.stringify(payload));
+    });
+
+    it("invalida caché con prefijo 'franchises:'", async () => {
+      // Arrange
+      const payload: CreateFranchisePayload = {
+        nit: "123456789",
+        name: "Nueva Franquicia",
+        email: "new@franquicia.com",
+        user: "new_user",
+        password: "securepass123",
+        city_id: 3,
+      };
+      (apiFetch as any).mockResolvedValue({ data: {} });
+
+      // Act
+      await createUser(payload);
+
+      // Assert
+      expect(memCache.invalidatePrefix).toHaveBeenCalledWith("franchises:");
     });
 
     it("retorna resultado de apiFetch", async () => {
@@ -401,6 +474,18 @@ describe("franchises/fetch", () => {
       });
     });
 
+    it("invalida caché con prefijo 'franchises:'", async () => {
+      // Arrange
+      const payload: UpdateFranchisePayload = { name: "Franquicia Actualizada" };
+      (apiFetch as any).mockResolvedValue({ data: {} });
+
+      // Act
+      await updateFranchise(5, payload);
+
+      // Assert
+      expect(memCache.invalidatePrefix).toHaveBeenCalledWith("franchises:");
+    });
+
     it("retorna resultado de apiFetch", async () => {
       // Arrange
       const payload: UpdateFranchisePayload = {
@@ -490,6 +575,17 @@ describe("franchises/fetch", () => {
       const callArgs = (apiFetch as any).mock.calls[0];
       const bodyPayload = JSON.parse(callArgs[1].body);
       expect(bodyPayload.state).toBe(2);
+    });
+
+    it("invalida caché con prefijo 'franchises:'", async () => {
+      // Arrange
+      (apiFetch as any).mockResolvedValue({ data: {} });
+
+      // Act
+      await updateFranchiseState(5, 2);
+
+      // Assert
+      expect(memCache.invalidatePrefix).toHaveBeenCalledWith("franchises:");
     });
 
     it("retorna resultado de apiFetch", async () => {

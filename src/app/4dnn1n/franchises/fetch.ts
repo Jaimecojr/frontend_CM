@@ -1,4 +1,5 @@
 import { apiFetch, csrf } from "@/lib/api";
+import { memCache, TTL_GEO, TTL_CATALOG } from "@/lib/memCache";
 
 export enum FranchiseType {
   SuperAdmin = 1,
@@ -29,12 +30,14 @@ export type { Department, City };
 type ApiResponse<T> = { message: string; data: T };
 
 export async function getFranchises(): Promise<ApiFranchise[]> {
-  const res = await apiFetch<ApiResponse<any[]>>("/api/users");
-  const data = (res.data ?? []) as any[];
+  return memCache.get("franchises:all", TTL_CATALOG, async () => {
+    const res = await apiFetch<ApiResponse<any[]>>("/api/users");
+    const data = (res.data ?? []) as any[];
 
-  return data
-    .map((u) => ({ ...u, type: Number(u.type) as FranchiseType }))
-    .filter((u) => u.type !== FranchiseType.SuperAdmin);
+    return data
+      .map((u) => ({ ...u, type: Number(u.type) as FranchiseType }))
+      .filter((u) => u.type !== FranchiseType.SuperAdmin);
+  });
 }
 
 export async function getFranchise(id: number): Promise<ApiFranchise> {
@@ -43,13 +46,17 @@ export async function getFranchise(id: number): Promise<ApiFranchise> {
 }
 
 export async function getDepartments(): Promise<Department[]> {
-  const res = await apiFetch<ApiResponse<Department[]>>(`/api/departments`);
-  return res.data ?? [];
+  return memCache.get("departments", TTL_GEO, async () => {
+    const res = await apiFetch<ApiResponse<Department[]>>(`/api/departments`);
+    return res.data ?? [];
+  });
 }
 
 export async function getCitiesByDepartment(departmentId: number): Promise<City[]> {
-  const res = await apiFetch<ApiResponse<City[]>>(`/api/departments/${departmentId}/cities`);
-  return res.data ?? [];
+  return memCache.get(`cities:${departmentId}`, TTL_GEO, async () => {
+    const res = await apiFetch<ApiResponse<City[]>>(`/api/departments/${departmentId}/cities`);
+    return res.data ?? [];
+  });
 }
 
 export type CreateFranchisePayload = {
@@ -70,10 +77,12 @@ export type CreateFranchisePayload = {
 
 export async function createUser(payload: CreateFranchisePayload) {
   await csrf();
-  return apiFetch<ApiResponse<ApiFranchise>>("/api/users", {
+  const result = await apiFetch<ApiResponse<ApiFranchise>>("/api/users", {
     method: "POST",
     body: JSON.stringify(payload),
   });
+  memCache.invalidatePrefix("franchises:");
+  return result;
 }
 
 export type UpdateFranchisePayload = Partial<Omit<CreateFranchisePayload, "password">> & {
@@ -82,16 +91,20 @@ export type UpdateFranchisePayload = Partial<Omit<CreateFranchisePayload, "passw
 
 export async function updateFranchise(id: number, payload: UpdateFranchisePayload) {
   await csrf();
-  return apiFetch<ApiResponse<ApiFranchise>>(`/api/users/${id}`, {
+  const result = await apiFetch<ApiResponse<ApiFranchise>>(`/api/users/${id}`, {
     method: "PATCH",
     body: JSON.stringify(payload),
   });
+  memCache.invalidatePrefix("franchises:");
+  return result;
 }
 
 export async function updateFranchiseState(id: number, state: 1 | 2) {
   await csrf();
-  return apiFetch<ApiResponse<ApiFranchise>>(`/api/users/${id}`, {
+  const result = await apiFetch<ApiResponse<ApiFranchise>>(`/api/users/${id}`, {
     method: "PATCH",
     body: JSON.stringify({ state }),
   });
+  memCache.invalidatePrefix("franchises:");
+  return result;
 }
