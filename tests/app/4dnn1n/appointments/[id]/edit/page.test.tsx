@@ -186,28 +186,24 @@ describe("EditAppointmentPage", () => {
       expect(pushMock).toHaveBeenCalledWith("/4dnn1n/appointments");
     });
 
-    // Verified finding (not fixed here): `handleSubmit` in
-    // `src/app/4dnn1n/appointments/[id]/edit/page.tsx` has no try/catch around
-    // `updateAppointment`, so a rejected promise propagates unhandled out of
-    // the `onSubmit` prop instead of surfacing through `alert.error` to the user.
-    it("si updateAppointment rechaza, la promesa retornada por onSubmit se propaga sin manejar (sin alert.error, sin redirect)", async () => {
+    it("si updateAppointment rechaza, llama alert.error con el mensaje de la API, no redirige y no propaga la excepción", async () => {
       // Arrange
       mockAuth(1);
       mockParams("5");
       (getAppointment as any).mockResolvedValue(createMockAppointment({ id: 5 }));
-      const rejection = new Error("network error");
-      (updateAppointment as any).mockRejectedValue(rejection);
+      const apiError = { data: { message: "No se pudo actualizar la cita" } };
+      (updateAppointment as any).mockRejectedValue(apiError);
 
       render(<EditAppointmentPage />);
       await screen.findByTestId("appointment-edit-form");
 
       // Act / Assert: calling the captured `onSubmit` prop directly confirms
-      // the returned promise genuinely rejects — the page itself never
-      // catches it.
+      // the page's `handleSubmit` catches the rejection itself instead of
+      // letting it propagate to the form's `try/finally`.
       expect(capturedOnSubmit).not.toBeNull();
-      await expect(capturedOnSubmit!(testPayload)).rejects.toThrow("network error");
+      await expect(capturedOnSubmit!(testPayload)).resolves.toBeUndefined();
 
-      expect(alert.error).not.toHaveBeenCalled();
+      expect(alert.error).toHaveBeenCalledWith("Error", "No se pudo actualizar la cita");
       expect(alert.success).not.toHaveBeenCalled();
       expect(pushMock).not.toHaveBeenCalled();
     });

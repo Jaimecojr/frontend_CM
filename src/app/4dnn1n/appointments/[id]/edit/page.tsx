@@ -53,9 +53,13 @@ export default function EditAppointmentPage() {
   }
 
   const handleSubmit = async (payload: CreateAppointmentPayload) => {
-    await updateAppointment(id, payload);
-    await alert.success("Cita actualizada", "Los cambios fueron guardados correctamente.");
-    router.push("/4dnn1n/appointments");
+    try {
+      await updateAppointment(id, payload);
+      await alert.success("Cita actualizada", "Los cambios fueron guardados correctamente.");
+      router.push("/4dnn1n/appointments");
+    } catch (err) {
+      await alert.error("Error", getApiErrorMessage(err));
+    }
   };
 
   return (
