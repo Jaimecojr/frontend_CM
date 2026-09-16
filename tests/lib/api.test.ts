@@ -117,6 +117,22 @@ describe("apiFetch", () => {
       const headers = init?.headers as Record<string, string>;
       expect(headers["X-XSRF-TOKEN"]).toBe("abc");
     });
+
+    it("con body FormData, NO incluye Content-Type (el navegador arma su propio boundary)", async () => {
+      // Arrange
+      fetchMock.mockResolvedValueOnce(mockResponse({ ok: true, status: 200, json: async () => ({}) }));
+      const formData = new FormData();
+      formData.append("image", "fake-content");
+
+      // Act
+      await apiFetch("/api/x", { method: "POST", body: formData });
+
+      // Assert
+      const [, init] = fetchMock.mock.calls[0];
+      const headers = init?.headers as Record<string, string>;
+      expect(headers["Content-Type"]).toBeUndefined();
+      expect(init?.body).toBe(formData);
+    });
   });
 
   describe("respuestas exitosas y de error", () => {

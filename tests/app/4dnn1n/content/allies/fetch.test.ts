@@ -6,22 +6,18 @@ import {
   deleteAlly,
   reorderAllies,
 } from "@/app/4dnn1n/content/allies/fetch";
-import { apiFetch, csrf, getXsrfToken } from "@/lib/api";
+import { apiFetch, csrf } from "@/lib/api";
 import { memCache, TTL_CATALOG } from "@/lib/memCache";
 
 vi.mock("@/lib/api", () => ({
   apiFetch: vi.fn(),
   csrf: vi.fn().mockResolvedValue(undefined),
-  getXsrfToken: vi.fn(() => "test-xsrf-token"),
 }));
 
 vi.mock("@/lib/memCache", () => ({
   memCache: { get: vi.fn((key, ttl, fn) => fn()), invalidatePrefix: vi.fn() },
   TTL_CATALOG: 300000,
 }));
-
-const fetchMock = vi.fn();
-vi.stubGlobal("fetch", fetchMock);
 
 describe("content/allies/fetch", () => {
   beforeEach(() => {
@@ -82,7 +78,7 @@ describe("content/allies/fetch", () => {
     });
   });
 
-  // ──── Step 2: Tests for createAlly (goes through global fetch, not apiFetch) ────
+  // ──── Step 2: Tests for createAlly (uses apiFetch, same client as the rest of the app) ────
   describe("createAlly", () => {
     const mockAlly = {
       id: 1,
@@ -92,16 +88,16 @@ describe("content/allies/fetch", () => {
       position: 1,
     };
 
-    it("llama csrf antes que fetch", async () => {
+    it("llama csrf antes que apiFetch", async () => {
       // Arrange
       const callOrder: string[] = [];
       (csrf as any).mockImplementation(async () => {
         callOrder.push("csrf");
         return undefined;
       });
-      fetchMock.mockImplementation(async () => {
-        callOrder.push("fetch");
-        return { ok: true, json: vi.fn().mockResolvedValue({ message: "ok", data: mockAlly }) };
+      (apiFetch as any).mockImplementation(async () => {
+        callOrder.push("apiFetch");
+        return { message: "ok", data: mockAlly };
       });
       const formData = new FormData();
 
@@ -109,55 +105,28 @@ describe("content/allies/fetch", () => {
       await createAlly(formData);
 
       // Assert
-      expect(callOrder).toEqual(["csrf", "fetch"]);
+      expect(callOrder).toEqual(["csrf", "apiFetch"]);
     });
 
-    it("llama fetch con la URL, método y headers correctos", async () => {
+    it("llama apiFetch con POST y el FormData como body", async () => {
       // Arrange
       const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ message: "ok", data: mockAlly }),
-      });
+      (apiFetch as any).mockResolvedValue({ message: "ok", data: mockAlly });
 
       // Act
       await createAlly(formData);
 
       // Assert
-      expect(fetchMock).toHaveBeenCalledWith("http://localhost:8000/api/content-allies", {
+      expect(apiFetch).toHaveBeenCalledWith("/api/content-allies", {
         method: "POST",
-        credentials: "include",
         body: formData,
-        headers: {
-          Accept: "application/json",
-          "X-XSRF-TOKEN": "test-xsrf-token",
-        },
       });
-      expect(getXsrfToken).toHaveBeenCalled();
-    });
-
-    it("nunca llama apiFetch en este flujo", async () => {
-      // Arrange
-      const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ message: "ok", data: mockAlly }),
-      });
-
-      // Act
-      await createAlly(formData);
-
-      // Assert
-      expect(apiFetch).not.toHaveBeenCalled();
     });
 
     it("retorna res.data cuando la petición es exitosa", async () => {
       // Arrange
       const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ message: "ok", data: mockAlly }),
-      });
+      (apiFetch as any).mockResolvedValue({ message: "ok", data: mockAlly });
 
       // Act
       const result = await createAlly(formData);
@@ -169,10 +138,7 @@ describe("content/allies/fetch", () => {
     it("invalida caché con prefijo 'content-allies:' cuando la petición es exitosa", async () => {
       // Arrange
       const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ message: "ok", data: mockAlly }),
-      });
+      (apiFetch as any).mockResolvedValue({ message: "ok", data: mockAlly });
 
       // Act
       await createAlly(formData);
@@ -181,50 +147,20 @@ describe("content/allies/fetch", () => {
       expect(memCache.invalidatePrefix).toHaveBeenCalledWith("content-allies:");
     });
 
-    it("rechaza con el mensaje del cuerpo de la respuesta cuando la petición falla", async () => {
+    it("no invalida caché cuando apiFetch rechaza", async () => {
       // Arrange
       const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: false,
-        status: 422,
-        json: vi.fn().mockResolvedValue({ message: "La imagen es obligatoria" }),
-      });
-
-      // Act & Assert
-      await expect(createAlly(formData)).rejects.toThrow("La imagen es obligatoria");
-    });
-
-    it("rechaza con el fallback 'Error {status}' cuando el cuerpo no trae mensaje", async () => {
-      // Arrange
-      const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: vi.fn().mockResolvedValue({}),
-      });
-
-      // Act & Assert
-      await expect(createAlly(formData)).rejects.toThrow("Error 500");
-    });
-
-    it("no invalida caché cuando la petición falla", async () => {
-      // Arrange
-      const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: vi.fn().mockResolvedValue({}),
-      });
+      (apiFetch as any).mockRejectedValue(new Error("La imagen es obligatoria"));
 
       // Act
-      await expect(createAlly(formData)).rejects.toThrow();
+      await expect(createAlly(formData)).rejects.toThrow("La imagen es obligatoria");
 
       // Assert
       expect(memCache.invalidatePrefix).not.toHaveBeenCalled();
     });
   });
 
-  // ──── Step 3: Test for updateAlly (appends _method: PUT, still POSTs) ────
+  // ──── Step 3: Test for updateAlly (appends _method: PUT, still POSTs via apiFetch) ────
   describe("updateAlly", () => {
     const mockAlly = {
       id: 3,
@@ -237,10 +173,7 @@ describe("content/allies/fetch", () => {
     it("agrega '_method: PUT' al FormData recibido", async () => {
       // Arrange
       const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ message: "ok", data: mockAlly }),
-      });
+      (apiFetch as any).mockResolvedValue({ message: "ok", data: mockAlly });
 
       // Act
       await updateAlly(3, formData);
@@ -252,31 +185,28 @@ describe("content/allies/fetch", () => {
     it("sigue enviando un POST real a /api/content-allies/{id}", async () => {
       // Arrange
       const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ message: "ok", data: mockAlly }),
-      });
+      (apiFetch as any).mockResolvedValue({ message: "ok", data: mockAlly });
 
       // Act
       await updateAlly(3, formData);
 
       // Assert
-      const [url, options] = fetchMock.mock.calls[0];
-      expect(url).toBe("http://localhost:8000/api/content-allies/3");
+      const [path, options] = (apiFetch as any).mock.calls[0];
+      expect(path).toBe("/api/content-allies/3");
       expect(options.method).toBe("POST");
       expect(options.body.get("_method")).toBe("PUT");
     });
 
-    it("llama csrf antes que fetch", async () => {
+    it("llama csrf antes que apiFetch", async () => {
       // Arrange
       const callOrder: string[] = [];
       (csrf as any).mockImplementation(async () => {
         callOrder.push("csrf");
         return undefined;
       });
-      fetchMock.mockImplementation(async () => {
-        callOrder.push("fetch");
-        return { ok: true, json: vi.fn().mockResolvedValue({ message: "ok", data: mockAlly }) };
+      (apiFetch as any).mockImplementation(async () => {
+        callOrder.push("apiFetch");
+        return { message: "ok", data: mockAlly };
       });
       const formData = new FormData();
 
@@ -284,16 +214,13 @@ describe("content/allies/fetch", () => {
       await updateAlly(3, formData);
 
       // Assert
-      expect(callOrder).toEqual(["csrf", "fetch"]);
+      expect(callOrder).toEqual(["csrf", "apiFetch"]);
     });
 
     it("retorna res.data e invalida caché con prefijo 'content-allies:'", async () => {
       // Arrange
       const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ message: "ok", data: mockAlly }),
-      });
+      (apiFetch as any).mockResolvedValue({ message: "ok", data: mockAlly });
 
       // Act
       const result = await updateAlly(3, formData);

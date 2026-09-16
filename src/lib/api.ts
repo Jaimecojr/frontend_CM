@@ -52,6 +52,10 @@ function resetCsrf() {
 export async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
   const method = (options.method ?? "GET").toUpperCase();
   const hasBody = method !== "GET" && method !== "HEAD";
+  // A FormData body (file uploads) must NOT get an explicit Content-Type —
+  // the browser sets its own `multipart/form-data; boundary=...` only when
+  // the header is left unset.
+  const isFormData = typeof FormData !== "undefined" && options.body instanceof FormData;
 
   const doFetch = () =>
     fetch(`${API_URL}${path}`, {
@@ -61,7 +65,7 @@ export async function apiFetch<T = unknown>(path: string, options: RequestInit =
         Accept: "application/json",
         // Content-Type is only sent on requests with a body — on a GET
         // this header isn't necessary and triggers an extra CORS preflight.
-        ...(hasBody ? { "Content-Type": "application/json" } : {}),
+        ...(hasBody && !isFormData ? { "Content-Type": "application/json" } : {}),
         "X-XSRF-TOKEN": getXsrfToken() ?? "",
         ...(options.headers || {}),
       },

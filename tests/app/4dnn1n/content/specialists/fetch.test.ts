@@ -6,22 +6,18 @@ import {
   deleteSpecialist,
   reorderSpecialists,
 } from "@/app/4dnn1n/content/specialists/fetch";
-import { apiFetch, csrf, getXsrfToken } from "@/lib/api";
+import { apiFetch, csrf } from "@/lib/api";
 import { memCache, TTL_CATALOG } from "@/lib/memCache";
 
 vi.mock("@/lib/api", () => ({
   apiFetch: vi.fn(),
   csrf: vi.fn().mockResolvedValue(undefined),
-  getXsrfToken: vi.fn(() => "test-xsrf-token"),
 }));
 
 vi.mock("@/lib/memCache", () => ({
   memCache: { get: vi.fn((key, ttl, fn) => fn()), invalidatePrefix: vi.fn() },
   TTL_CATALOG: 300000,
 }));
-
-const fetchMock = vi.fn();
-vi.stubGlobal("fetch", fetchMock);
 
 describe("content/specialists/fetch", () => {
   beforeEach(() => {
@@ -89,7 +85,7 @@ describe("content/specialists/fetch", () => {
     });
   });
 
-  // ──── Step 2: Tests for createSpecialist (goes through global fetch, not apiFetch) ────
+  // ──── Step 2: Tests for createSpecialist (uses apiFetch, same client as the rest of the app) ────
   describe("createSpecialist", () => {
     const mockSpecialist = {
       id: 1,
@@ -100,16 +96,16 @@ describe("content/specialists/fetch", () => {
       position: 1,
     };
 
-    it("llama csrf antes que fetch", async () => {
+    it("llama csrf antes que apiFetch", async () => {
       // Arrange
       const callOrder: string[] = [];
       (csrf as any).mockImplementation(async () => {
         callOrder.push("csrf");
         return undefined;
       });
-      fetchMock.mockImplementation(async () => {
-        callOrder.push("fetch");
-        return { ok: true, json: vi.fn().mockResolvedValue({ message: "ok", data: mockSpecialist }) };
+      (apiFetch as any).mockImplementation(async () => {
+        callOrder.push("apiFetch");
+        return { message: "ok", data: mockSpecialist };
       });
       const formData = new FormData();
 
@@ -117,55 +113,28 @@ describe("content/specialists/fetch", () => {
       await createSpecialist(formData);
 
       // Assert
-      expect(callOrder).toEqual(["csrf", "fetch"]);
+      expect(callOrder).toEqual(["csrf", "apiFetch"]);
     });
 
-    it("llama fetch con la URL, método y headers correctos", async () => {
+    it("llama apiFetch con POST y el FormData como body", async () => {
       // Arrange
       const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ message: "ok", data: mockSpecialist }),
-      });
+      (apiFetch as any).mockResolvedValue({ message: "ok", data: mockSpecialist });
 
       // Act
       await createSpecialist(formData);
 
       // Assert
-      expect(fetchMock).toHaveBeenCalledWith("http://localhost:8000/api/content-specialists", {
+      expect(apiFetch).toHaveBeenCalledWith("/api/content-specialists", {
         method: "POST",
-        credentials: "include",
         body: formData,
-        headers: {
-          Accept: "application/json",
-          "X-XSRF-TOKEN": "test-xsrf-token",
-        },
       });
-      expect(getXsrfToken).toHaveBeenCalled();
-    });
-
-    it("nunca llama apiFetch en este flujo", async () => {
-      // Arrange
-      const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ message: "ok", data: mockSpecialist }),
-      });
-
-      // Act
-      await createSpecialist(formData);
-
-      // Assert
-      expect(apiFetch).not.toHaveBeenCalled();
     });
 
     it("retorna res.data cuando la petición es exitosa", async () => {
       // Arrange
       const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ message: "ok", data: mockSpecialist }),
-      });
+      (apiFetch as any).mockResolvedValue({ message: "ok", data: mockSpecialist });
 
       // Act
       const result = await createSpecialist(formData);
@@ -177,10 +146,7 @@ describe("content/specialists/fetch", () => {
     it("invalida caché con prefijo 'content-specialists:' cuando la petición es exitosa", async () => {
       // Arrange
       const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ message: "ok", data: mockSpecialist }),
-      });
+      (apiFetch as any).mockResolvedValue({ message: "ok", data: mockSpecialist });
 
       // Act
       await createSpecialist(formData);
@@ -189,50 +155,20 @@ describe("content/specialists/fetch", () => {
       expect(memCache.invalidatePrefix).toHaveBeenCalledWith("content-specialists:");
     });
 
-    it("rechaza con el mensaje del cuerpo de la respuesta cuando la petición falla", async () => {
+    it("no invalida caché cuando apiFetch rechaza", async () => {
       // Arrange
       const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: false,
-        status: 422,
-        json: vi.fn().mockResolvedValue({ message: "La foto es obligatoria" }),
-      });
-
-      // Act & Assert
-      await expect(createSpecialist(formData)).rejects.toThrow("La foto es obligatoria");
-    });
-
-    it("rechaza con el fallback 'Error {status}' cuando el cuerpo no trae mensaje", async () => {
-      // Arrange
-      const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: vi.fn().mockResolvedValue({}),
-      });
-
-      // Act & Assert
-      await expect(createSpecialist(formData)).rejects.toThrow("Error 500");
-    });
-
-    it("no invalida caché cuando la petición falla", async () => {
-      // Arrange
-      const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: false,
-        status: 500,
-        json: vi.fn().mockResolvedValue({}),
-      });
+      (apiFetch as any).mockRejectedValue(new Error("La foto es obligatoria"));
 
       // Act
-      await expect(createSpecialist(formData)).rejects.toThrow();
+      await expect(createSpecialist(formData)).rejects.toThrow("La foto es obligatoria");
 
       // Assert
       expect(memCache.invalidatePrefix).not.toHaveBeenCalled();
     });
   });
 
-  // ──── Step 3: Test for updateSpecialist (appends _method: PUT, still POSTs) ────
+  // ──── Step 3: Test for updateSpecialist (appends _method: PUT, still POSTs via apiFetch) ────
   describe("updateSpecialist", () => {
     const mockSpecialist = {
       id: 3,
@@ -246,10 +182,7 @@ describe("content/specialists/fetch", () => {
     it("agrega '_method: PUT' al FormData recibido", async () => {
       // Arrange
       const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ message: "ok", data: mockSpecialist }),
-      });
+      (apiFetch as any).mockResolvedValue({ message: "ok", data: mockSpecialist });
 
       // Act
       await updateSpecialist(3, formData);
@@ -261,31 +194,28 @@ describe("content/specialists/fetch", () => {
     it("sigue enviando un POST real a /api/content-specialists/{id}", async () => {
       // Arrange
       const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ message: "ok", data: mockSpecialist }),
-      });
+      (apiFetch as any).mockResolvedValue({ message: "ok", data: mockSpecialist });
 
       // Act
       await updateSpecialist(3, formData);
 
       // Assert
-      const [url, options] = fetchMock.mock.calls[0];
-      expect(url).toBe("http://localhost:8000/api/content-specialists/3");
+      const [path, options] = (apiFetch as any).mock.calls[0];
+      expect(path).toBe("/api/content-specialists/3");
       expect(options.method).toBe("POST");
       expect(options.body.get("_method")).toBe("PUT");
     });
 
-    it("llama csrf antes que fetch", async () => {
+    it("llama csrf antes que apiFetch", async () => {
       // Arrange
       const callOrder: string[] = [];
       (csrf as any).mockImplementation(async () => {
         callOrder.push("csrf");
         return undefined;
       });
-      fetchMock.mockImplementation(async () => {
-        callOrder.push("fetch");
-        return { ok: true, json: vi.fn().mockResolvedValue({ message: "ok", data: mockSpecialist }) };
+      (apiFetch as any).mockImplementation(async () => {
+        callOrder.push("apiFetch");
+        return { message: "ok", data: mockSpecialist };
       });
       const formData = new FormData();
 
@@ -293,16 +223,13 @@ describe("content/specialists/fetch", () => {
       await updateSpecialist(3, formData);
 
       // Assert
-      expect(callOrder).toEqual(["csrf", "fetch"]);
+      expect(callOrder).toEqual(["csrf", "apiFetch"]);
     });
 
     it("retorna res.data e invalida caché con prefijo 'content-specialists:'", async () => {
       // Arrange
       const formData = new FormData();
-      fetchMock.mockResolvedValue({
-        ok: true,
-        json: vi.fn().mockResolvedValue({ message: "ok", data: mockSpecialist }),
-      });
+      (apiFetch as any).mockResolvedValue({ message: "ok", data: mockSpecialist });
 
       // Act
       const result = await updateSpecialist(3, formData);
