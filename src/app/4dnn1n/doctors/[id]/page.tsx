@@ -43,21 +43,21 @@ export default function ViewDoctorPage() {
     };
   }, [id]);
 
+  if (authLoading) return null;
+  if (user?.type !== 1 && user?.type !== 2) {
+    return (
+      <div className="flex h-64 items-center justify-center p-6 text-red-500 font-medium">
+        No tienes permisos suficientes para acceder a esta vista.
+      </div>
+    );
+  }
+
   if (loading) return <FormPageSkeleton fields={10} />;
 
   if (!initialData) {
     return (
       <div className="p-6 text-center text-red-500">
         No se pudo cargar el médico.
-      </div>
-    );
-  }
-
-  if (authLoading) return null;
-  if (user?.type !== 1 && user?.type !== 2) {
-    return (
-      <div className="flex h-64 items-center justify-center p-6 text-red-500 font-medium">
-        No tienes permisos suficientes para acceder a esta vista.
       </div>
     );
   }

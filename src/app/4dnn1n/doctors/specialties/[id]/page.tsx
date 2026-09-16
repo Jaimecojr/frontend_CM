@@ -16,7 +16,7 @@ import { ArrowLeft } from "lucide-react";
 
 export default function SpecialtyViewPage() {
   usePageTitle("Ver Especialidad");
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const hasAccess = user?.type === 1 || user?.type === 2;
   const params = useParams();
   const specialtyId = parseInt(params?.id as string, 10);
@@ -43,6 +43,11 @@ export default function SpecialtyViewPage() {
 
   const columns = useMemo(() => buildSpecialtyDoctorColumns(), []);
 
+  if (authLoading) return null;
+  if (!hasAccess) {
+    return <div className="p-6 text-red-500">No tienes permisos para acceder a esta página.</div>;
+  }
+
   if (!specialty) {
     return (
       <div className="rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
@@ -63,10 +68,6 @@ export default function SpecialtyViewPage() {
         </div>
       </div>
     );
-  }
-
-  if (!hasAccess) {
-    return <div className="p-6 text-red-500">No tienes permisos para acceder a esta página.</div>;
   }
 
   return (

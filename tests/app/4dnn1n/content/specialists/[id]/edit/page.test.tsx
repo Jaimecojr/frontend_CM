@@ -62,8 +62,12 @@ function createMockSpecialist(overrides: Partial<ApiSpecialist> = {}): ApiSpecia
   };
 }
 
-function mockAuth(type: number) {
-  (useAuth as any).mockReturnValue({ user: { id: 1, type }, loading: false, isLoggingOut: false });
+function mockAuth(type: number | null, loading = false) {
+  (useAuth as any).mockReturnValue({
+    user: type === null ? null : { id: 1, type },
+    loading,
+    isLoggingOut: false,
+  });
 }
 
 function mockParams(id: string) {
@@ -127,19 +131,33 @@ describe("EditSpecialistPage", () => {
 
   // ──── Step 3.3: permission gate ────
   describe("gate de permisos", () => {
-    it("user.type: 2 → no renderiza el formulario (retorna null) y redirige vía router.replace a /4dnn1n/content", async () => {
+    it("authLoading: true → no renderiza nada (retorna null)", () => {
       // Arrange
-      mockAuth(2);
+      mockAuth(1, true);
       mockParams("2");
-      (getSpecialists as any).mockResolvedValue([createMockSpecialist({ id: 2 })]);
 
       // Act
       const { container } = render(<EditSpecialistPage />);
 
       // Assert
-      await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/4dnn1n/content"));
-      expect(screen.queryByTestId("specialist-form")).not.toBeInTheDocument();
       expect(container).toBeEmptyDOMElement();
+    });
+
+    it("user.type: 2 → muestra el mensaje de permisos insuficientes, sin redirigir", () => {
+      // Arrange
+      mockAuth(2);
+      mockParams("2");
+      (getSpecialists as any).mockReturnValue(new Promise(() => {}));
+
+      // Act
+      render(<EditSpecialistPage />);
+
+      // Assert
+      expect(
+        screen.getByText("No tienes permisos suficientes para acceder a esta vista."),
+      ).toBeInTheDocument();
+      expect(screen.queryByTestId("specialist-form")).not.toBeInTheDocument();
+      expect(replaceMock).not.toHaveBeenCalled();
     });
   });
 

@@ -56,8 +56,12 @@ function createMockAgreement(overrides: Partial<ApiAgreement> = {}): ApiAgreemen
   };
 }
 
-function mockAuth(type: number) {
-  (useAuth as any).mockReturnValue({ user: { id: 1, type }, loading: false, isLoggingOut: false });
+function mockAuth(type: number | null, loading = false) {
+  (useAuth as any).mockReturnValue({
+    user: type === null ? null : { id: 1, type },
+    loading,
+    isLoggingOut: false,
+  });
 }
 
 function mockParams(id: string) {
@@ -88,18 +92,32 @@ describe("EditAgreementPage", () => {
 
   // ──── Step 5: gate y skeleton ────
   describe("gate de permisos y skeleton", () => {
-    it("user.type: 3 → redirige vía router.replace y no renderiza el formulario (retorna null)", async () => {
+    it("authLoading: true → no renderiza nada (retorna null)", () => {
       // Arrange
-      mockAuth(3);
+      mockAuth(1, true);
       mockParams("5");
 
       // Act
       const { container } = render(<EditAgreementPage />);
 
       // Assert
-      await waitFor(() => expect(replaceMock).toHaveBeenCalledWith("/4dnn1n/agreements"));
-      expect(screen.queryByTestId("agreement-form")).not.toBeInTheDocument();
       expect(container).toBeEmptyDOMElement();
+    });
+
+    it("user.type: 3 → muestra el mensaje de permisos insuficientes, sin redirigir", () => {
+      // Arrange
+      mockAuth(3);
+      mockParams("5");
+
+      // Act
+      render(<EditAgreementPage />);
+
+      // Assert
+      expect(
+        screen.getByText("No tienes permisos suficientes para acceder a esta vista."),
+      ).toBeInTheDocument();
+      expect(screen.queryByTestId("agreement-form")).not.toBeInTheDocument();
+      expect(replaceMock).not.toHaveBeenCalled();
     });
 
     it("user.type: 1 mientras getAgreement no ha resuelto → muestra FormPageSkeleton", () => {

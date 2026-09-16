@@ -17,12 +17,8 @@ export default function EditAllyPage() {
   usePageTitle("Editar Aliado Estratégico");
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [ally, setAlly] = useState<ApiAlly | null>(null);
-
-  useEffect(() => {
-    if (user && user.type !== 1) router.replace("/4dnn1n/content");
-  }, [user, router]);
 
   useEffect(() => {
     getAllies().then((list) => {
@@ -32,7 +28,16 @@ export default function EditAllyPage() {
     });
   }, [id, router]);
 
-  if (!user || user.type !== 1 || !ally) return null;
+  if (authLoading) return null;
+  if (user?.type !== 1) {
+    return (
+      <div className="flex h-64 items-center justify-center p-6 text-red-500 font-medium">
+        No tienes permisos suficientes para acceder a esta vista.
+      </div>
+    );
+  }
+
+  if (!ally) return null;
 
   return (
     <ShowcaseSection

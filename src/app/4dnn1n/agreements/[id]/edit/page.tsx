@@ -20,15 +20,9 @@ export default function EditAgreementPage() {
   const params = useParams<{ id: string }>();
   const id = Number(params.id);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const [agreement, setAgreement] = useState<ApiAgreement | null>(null);
-
-  useEffect(() => {
-    if (user && user.type !== 1) {
-      router.replace("/4dnn1n/agreements");
-    }
-  }, [user, router]);
 
   useEffect(() => {
     (async () => {
@@ -37,7 +31,14 @@ export default function EditAgreementPage() {
     })();
   }, [id]);
 
-  if (!user || user.type !== 1) return null;
+  if (authLoading) return null;
+  if (user?.type !== 1) {
+    return (
+      <div className="flex h-64 items-center justify-center p-6 text-red-500 font-medium">
+        No tienes permisos suficientes para acceder a esta vista.
+      </div>
+    );
+  }
 
   if (!agreement) return <FormPageSkeleton fields={6} />;
 

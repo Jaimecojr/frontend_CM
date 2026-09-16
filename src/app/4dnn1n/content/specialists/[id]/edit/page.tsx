@@ -17,12 +17,8 @@ export default function EditSpecialistPage() {
   usePageTitle("Editar Especialista");
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [specialist, setSpecialist] = useState<ApiSpecialist | null>(null);
-
-  useEffect(() => {
-    if (user && user.type !== 1) router.replace("/4dnn1n/content");
-  }, [user, router]);
 
   useEffect(() => {
     getSpecialists().then((list) => {
@@ -32,7 +28,16 @@ export default function EditSpecialistPage() {
     });
   }, [id, router]);
 
-  if (!user || user.type !== 1 || !specialist) return null;
+  if (authLoading) return null;
+  if (user?.type !== 1) {
+    return (
+      <div className="flex h-64 items-center justify-center p-6 text-red-500 font-medium">
+        No tienes permisos suficientes para acceder a esta vista.
+      </div>
+    );
+  }
+
+  if (!specialist) return null;
 
   return (
     <ShowcaseSection

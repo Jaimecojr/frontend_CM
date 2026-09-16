@@ -7,11 +7,9 @@ import { getDoctor } from "@/app/4dnn1n/doctors/fetch";
 import { alert } from "@/lib/alert";
 import type { ApiDoctor } from "@/app/4dnn1n/doctors/fetch";
 
-// NOTE (finding, verified against the real page): unlike `franchises/[id]/page.tsx`,
-// this view page DOES check permission — but only AFTER the data fetch settles.
-// The real check order is: loading → skeleton; !initialData → error div (evaluated
-// BEFORE authLoading/permission are even looked at); authLoading → null; permission
-// → error div. Tests below exercise that exact ordering.
+// Check order: authLoading → permission → data loading → data-fail. Permission
+// is resolved before any data fetch is trusted, so an unauthorized user never
+// sees a data skeleton or error, only the permission message.
 
 vi.mock("next/navigation", () => ({
   useRouter: vi.fn(),
@@ -78,9 +76,36 @@ describe("ViewDoctorPage", () => {
     vi.clearAllMocks();
   });
 
-  // ──── Step 3: check ordering — data BEFORE permission ────
-  describe("orden de checks (loading → dato → authLoading → permiso)", () => {
-    it("loading: true → muestra FormPageSkeleton, sin renderizar el formulario", () => {
+  describe("orden de checks (authLoading → permiso → loading → dato)", () => {
+    it("authLoading: true → no renderiza nada (retorna null), sin llamar getDoctor", () => {
+      // Arrange
+      mockAuth(1, true);
+      mockParams("5");
+
+      // Act
+      const { container } = render(<ViewDoctorPage />);
+
+      // Assert
+      expect(container).toBeEmptyDOMElement();
+    });
+
+    it("user.type: 3 → muestra el mensaje de permisos insuficientes sin esperar a getDoctor", () => {
+      // Arrange
+      mockAuth(3);
+      mockParams("5");
+      (getDoctor as any).mockReturnValue(new Promise(() => {}));
+
+      // Act
+      render(<ViewDoctorPage />);
+
+      // Assert
+      expect(
+        screen.getByText("No tienes permisos suficientes para acceder a esta vista."),
+      ).toBeInTheDocument();
+      expect(screen.queryByTestId("doctor-form")).not.toBeInTheDocument();
+    });
+
+    it("con permiso, loading: true → muestra FormPageSkeleton, sin renderizar el formulario", () => {
       // Arrange
       mockAuth(1);
       mockParams("5");
@@ -95,53 +120,20 @@ describe("ViewDoctorPage", () => {
       expect(screen.queryByTestId("doctor-form")).not.toBeInTheDocument();
     });
 
-    it("getDoctor rechaza → tras terminar loading, muestra 'No se pudo cargar el médico.' incluso con authLoading: true", async () => {
+    it("con permiso, getDoctor rechaza → tras terminar loading, muestra 'No se pudo cargar el médico.'", async () => {
       // Arrange
-      mockAuth(1, true);
+      mockAuth(1);
       mockParams("5");
       (getDoctor as any).mockRejectedValue({ data: { message: "No encontrado" } });
 
       // Act
       render(<ViewDoctorPage />);
 
-      // Assert: the null-data error appears even though authLoading is still true —
-      // proof that the data check runs BEFORE the auth/permission checks.
+      // Assert
       await waitFor(() =>
         expect(screen.getByText("No se pudo cargar el médico.")).toBeInTheDocument(),
       );
       expect(alert.error).toHaveBeenCalled();
-      expect(screen.queryByTestId("doctor-form")).not.toBeInTheDocument();
-    });
-
-    it("dato cargado, authLoading: true → no renderiza nada (retorna null)", async () => {
-      // Arrange
-      mockAuth(1, true);
-      mockParams("5");
-      (getDoctor as any).mockResolvedValue(createMockDoctor());
-
-      // Act
-      const { container } = render(<ViewDoctorPage />);
-
-      // Assert
-      await waitFor(() => expect(getDoctor).toHaveBeenCalledWith(5));
-      expect(container).toBeEmptyDOMElement();
-    });
-
-    it("dato cargado, user.type: 3 → muestra el mensaje de permisos insuficientes", async () => {
-      // Arrange
-      mockAuth(3);
-      mockParams("5");
-      (getDoctor as any).mockResolvedValue(createMockDoctor());
-
-      // Act
-      render(<ViewDoctorPage />);
-
-      // Assert
-      await waitFor(() =>
-        expect(
-          screen.getByText("No tienes permisos suficientes para acceder a esta vista."),
-        ).toBeInTheDocument(),
-      );
       expect(screen.queryByTestId("doctor-form")).not.toBeInTheDocument();
     });
 

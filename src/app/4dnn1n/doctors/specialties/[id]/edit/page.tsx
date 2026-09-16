@@ -16,7 +16,7 @@ import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 
 export default function EditSpecialtyPage() {
   usePageTitle("Modificar Especialidad");
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const hasAccess = user?.type === 1 || user?.type === 2;
   const router = useRouter();
   const params = useParams();
@@ -59,6 +59,11 @@ export default function EditSpecialtyPage() {
     }
   };
 
+  if (authLoading) return null;
+  if (!hasAccess) {
+    return <div className="p-6 text-red-500">No tienes permisos para acceder a esta página.</div>;
+  }
+
   if (loading) return <FormPageSkeleton fields={2} />;
 
   if (!initialData) {
@@ -67,10 +72,6 @@ export default function EditSpecialtyPage() {
         No se pudo cargar la especialidad.
       </div>
     );
-  }
-
-  if (!hasAccess) {
-    return <div className="p-6 text-red-500">No tienes permisos para acceder a esta página.</div>;
   }
 
   return (
