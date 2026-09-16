@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import type { ApiDoctor } from "@/app/4dnn1n/doctors/fetch";
 import type { Department, City } from "@/types/geo";
 import type { ApiSpecialty } from "@/app/4dnn1n/doctors/specialties/fetch";
@@ -62,6 +62,7 @@ export default function GuiaMedicaPage() {
   const [specialties, setSpecialties] = useState<ApiSpecialty[]>([]);
 
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [deptId, setDeptId] = useState<number | "">("");
   const [cityId, setCityId] = useState<number | "">("");
   const [specialtyId, setSpecialtyId] = useState<number | "">("");
@@ -70,6 +71,8 @@ export default function GuiaMedicaPage() {
   const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0 });
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
+
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     getDepartments().then(setDepartments).catch(console.error);
@@ -88,7 +91,13 @@ export default function GuiaMedicaPage() {
   const fetchDoctors = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await getDoctors({ page, search, department_id: deptId, city_id: cityId, specialty_id: specialtyId });
+      const res = await getDoctors({
+        page,
+        search: debouncedSearch,
+        department_id: deptId,
+        city_id: cityId,
+        specialty_id: specialtyId,
+      });
       setDoctors(res.data);
       setMeta(res.meta);
     } catch {
@@ -96,7 +105,7 @@ export default function GuiaMedicaPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, search, deptId, cityId, specialtyId]);
+  }, [page, debouncedSearch, deptId, cityId, specialtyId]);
 
   useEffect(() => {
     fetchDoctors();
@@ -109,6 +118,23 @@ export default function GuiaMedicaPage() {
   const handleFilterChange = () => {
     setPage(1);
   };
+
+  // Debounces the search box the same way the admin panel's DataTable does
+  // (useServerTable, 400ms) — without it, every keystroke fired its own fetch.
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => {
+      setDebouncedSearch(value);
+      setPage(1);
+    }, 400);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
+  }, []);
 
   return (
     <main>
@@ -158,7 +184,7 @@ export default function GuiaMedicaPage() {
               <input
                 type="text"
                 value={search}
-                onChange={(e) => { setSearch(e.target.value); handleFilterChange(); }}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Buscar por nombre o apellido..."
                 className="w-full h-10 pl-9 pr-4 rounded-lg border border-slate-200 text-sm text-[#1A1A2E] outline-none focus:border-[#1DBFCE] focus:ring-2 focus:ring-[#1DBFCE]/10 transition-all"
               />
@@ -205,7 +231,9 @@ export default function GuiaMedicaPage() {
             {(search || deptId || cityId || specialtyId) && (
               <button
                 onClick={() => {
-                  setSearch(""); setDeptId(""); setCityId(""); setSpecialtyId(""); setPage(1);
+                  if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+                  setSearch(""); setDebouncedSearch("");
+                  setDeptId(""); setCityId(""); setSpecialtyId(""); setPage(1);
                 }}
                 className="h-10 px-4 rounded-lg border border-slate-200 text-sm text-[#64748B] hover:border-[#E8192C] hover:text-[#E8192C] transition-all flex items-center gap-1.5"
               >

@@ -237,16 +237,11 @@ describe("GuiaMedicaPage (directorio médico público)", () => {
 
   /* ── Paso 2 ── */
   describe("Paso 2: filtros — cascada y reset de página", () => {
-    it("escribir en el buscador dispara un fetch nuevo por cada tecleo de forma inmediata (sin debounce) y resetea la página", async () => {
+    it("escribir en el buscador debouncea el fetch (400ms, igual que useServerTable) y resetea la página", async () => {
       // Arrange: get to page 2 with real timers, like the rest of the suite.
       // Fake timers are only enabled right before typing (see the Act block
-      // below): that way it can be asserted, without relying on `waitFor`
-      // (which waits up to ~1000ms real time and would therefore tolerate a
-      // debounce), that the fetch happens without advancing any timer.
-      // Same rigor as DataTable's debounce test
-      // (tests/components/data-table/DataTable.test.tsx), adapted so that
-      // what's being demonstrated here is the ABSENCE of a `setTimeout`
-      // around the fetch.
+      // below), following the same rigor as `useServerTable`'s own debounce
+      // test (tests/hooks/useServerTable.test.ts).
       doctorsResponse = async () =>
         jsonResponse(true, {
           data: [buildDoctor()],
@@ -260,33 +255,26 @@ describe("GuiaMedicaPage (directorio médico público)", () => {
       // Act & Assert
       vi.useFakeTimers();
       try {
-        // If the fetch depended on a `setTimeout(..., 300)` (debounce), this
-        // call would be left pending on a simulated timer that never advances
-        // in this test, and the assertion below would fail immediately.
+        // Typing twice in a row should reset the pending timer, not stack
+        // two separate fetches.
         fireEvent.change(getSearchInput(), { target: { value: "A" } });
-        expect(doctorsCalls().length).toBe(callsBefore + 1);
-        const firstSearchCall = lastDoctorsCall();
-        expect(firstSearchCall.get("search")).toBe("A");
-        expect(firstSearchCall.get("page")).toBe("1");
-
         fireEvent.change(getSearchInput(), { target: { value: "An" } });
-        expect(doctorsCalls().length).toBe(callsBefore + 2);
-        const secondSearchCall = lastDoctorsCall();
-        expect(secondSearchCall.get("search")).toBe("An");
-        expect(secondSearchCall.get("page")).toBe("1");
 
-        // No timer (e.g. a debounce) should be left pending waiting to
-        // trigger the fetch.
-        expect(vi.getTimerCount()).toBe(0);
-
-        // Cleanup: drain the last fetch's promise (it doesn't depend on
-        // timers, only on the microtask queue) so it isn't left resolving
-        // outside act() once the test has finished.
+        // Before the debounce window closes, no new fetch should have fired.
         await act(async () => {
-          await Promise.resolve();
-          await Promise.resolve();
-          await Promise.resolve();
+          await vi.advanceTimersByTimeAsync(399);
         });
+        expect(doctorsCalls().length).toBe(callsBefore);
+
+        // Once it closes, exactly one fetch fires with the final value and
+        // the page reset to 1.
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(1);
+        });
+        expect(doctorsCalls().length).toBe(callsBefore + 1);
+        const searchCall = lastDoctorsCall();
+        expect(searchCall.get("search")).toBe("An");
+        expect(searchCall.get("page")).toBe("1");
       } finally {
         vi.useRealTimers();
       }
