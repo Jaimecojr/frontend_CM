@@ -1,70 +1,15 @@
+import { apiFetch, csrf, getXsrfToken } from "@/lib/api";
 import { memCache, TTL_LIST, TTL_CATALOG } from "@/lib/memCache";
 import type { AuthUser } from "@/context/AuthContext";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-
-// Caches the CSRF request promise: as long as the session stays active,
-// the XSRF-TOKEN cookie remains valid, so there's no need to request it
-// again on every call.
-let csrfPromise: Promise<void> | null = null;
-
-export function csrf(): Promise<void> {
-  if (!csrfPromise) {
-    csrfPromise = fetch(`${API_URL}/sanctum/csrf-cookie`, {
-      method: "GET",
-      credentials: "include",
-    })
-      .then(() => undefined)
-      .catch((err) => {
-        csrfPromise = null;
-        throw err;
-      });
-  }
-  return csrfPromise;
-}
-
-function resetCsrf() {
-  csrfPromise = null;
-}
-
-//
-// Fetch for protected routes (which NO LONGER have /api)
-//
-export async function apiFetch(path: string, options: RequestInit = {}) {
-  const method = (options.method ?? "GET").toUpperCase();
-  const hasBody = method !== "GET" && method !== "HEAD";
-
-  const doFetch = () =>
-    fetch(`${API_URL}${path}`, {
-      ...options,
-      credentials: "include",
-      headers: {
-        ...(hasBody ? { "Content-Type": "application/json" } : {}),
-        "X-XSRF-TOKEN": getXsrfToken() ?? "",
-        ...(options.headers || {}),
-      },
-    });
-
-  let res = await doFetch();
-
-  if (res.status === 419) {
-    resetCsrf();
-    await csrf();
-    res = await doFetch();
-  }
-
-  const data = await res.json().catch(() => ({}));
-
-  if (!res.ok) throw { status: res.status, data };
-  return data;
-}
+export { csrf, getXsrfToken };
 
 //
 // Get authenticated user
 //
 export async function getAuthUser(): Promise<AuthUser | null> {
   try {
-    return await apiFetch("/user");
+    return await apiFetch<AuthUser>("/user");
   } catch {
     return null;
   }
@@ -74,18 +19,7 @@ export async function getAuthUser(): Promise<AuthUser | null> {
 // Logout
 //
 export async function logout() {
-  return await apiFetch("/logout", {
-    method: "POST",
-    headers: {
-      "X-XSRF-TOKEN": getXsrfToken() ?? "",
-    },
-  });
-}
-
-export function getXsrfToken() {
-  if (typeof document === "undefined") return null;
-  const m = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
-  return m ? decodeURIComponent(m[1]) : null;
+  return await apiFetch("/logout", { method: "POST" });
 }
 
 // ─── Dashboard Types ─────────────────────────────────────────────────────────
@@ -127,21 +61,25 @@ export type DashboardCharts = {
 
 export async function getTodayAppointments(): Promise<TodayAppointmentsResponse> {
   return memCache.get('appointments:today', TTL_LIST, async () => {
-    const res = (await apiFetch('/api/appointments/today')) as { message: string; data: TodayAppointment[]; date: string };
+    const res = await apiFetch<{ message: string; data: TodayAppointment[]; date: string }>(
+      '/api/appointments/today',
+    );
     return { data: res.data ?? [], date: res.date };
   });
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
   return memCache.get('dashboard:stats', TTL_CATALOG, async () => {
-    const res = (await apiFetch('/api/dashboard/stats')) as { message: string; data: DashboardStats };
+    const res = await apiFetch<{ message: string; data: DashboardStats }>('/api/dashboard/stats');
     return res.data;
   });
 }
 
 export async function getDashboardCharts(year: number): Promise<DashboardCharts> {
   return memCache.get(`dashboard:charts:${year}`, TTL_CATALOG, async () => {
-    const res = (await apiFetch(`/api/dashboard/charts?year=${year}`)) as { message: string; data: DashboardCharts };
+    const res = await apiFetch<{ message: string; data: DashboardCharts }>(
+      `/api/dashboard/charts?year=${year}`,
+    );
     return res.data;
   });
 }
