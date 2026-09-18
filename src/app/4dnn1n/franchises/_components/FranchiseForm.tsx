@@ -189,9 +189,15 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
       email: form.email,
       user: form.user,
       city_id: Number(form.city_id),
-      // Clamped like CounselorForm/DoctorForm instead of `isCreate ? 1 : Number(form.state)`:
-      // in create mode `form.state` already defaults to 1, so the result is
-      // identical — this just makes the 1|2 invariant explicit for the type.
+      // Clamped like CounselorForm/DoctorForm instead of `isCreate ? 1 : Number(form.state)`.
+      // In create mode this is identical to the old behavior: the form renders
+      // no `state` control, so `form.state` is always seeded from
+      // `initial?.state ?? 1` and `initial` is undefined on create — the
+      // clamp just makes the 1|2 invariant explicit for the type.
+      // In edit mode this is a deliberate (low-risk) behavior change: any
+      // `initial.state` outside 1|2 — shouldn't happen given the project's
+      // 1|2 convention, but the DTO types `state` as a plain `number` — is now
+      // normalized to 1 instead of being passed through unchanged.
       state: Number(form.state) === 2 ? 2 : 1,
     };
 

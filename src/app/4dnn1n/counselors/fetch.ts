@@ -57,10 +57,13 @@ export type CreateCounselorPayload = {
 
   address?: string | null;
   date_admission?: string | null;
-  // Widened to `| string`: `ApiCounselor.type_contra` also accepts a plain
-  // string to represent legacy values read from the backend that may not
-  // match the current fixed options list.
-  type_contra: CounselorTypeContra | string;
+  // Widened to accept a plain string: `ApiCounselor.type_contra` also accepts
+  // a plain string to represent legacy values read from the backend that may
+  // not match the current fixed options list. Written as `| (string & {})`
+  // instead of `| string` so TypeScript doesn't collapse the union down to
+  // plain `string` — the literal members of `CounselorTypeContra` still show
+  // up in autocomplete, while any other string remains assignable.
+  type_contra: CounselorTypeContra | (string & {});
 
   email?: string | null;
   // Widened to `| null`: CounselorForm never lets the user set a password

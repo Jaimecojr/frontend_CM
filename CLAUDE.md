@@ -126,6 +126,9 @@ export async function createAffiliate(payload: CreateAffiliatePayload) {
 2. **Módulo grande (paginado):** cachear con `TTL_LIST` usando `xxx:list:${query}` como clave e `invalidatePrefix("xxx:list:")` en create/update/delete.
 3. **Selectores que usa este módulo en su formulario** (departamentos, ciudades, etc.): ya están cacheados vía el singleton compartido — no hay que hacer nada extra si se importan de un fetch.ts existente.
 
+### `src/lib/geo.ts`
+Fuente única de `getDepartments()`/`getCitiesByDepartment(departmentId)` — antes duplicadas byte a byte en 5 módulos (`affiliates`, `agreements`, `appointments`, `counselors`, `franchises`), y una de ellas (`doctors`) las importaba de forma cruzada desde `counselors/fetch.ts`. Los `fetch.ts` de esos 5 módulos re-exportan desde aquí (`export { getDepartments, getCitiesByDepartment } from "@/lib/geo";`) para no romper los imports existentes. **No reintroducir una implementación local** de estas dos funciones en un `fetch.ts` nuevo — importar siempre desde `@/lib/geo`.
+
 ## Manejo de Tablas y Datos (Hooks)
 
 ### 1. Tablas Pequeñas (`useClientTable`)

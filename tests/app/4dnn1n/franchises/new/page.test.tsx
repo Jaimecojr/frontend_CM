@@ -27,7 +27,10 @@ vi.mock("@/app/4dnn1n/franchises/fetch", () => ({
 
 // Stub replacement for the real form (already tested in a previous task):
 // exposes a "submit-stub" button that invokes `onSubmit` with a fixed test
-// payload, and surfaces `mode` as a data attribute for assertions.
+// payload, and surfaces `mode` as a data attribute for assertions. A second
+// "submit-stub-no-password" button omits `password` to exercise the
+// page-level password guard, which the real FranchiseForm's own `canSubmit`
+// normally prevents from ever being reached with a real user.
 vi.mock("@/app/4dnn1n/franchises/_components/FranchiseForm", () => ({
   default: (props: any) => (
     <div data-testid="franchise-form" data-mode={props.mode}>
@@ -46,6 +49,22 @@ vi.mock("@/app/4dnn1n/franchises/_components/FranchiseForm", () => ({
         }
       >
         submit-stub
+      </button>
+      <button
+        data-testid="submit-stub-no-password"
+        onClick={() =>
+          props.onSubmit?.({
+            nit: "900123456",
+            name: "Franquicia Nueva",
+            email: "nueva@test.com",
+            user: "nueva1",
+            password: undefined,
+            city_id: 3,
+            state: 1,
+          })
+        }
+      >
+        submit-stub-no-password
       </button>
     </div>
   ),
@@ -171,6 +190,28 @@ describe("NewUserPage", () => {
         expect(alert.error).toHaveBeenCalledWith("Error", "No se pudo crear la franquicia"),
       );
       expect(alert.success).not.toHaveBeenCalled();
+      expect(pushMock).not.toHaveBeenCalled();
+    });
+
+    it("si el payload llega sin password, muestra alert.warn y no llama a createUser", async () => {
+      // Arrange
+      mockAuth(1);
+      mockConfirm();
+
+      render(<NewUserPage />);
+      const submitButton = screen.getByTestId("submit-stub-no-password");
+
+      // Act
+      await userEvent.click(submitButton);
+
+      // Assert
+      await waitFor(() =>
+        expect(alert.warn).toHaveBeenCalledWith(
+          "Faltan datos",
+          "La contraseña es obligatoria para crear la franquicia.",
+        ),
+      );
+      expect(createUser).not.toHaveBeenCalled();
       expect(pushMock).not.toHaveBeenCalled();
     });
   });
