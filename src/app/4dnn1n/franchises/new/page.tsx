@@ -48,13 +48,24 @@ export default function NewUserPage() {
         <FranchiseForm
           mode="create"
           onSubmit={async (payload) => {
+            // `FranchiseFormPayload.password` is optional so the same type
+            // also fits the edit form (where it's only sent on change), but
+            // `createUser` requires it. This guard should never trigger in
+            // practice — FranchiseForm's own `canSubmit` already blocks
+            // submission without a password in create mode — it only
+            // satisfies the type across the component boundary.
+            if (!payload.password) {
+              await alert.warn("Faltan datos", "La contraseña es obligatoria para crear la franquicia.");
+              return;
+            }
+            const password = payload.password;
             try {
               const ok = await alert.confirm({
                 title: "¿Crear franquicia?",
                 text: "Se guardará la información y quedará activa para su uso.",
                 confirmButtonText: "Sí, crear",
                 cancelButtonText: "Cancelar",
-                onConfirm: () => createUser(payload),
+                onConfirm: () => createUser({ ...payload, password }),
               });
               if (ok) {
                 await alert.success("Creado", "Franquicia creada exitosamente");

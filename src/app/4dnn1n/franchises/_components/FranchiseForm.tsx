@@ -11,10 +11,29 @@ import { alert } from "@/lib/alert";
 
 type Mode = "create" | "edit" | "view";
 
+// `password` is optional here because this same payload type is produced by
+// both the create flow (where the caller enforces it's present before
+// sending) and the edit flow (where it's only included when the user is
+// changing it).
+export type FranchiseFormPayload = {
+  nit: string;
+  name: string;
+  contact: string | null;
+  phone: string | null;
+  movil: string | null;
+  address: string | null;
+  date_afi: string | null;
+  email: string;
+  user: string;
+  city_id: number;
+  state: 1 | 2;
+  password?: string;
+};
+
 type Props = {
   mode: Mode;
   initial?: Partial<ApiFranchise>;
-  onSubmit?: (payload: any) => Promise<void>;
+  onSubmit?: (payload: FranchiseFormPayload) => Promise<void>;
 };
 
 function onlyDigits(value: string) {
@@ -53,15 +72,15 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
   const [form, setForm] = useState({
     nit: initial?.nit ?? "",
     name: initial?.name ?? "",
-    contact: (initial as any)?.contact ?? "",
-    phone: (initial as any)?.phone ?? "",
-    movil: (initial as any)?.movil ?? "",
-    address: (initial as any)?.address ?? "",
-    date_afi: (initial as any)?.date_afi ?? "",
+    contact: initial?.contact ?? "",
+    phone: initial?.phone ?? "",
+    movil: initial?.movil ?? "",
+    address: initial?.address ?? "",
+    date_afi: initial?.date_afi ?? "",
     email: initial?.email ?? "",
     user: initial?.user ?? "",
-    city_id: (initial as any)?.city_id ?? "",
-    state: Number((initial as any)?.state ?? 1), // 1 active, 2 inactive
+    city_id: initial?.city_id ?? "",
+    state: Number(initial?.state ?? 1), // 1 active, 2 inactive
     password: "",
     password2: "",
   });
@@ -80,7 +99,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
 
   // Pre-select department when initial.city.department_id is present (edit/view)
   useEffect(() => {
-    const depFromCity = (initial as any)?.city?.department_id;
+    const depFromCity = initial?.city?.department_id;
     if (depFromCity && departmentId === "") {
       setDepartmentId(Number(depFromCity));
     }
@@ -159,7 +178,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
       return;
     }
 
-    const payload: any = {
+    const payload: FranchiseFormPayload = {
       nit: form.nit,
       name: form.name,
       contact: form.contact || null,
@@ -170,7 +189,10 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
       email: form.email,
       user: form.user,
       city_id: Number(form.city_id),
-      state: isCreate ? 1 : Number(form.state),
+      // Clamped like CounselorForm/DoctorForm instead of `isCreate ? 1 : Number(form.state)`:
+      // in create mode `form.state` already defaults to 1, so the result is
+      // identical — this just makes the 1|2 invariant explicit for the type.
+      state: Number(form.state) === 2 ? 2 : 1,
     };
 
     if (isCreate) payload.password = form.password;
@@ -316,7 +338,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
             onChange={(v) => setForm((p) => ({ ...p, city_id: v }))}
             placeholder={departmentId ? "Seleccionar…" : "Selecciona un departamento"}
             disabledPlaceholder={
-              (initial as any)?.city?.name ||
+              initial?.city?.name ||
               cities.find((c) => String(c.id) === String(form.city_id))?.name ||
               ""
             }
