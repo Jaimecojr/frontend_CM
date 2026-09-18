@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Save, Eraser } from "lucide-react";
 import { SearchableSelect } from "@/components/FormElements/SearchableSelect";
 import type { ApiDoctor } from "../fetch";
-import { getDepartments, getCitiesByDepartment } from "../../counselors/fetch";
+import { getDepartments, getCitiesByDepartment } from "@/lib/geo";
 import type { Department, City } from "@/types/geo";
 import { getSpecialties, type ApiSpecialty } from "../specialties/fetch";
 import { Button } from "@/components/ui-elements/button";

@@ -1,5 +1,5 @@
 import { apiFetch, csrf } from "@/lib/api";
-import { memCache, TTL_GEO, TTL_CATALOG } from "@/lib/memCache";
+import { memCache, TTL_CATALOG } from "@/lib/memCache";
 
 export type CounselorTypeContra =
   | "Término Fijo"
@@ -48,21 +48,7 @@ export async function getCounselor(id: number): Promise<ApiCounselor> {
   return res.data;
 }
 
-export async function getDepartments(): Promise<Department[]> {
-  return memCache.get("departments", TTL_GEO, async () => {
-    const res = await apiFetch<ApiResponse<Department[]>>(`/api/departments`);
-    return res.data ?? [];
-  });
-}
-
-export async function getCitiesByDepartment(departmentId: number): Promise<City[]> {
-  return memCache.get(`cities:${departmentId}`, TTL_GEO, async () => {
-    const res = await apiFetch<ApiResponse<City[]>>(
-      `/api/departments/${departmentId}/cities`,
-    );
-    return res.data ?? [];
-  });
-}
+export { getDepartments, getCitiesByDepartment } from "@/lib/geo";
 
 export type CreateCounselorPayload = {
   name: string;

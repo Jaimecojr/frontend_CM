@@ -1,15 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import DoctorForm from "@/app/4dnn1n/doctors/_components/DoctorForm";
-import { getDepartments, getCitiesByDepartment } from "@/app/4dnn1n/counselors/fetch";
+import { getDepartments, getCitiesByDepartment } from "@/lib/geo";
 import { getSpecialties } from "@/app/4dnn1n/doctors/specialties/fetch";
 import type { ApiDoctor } from "@/app/4dnn1n/doctors/fetch";
 import type { Department } from "@/types/geo";
 
-// This component reuses `counselors/fetch` for geography (it has no `getDepartments`
-// of its own) and `specialties/fetch` for the specialty catalog. Both modules are
-// mocked so no real `apiFetch` call ever fires from the mount-time loading effects.
-vi.mock("@/app/4dnn1n/counselors/fetch", () => ({
+// This component gets geography from the shared `@/lib/geo` module (it has no
+// `getDepartments` of its own) and `specialties/fetch` for the specialty catalog.
+// Both modules are mocked so no real `apiFetch` call ever fires from the
+// mount-time loading effects.
+vi.mock("@/lib/geo", () => ({
   getDepartments: vi.fn(),
   getCitiesByDepartment: vi.fn(),
 }));
