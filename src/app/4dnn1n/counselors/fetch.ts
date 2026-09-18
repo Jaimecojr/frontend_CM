@@ -57,12 +57,21 @@ export type CreateCounselorPayload = {
 
   address?: string | null;
   date_admission?: string | null;
-  type_contra: CounselorTypeContra;
+  // Widened to `| string`: `ApiCounselor.type_contra` also accepts a plain
+  // string to represent legacy values read from the backend that may not
+  // match the current fixed options list.
+  type_contra: CounselorTypeContra | string;
 
   email?: string | null;
-  password: string;
+  // Widened to `| null`: CounselorForm never lets the user set a password
+  // here (advisor accounts don't manage credentials through this form) and
+  // always sends `null` explicitly.
+  password: string | null;
 
-  rol?: string | null;
+  // Widened to include `number`: CounselorForm always sends the literal `0`
+  // (see the "rol always 0" comment in CounselorForm.tsx) — the backend
+  // field predates this form and used to be a free string.
+  rol?: string | number | null;
   phone?: string | null;
   movil?: string | null;
 
@@ -83,7 +92,7 @@ export async function createCounselor(payload: CreateCounselorPayload) {
 }
 
 export type UpdateCounselorPayload = Partial<Omit<CreateCounselorPayload, "password">> & {
-  password?: string; // optional when editing
+  password?: string | null; // optional when editing
 };
 
 export async function updateCounselor(id: number, payload: UpdateCounselorPayload) {

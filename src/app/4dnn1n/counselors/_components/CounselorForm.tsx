@@ -10,6 +10,7 @@ import type {
   Department,
   CounselorTypeContra,
   FranchiseOption,
+  CreateCounselorPayload,
 } from "../fetch";
 import {
   getCitiesByDepartment,
@@ -25,7 +26,7 @@ type Mode = "create" | "edit" | "view";
 type Props = {
   mode: Mode;
   initial?: Partial<ApiCounselor>;
-  onSubmit?: (payload: any) => Promise<void>;
+  onSubmit?: (payload: CreateCounselorPayload) => Promise<void>;
 };
 
 function Label({
@@ -62,9 +63,9 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
   const isEdit = mode === "edit";
   const isCreate = mode === "create";
 
-  const counselorId = Number((initial as any)?.id ?? 0) || undefined;
-  const initialIdCard = String((initial as any)?.id_card ?? "");
-  const initialRoleNum = Number((initial as any)?.rol ?? 0);
+  const counselorId = Number(initial?.id ?? 0) || undefined;
+  const initialIdCard = String(initial?.id_card ?? "");
+  const initialRoleNum = Number(initial?.rol ?? 0);
 
   const [departments, setDepartments] = useState<Department[]>([]);
   const [cities, setCities] = useState<City[]>([]);
@@ -80,22 +81,22 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
 
   const [form, setForm] = useState({
     name: initial?.name ?? "",
-    lastname: (initial as any)?.lastname ?? "",
-    id_card: String((initial as any)?.id_card ?? ""),
-    address: (initial as any)?.address ?? "",
-    date_admission: (initial as any)?.date_admission ?? "",
-    type_contra: (initial as any)?.type_contra ?? TYPE_CONTRA[0],
+    lastname: initial?.lastname ?? "",
+    id_card: String(initial?.id_card ?? ""),
+    address: initial?.address ?? "",
+    date_admission: initial?.date_admission ?? "",
+    type_contra: initial?.type_contra ?? TYPE_CONTRA[0],
 
     // rol always 0
     rol: 0,
 
-    phone: (initial as any)?.phone ?? "",
-    movil: (initial as any)?.movil ?? "",
+    phone: initial?.phone ?? "",
+    movil: initial?.movil ?? "",
 
-    city_id: (initial as any)?.city_id ?? "",
-    user_id: (initial as any)?.user_id ?? "",
+    city_id: initial?.city_id ?? "",
+    user_id: initial?.user_id ?? "",
 
-    state: Number((initial as any)?.state ?? 1),
+    state: Number(initial?.state ?? 1),
   });
 
   //Franchises
@@ -124,7 +125,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
 
   // Preselect department from city.department_id (edit/view)
   useEffect(() => {
-    const depFromCity = (initial as any)?.city?.department_id;
+    const depFromCity = initial?.city?.department_id;
     if (depFromCity && departmentId === "") {
       setDepartmentId(Number(depFromCity));
     }
@@ -237,7 +238,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
       return;
     }
 
-    const payload: any = {
+    const payload: CreateCounselorPayload = {
       name: form.name,
       lastname: form.lastname,
       id_card: onlyDigits(form.id_card), // always numeric
@@ -361,7 +362,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
             onChange={(v) => setForm((p) => ({ ...p, city_id: v }))}
             placeholder={departmentId ? "Seleccionar…" : "Selecciona un departamento"}
             disabledPlaceholder={
-              (initial as any)?.city?.name ||
+              initial?.city?.name ||
               cities.find((c) => String(c.id) === String(form.city_id))?.name ||
               ""
             }
