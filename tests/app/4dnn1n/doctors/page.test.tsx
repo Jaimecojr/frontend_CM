@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useServerTable } from "@/hooks/useServerTable";
 import { useOptimisticToggle } from "@/hooks/useOptimisticToggle";
 import { getDoctors } from "@/app/4dnn1n/doctors/fetch";
-import { getDepartments, getCitiesByDepartment } from "@/app/4dnn1n/counselors/fetch";
+import { getDepartments, getCitiesByDepartment } from "@/lib/geo";
 import { getSpecialties } from "@/app/4dnn1n/doctors/specialties/fetch";
 import type { ApiDoctor } from "@/app/4dnn1n/doctors/fetch";
 
@@ -29,7 +29,7 @@ vi.mock("@/app/4dnn1n/doctors/fetch", () => ({
 }));
 
 // Reused catalogs — same modules `DoctorForm` relies on.
-vi.mock("@/app/4dnn1n/counselors/fetch", () => ({
+vi.mock("@/lib/geo", () => ({
   getDepartments: vi.fn(),
   getCitiesByDepartment: vi.fn(),
 }));

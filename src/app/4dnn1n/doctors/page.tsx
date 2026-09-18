@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import { Settings } from "lucide-react";
 import { DataTable } from "@/components/data-table/DataTable";
@@ -13,9 +13,7 @@ import { useOptimisticToggle } from "@/hooks/useOptimisticToggle";
 import { useAuth } from "@/context/AuthContext";
 import { getDoctors, updateDoctorState, type ApiDoctor } from "./fetch";
 import { buildDoctorColumns } from "./_components/columns";
-import { getDepartments, getCitiesByDepartment } from "../counselors/fetch";
-import type { Department, City } from "@/types/geo";
-import { getSpecialties, type ApiSpecialty } from "./specialties/fetch";
+import { useDoctorFilters } from "./_hooks/useDoctorFilters";
 
 const STATE_OPTIONS = [
   { label: "Activos", value: "1" },
@@ -27,40 +25,18 @@ export default function DoctorsPage() {
   const { user } = useAuth();
   const hasAccess = user?.type === 1 || user?.type === 2;
 
-  // Advanced filters
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [cities, setCities] = useState<City[]>([]);
-  const [specialties, setSpecialties] = useState<ApiSpecialty[]>([]);
-
-  const [filterDepartmentId, setFilterDepartmentId] = useState<number | "">("");
-  const [filterCityId, setFilterCityId] = useState<number | "">("");
-  const [specialtySearch, setSpecialtySearch] = useState("");
-  const [filterSpecialtyId, setFilterSpecialtyId] = useState<number | "">("");
-
-  useEffect(() => {
-    getDepartments().then(setDepartments).catch(console.error);
-    getSpecialties().then(list => setSpecialties(list.filter(s => s.state === 1))).catch(console.error);
-  }, []);
-
-  useEffect(() => {
-    if (!filterDepartmentId) {
-      setCities([]);
-      setFilterCityId("");
-      return;
-    }
-    getCitiesByDepartment(Number(filterDepartmentId)).then(setCities).catch(console.error);
-  }, [filterDepartmentId]);
-
-  const handleSpecialtyChange = (val: string) => {
-    setSpecialtySearch(val);
-    if (!val) {
-      setFilterSpecialtyId("");
-      return;
-    }
-    const spec = specialties.find((s) => s.name.toLowerCase() === val.toLowerCase());
-    if (spec) setFilterSpecialtyId(spec.id);
-    else setFilterSpecialtyId("");
-  };
+  const {
+    departments,
+    cities,
+    specialties,
+    filterDepartmentId,
+    setFilterDepartmentId,
+    filterCityId,
+    setFilterCityId,
+    specialtySearch,
+    filterSpecialtyId,
+    handleSpecialtyChange,
+  } = useDoctorFilters();
 
   const { data, setData, setMeta, stadeFilter, tableProps, isInitialLoad } = useServerTable<ApiDoctor>(
     getDoctors,
