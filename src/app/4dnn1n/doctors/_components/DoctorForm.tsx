@@ -14,7 +14,7 @@ type Mode = "create" | "edit" | "view";
 type Props = {
   mode: Mode;
   initial?: Partial<ApiDoctor>;
-  onSubmit?: (payload: any) => Promise<void>;
+  onSubmit?: (payload: Partial<ApiDoctor>) => Promise<void>;
 };
 
 function Label({

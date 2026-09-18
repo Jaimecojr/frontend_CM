@@ -8,6 +8,7 @@ import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import { Button } from "@/components/ui-elements/button";
 import SpecialtyForm from "../_components/SpecialtyForm";
 import { createSpecialty } from "../fetch";
+import type { ApiSpecialty } from "../fetch";
 import { alert } from "@/lib/alert";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -28,7 +29,7 @@ export default function NewSpecialtyPage() {
     );
   }
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: Partial<ApiSpecialty>) => {
     setLoading(true);
     try {
       await createSpecialty(data);

@@ -8,6 +8,7 @@ import { ShowcaseSection } from "@/components/Layouts/showcase-section";
 import { Button } from "@/components/ui-elements/button";
 import DoctorForm from "../_components/DoctorForm";
 import { createDoctor } from "../fetch";
+import type { ApiDoctor } from "../fetch";
 import { alert } from "@/lib/alert";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import { usePageTitle } from "@/hooks/usePageTitle";
@@ -28,7 +29,7 @@ export default function NewDoctorPage() {
     );
   }
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: Partial<ApiDoctor>) => {
     setLoading(true);
     try {
       await createDoctor(data);

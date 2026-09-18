@@ -46,7 +46,7 @@ export default function EditSpecialtyPage() {
     };
   }, [id]);
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: Partial<ApiSpecialty>) => {
     setSaving(true);
     try {
       await updateSpecialty(id, data);

@@ -6,6 +6,7 @@ import type {
   ApiAgreement,
   City,
   Department,
+  CreateAgreementPayload,
 } from "../fetch";
 import {
   getCitiesByDepartment,
@@ -19,7 +20,7 @@ type Mode = "create" | "edit" | "view";
 type Props = {
   mode: Mode;
   initial?: Partial<ApiAgreement>;
-  onSubmit?: (payload: any) => Promise<void>;
+  onSubmit?: (payload: CreateAgreementPayload) => Promise<void>;
 };
 
 function Label({
@@ -53,9 +54,9 @@ export default function AgreementForm({ mode, initial, onSubmit }: Props) {
 
   const [form, setForm] = useState({
     name: initial?.name ?? "",
-    amount: String((initial as any)?.amount ?? ""),
-    city_id: (initial as any)?.city_id ?? "",
-    state: Number((initial as any)?.state ?? 1),
+    amount: String(initial?.amount ?? ""),
+    city_id: initial?.city_id ?? "",
+    state: Number(initial?.state ?? 1),
   });
 
   // Departments
@@ -72,7 +73,7 @@ export default function AgreementForm({ mode, initial, onSubmit }: Props) {
 
   // Preselect department from city.department_id (edit/view)
   useEffect(() => {
-    const depFromCity = (initial as any)?.city?.department_id;
+    const depFromCity = initial?.city?.department_id;
     if (depFromCity && departmentId === "") {
       setDepartmentId(Number(depFromCity));
     }
@@ -134,7 +135,7 @@ export default function AgreementForm({ mode, initial, onSubmit }: Props) {
 
     if (!canSubmit) return;
 
-    const payload: any = {
+    const payload: CreateAgreementPayload = {
       name: form.name,
       amount: Number(form.amount),
       city_id: Number(form.city_id),
@@ -171,7 +172,7 @@ export default function AgreementForm({ mode, initial, onSubmit }: Props) {
             <Label>Código</Label>
             <input
               disabled
-              value={(initial as any)?.id || ""}
+              value={initial?.id || ""}
               className="mt-1 w-full rounded-lg border px-3 py-2 bg-gray-50/50 dark:bg-gray-800/50"
             />
           </div>
@@ -226,7 +227,7 @@ export default function AgreementForm({ mode, initial, onSubmit }: Props) {
             onChange={(v) => setForm((p) => ({ ...p, city_id: v }))}
             placeholder={departmentId ? "Seleccionar…" : "Selecciona un departamento"}
             disabledPlaceholder={
-              (initial as any)?.city?.name ||
+              initial?.city?.name ||
               cities.find((c) => String(c.id) === String(form.city_id))?.name ||
               ""
             }

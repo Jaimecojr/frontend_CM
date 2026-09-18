@@ -44,7 +44,7 @@ export default function EditDoctorPage() {
     };
   }, [id]);
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: Partial<ApiDoctor>) => {
     try {
       await updateDoctor(id, data);
       await alert.success("Médico actualizado", "Los cambios se han guardado correctamente.");
