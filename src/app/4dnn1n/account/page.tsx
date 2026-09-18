@@ -1,115 +1,39 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Save, KeyRound, ChevronDown, ChevronUp, Eye, EyeOff } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { ShowcaseSection } from "@/components/Layouts/showcase-section";
-import { alert } from "@/lib/alert";
-import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
-import { updateUsername, changePassword } from "./fetch";
+import { useAccountForm } from "./_hooks/useAccountForm";
 
 export default function AccountPage() {
   usePageTitle("Configuración de cuenta");
 
-  const router = useRouter();
-  const { user, refreshUser } = useAuth();
-
-  // ── Section A: username ──────────────────────────────
-  const [username, setUsername] = useState(user?.user ?? "");
-  const [usernameError, setUsernameError] = useState("");
-  const [savingUsername, setSavingUsername] = useState(false);
-
-  // ── Section B: password ─────────────────────────────────────
-  const [showPasswordSection, setShowPasswordSection] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [passwordErrors, setPasswordErrors] = useState<{
-    current?: string;
-    new?: string;
-    confirm?: string;
-  }>({});
-  const [savingPassword, setSavingPassword] = useState(false);
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-
-  const handleSaveUsername = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setUsernameError("");
-
-    if (username.trim().length < 3) {
-      setUsernameError("El nombre de usuario debe tener al menos 3 caracteres.");
-      return;
-    }
-
-    setSavingUsername(true);
-    try {
-      await updateUsername(user!.id, username.trim());
-      await refreshUser();
-      await alert.success("Guardado", "Nombre de usuario actualizado correctamente.");
-      router.push("/4dnn1n/home");
-    } catch (err: any) {
-      const fieldErr = err?.data?.errors?.user;
-      if (fieldErr) {
-        setUsernameError(Array.isArray(fieldErr) ? fieldErr[0] : String(fieldErr));
-      } else {
-        await alert.error("Error", getApiErrorMessage(err));
-      }
-    } finally {
-      setSavingUsername(false);
-    }
-  };
-
-  const handleSavePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const errs: typeof passwordErrors = {};
-
-    if (newPassword.length < 6) {
-      errs.new = "La contraseña debe tener al menos 6 caracteres.";
-    }
-    if (newPassword !== confirmPassword) {
-      errs.confirm = "Las contraseñas no coinciden.";
-    }
-
-    if (Object.keys(errs).length > 0) {
-      setPasswordErrors(errs);
-      return;
-    }
-
-    setPasswordErrors({});
-    setSavingPassword(true);
-    try {
-      await changePassword(currentPassword, newPassword);
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setShowPasswordSection(false);
-      await alert.success("Guardado", "Contraseña actualizada correctamente.");
-      router.push("/4dnn1n/home");
-    } catch (err: any) {
-      const currentErr = err?.data?.errors?.current_password;
-      if (currentErr) {
-        setPasswordErrors({
-          current: Array.isArray(currentErr) ? currentErr[0] : String(currentErr),
-        });
-      } else {
-        await alert.error("Error", getApiErrorMessage(err));
-      }
-    } finally {
-      setSavingPassword(false);
-    }
-  };
-
-  const togglePasswordSection = () => {
-    setShowPasswordSection((v) => !v);
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    setPasswordErrors({});
-  };
+  const {
+    username,
+    setUsername,
+    usernameError,
+    setUsernameError,
+    savingUsername,
+    handleSaveUsername,
+    showPasswordSection,
+    togglePasswordSection,
+    currentPassword,
+    setCurrentPassword,
+    showCurrent,
+    setShowCurrent,
+    newPassword,
+    setNewPassword,
+    showNew,
+    setShowNew,
+    confirmPassword,
+    setConfirmPassword,
+    showConfirm,
+    setShowConfirm,
+    passwordErrors,
+    setPasswordErrors,
+    savingPassword,
+    handleSavePassword,
+  } = useAccountForm();
 
   return (
     <div className="space-y-6">
