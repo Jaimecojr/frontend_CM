@@ -48,6 +48,12 @@ export function useOptimisticToggle<T extends { id: number | string }, F extends
 
       if (ok) {
         await alert.success("Actualizado", opts.successMessage(isActive));
+
+        // If an active `stade`/`state` filter is applied (e.g. "only active"),
+        // the row we just toggled may no longer match it — remove it from the
+        // visible list instead of leaving it there until the next refetch.
+        // With "all" every state is visible, so the optimistic field update
+        // above is already enough and the row stays in place.
         if (opts.stadeFilter !== "all") {
           opts.setData((prev) => prev.filter((x) => x.id !== item.id));
           opts.setMeta((m) => ({ ...m, total: m.total - 1 }));
