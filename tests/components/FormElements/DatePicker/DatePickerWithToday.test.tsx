@@ -113,6 +113,40 @@ describe("DatePickerWithToday", () => {
       // Assert
       expect(handleChange).toHaveBeenCalledWith("2026-09-10");
     });
+
+    it('al hacer click en "Hoy" también cierra el calendario (elegir un día ya lo cierra solo)', () => {
+      // Arrange
+      render(<DatePickerWithToday value="2026-06-15" onChange={vi.fn<(date: string) => void>()} />);
+      fireEvent.click(screen.getByPlaceholderText("dd/mm/aaaa"));
+      const calendar = document.querySelector(".flatpickr-calendar");
+      expect(calendar).toHaveClass("open");
+
+      // Act
+      fireEvent.click(screen.getByText("Hoy"));
+
+      // Assert
+      expect(calendar).not.toHaveClass("open");
+    });
+
+    it("al elegir una fecha invoca el onChange más reciente, no el capturado al montar", () => {
+      // Arrange: flatpickr se crea una sola vez; si captura el onChange del primer render,
+      // un consumidor que hace setForm({ ...form, date }) restauraría el `form` del montaje
+      // y borraría lo escrito en los demás campos.
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date(2026, 8, 10));
+      const handlerAtMount = vi.fn<(date: string) => void>();
+      const latestHandler = vi.fn<(date: string) => void>();
+      const { rerender } = render(<DatePickerWithToday value="" onChange={handlerAtMount} />);
+      rerender(<DatePickerWithToday value="" onChange={latestHandler} />);
+      fireEvent.click(screen.getByPlaceholderText("dd/mm/aaaa"));
+
+      // Act
+      fireEvent.click(screen.getByText("Hoy"));
+
+      // Assert
+      expect(latestHandler).toHaveBeenCalledWith("2026-09-10");
+      expect(handlerAtMount).not.toHaveBeenCalled();
+    });
   });
 
   describe("Paso 4: cleanup al desmontar", () => {

@@ -146,7 +146,40 @@
 }
 
 .flatpickr-calendar {
-  @apply !p-6 !shadow-3 dark:!bg-gray-dark dark:!text-dark-6 dark:!shadow-card 2xsm:!w-auto;
+  @apply !p-3 !shadow-3 dark:!bg-gray-dark dark:!text-dark-6 dark:!shadow-card 2xsm:!w-auto;
+}
+
+/*
+  Compact calendar: 7 columns of 32px (flatpickr's default is 39px cells in a fixed 307.875px
+  grid). The grid width is hard-coded in three places, so all of them are overridden together;
+  the extra .flatpickr-calendar in each selector out-ranks the library's own rules regardless of
+  the order the stylesheets load in.
+*/
+.flatpickr-calendar .flatpickr-days,
+.flatpickr-calendar .dayContainer {
+  width: 224px;
+  min-width: 224px;
+  max-width: 224px;
+}
+
+.flatpickr-calendar .flatpickr-day {
+  max-width: 32px;
+  height: 32px;
+  line-height: 32px;
+}
+
+.flatpickr-calendar .flatpickr-months .flatpickr-month {
+  height: 30px;
+}
+
+/*
+  The month + year selectors share one row inside a 75%-wide box. At flatpickr's default 135%
+  font size they no longer fit in the narrower grid, so the year wraps onto a second line and is
+  clipped by the fixed row height above. A smaller font (and no wrapping) keeps both on one line.
+*/
+.flatpickr-calendar .flatpickr-current-month {
+  font-size: 110%;
+  white-space: nowrap;
 }
 
 .flatpickr-day {
@@ -155,17 +188,17 @@
 
 .flatpickr-months .flatpickr-prev-month,
 .flatpickr-months .flatpickr-next-month {
-  @apply !top-7 dark:!fill-white dark:!text-white;
+  @apply !top-3 dark:!fill-white dark:!text-white;
 }
 
 .flatpickr-months .flatpickr-prev-month.flatpickr-prev-month,
 .flatpickr-months .flatpickr-next-month.flatpickr-prev-month {
-  @apply !left-7;
+  @apply !left-3;
 }
 
 .flatpickr-months .flatpickr-prev-month.flatpickr-next-month,
 .flatpickr-months .flatpickr-next-month.flatpickr-next-month {
-  @apply !right-7;
+  @apply !right-3;
 }
 
 span.flatpickr-weekday,

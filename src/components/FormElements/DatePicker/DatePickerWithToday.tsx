@@ -34,6 +34,14 @@ const DatePickerWithToday = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const fpRef = useRef<flatpickr.Instance | null>(null);
 
+  // flatpickr is created once (see the effect below), so its callback would keep the
+  // onChange from the first render. A consumer doing setForm({ ...form, date }) would then
+  // write back the stale mount-time form and wipe every other field the user had typed.
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  });
+
   useEffect(() => {
     if (!inputRef.current || disabled) return;
 
@@ -48,7 +56,7 @@ const DatePickerWithToday = ({
           const y = selectedDates[0].getFullYear();
           const m = String(selectedDates[0].getMonth() + 1).padStart(2, "0");
           const d = String(selectedDates[0].getDate()).padStart(2, "0");
-          onChange(`${y}-${m}-${d}`);
+          onChangeRef.current(`${y}-${m}-${d}`);
         }
       },
       onReady: (_dates, _str, fp) => {
@@ -56,8 +64,12 @@ const DatePickerWithToday = ({
         btn.type = "button";
         btn.textContent = "Hoy";
         btn.className =
-          "flatpickr-today-btn w-full mt-2 rounded-md bg-primary py-1.5 text-sm font-medium text-white hover:bg-opacity-90";
-        btn.onclick = () => fp.setDate(new Date(), true);
+          "flatpickr-today-btn w-full mt-1 rounded-md bg-primary py-1 text-xs font-medium text-white hover:bg-opacity-90";
+        btn.onclick = () => {
+          fp.setDate(new Date(), true);
+          // Picking a day closes the calendar on its own; this custom button has to do it explicitly
+          fp.close();
+        };
         fp.calendarContainer.appendChild(btn);
       },
     });
