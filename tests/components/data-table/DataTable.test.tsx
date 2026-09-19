@@ -462,4 +462,21 @@ describe("DataTable", () => {
       expect(contenedor).toHaveClass("rounded-md", "border");
     });
   });
+
+  describe("Paso 7: columnas en mayúsculas (meta.uppercase)", () => {
+    it("aplica 'uppercase' solo a las celdas de las columnas marcadas con meta.uppercase", () => {
+      // Arrange: names are text data; the id column is not marked
+      const cols: ColumnDef<Row>[] = [
+        { accessorKey: "id", header: "ID" },
+        { accessorKey: "name", header: "Nombre", meta: { uppercase: true } },
+      ];
+
+      // Act
+      render(<DataTable columns={cols} data={personas} />);
+
+      // Assert
+      expect(screen.getByText("Ana Gómez").closest("td")).toHaveClass("uppercase");
+      expect(screen.getByText("1").closest("td")).not.toHaveClass("uppercase");
+    });
+  });
 });

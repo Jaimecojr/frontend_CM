@@ -23,7 +23,9 @@ import { DataTableToolbar } from "./DataTableToolbar";
 import { DataTablePagination } from "./DataTablePagination";
 import { Button } from "@/components/ui-elements/button";
 
-type ColumnMeta = { stickyRight?: boolean };
+// uppercase: show the column's text in capitals (free-text data such as names, addresses, cities).
+// Opt-in per column so emails, badges, dates and numbers keep their natural casing.
+type ColumnMeta = { stickyRight?: boolean; uppercase?: boolean };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Props
@@ -284,6 +286,7 @@ export function DataTable<TData, TValue>({
                             "whitespace-nowrap",
                             idx === 0 ? "!text-left" : "text-center",
                             meta?.stickyRight && "sticky right-0 z-10 bg-white dark:bg-gray-dark text-right",
+                            meta?.uppercase && "uppercase",
                           )}
                         >
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
