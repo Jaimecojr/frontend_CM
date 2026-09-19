@@ -162,7 +162,7 @@ describe("AffiliateNotes", () => {
     fireEvent.click(screen.getByRole("button", { name: /guardar nota/i }));
 
     // Assert
-    await waitFor(() => expect(createAffiliateNote).toHaveBeenCalledWith(3, "Texto nuevo"));
+    await waitFor(() => expect(createAffiliateNote).toHaveBeenCalledWith(3, "TEXTO NUEVO"));
     await waitFor(() => expect(getAffiliateNotes).toHaveBeenCalledTimes(2));
   });
 
@@ -184,5 +184,26 @@ describe("AffiliateNotes", () => {
       expect(screen.queryByRole("button", { name: /cancelar/i })).not.toBeInTheDocument(),
     );
     expect(getAffiliateNotes).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("AffiliateNotes: texto en mayúsculas", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("el texto de la nota y el nombre del autor se muestran en mayúsculas; la fecha no", async () => {
+    // Arrange: a note saved in lowercase before the rule existed
+    mockAuth(2);
+    (getAffiliateNotes as any).mockResolvedValue([
+      createNote({ body: "llamar mañana", user: { id: 1, name: "Asesor Uno" } }),
+    ]);
+
+    // Act
+    render(<AffiliateNotes affiliateId={7} affiliateName="Juan" />);
+
+    // Assert
+    expect(await screen.findByText("llamar mañana")).toHaveClass("uppercase");
+    expect(screen.getByText("Asesor Uno")).toHaveClass("uppercase");
   });
 });

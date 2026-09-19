@@ -146,3 +146,27 @@ describe("ViewAppointmentPage", () => {
     ).toBeInTheDocument();
   });
 });
+
+describe("ViewAppointmentPage: texto en mayúsculas", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("paciente, médico, dirección y ciudad se muestran en mayúsculas; el teléfono no", async () => {
+    // Arrange
+    mockParams("5");
+    (getAppointment as any).mockResolvedValue(
+      createMockAppointment({ owner: null, name: "Juan García" }),
+    );
+
+    // Act
+    render(<ViewAppointmentPage />);
+
+    // Assert
+    expect(await screen.findByText("Juan García")).toHaveClass("uppercase");
+    expect(screen.getByText("Carlos Pérez")).toHaveClass("uppercase");
+    expect(screen.getByText("Carrera 7 #45-67")).toHaveClass("uppercase");
+    expect(screen.getByText("Bogotá")).toHaveClass("uppercase");
+    expect(screen.getByText("3001234567")).not.toHaveClass("uppercase");
+  });
+});

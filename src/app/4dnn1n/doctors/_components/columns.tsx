@@ -16,6 +16,7 @@ export function buildDoctorColumns({
     {
       id: "full_name",
       header: "Nombres",
+      meta: { uppercase: true },
       accessorFn: (row) => `${row.name} ${row.lastname}`,
       cell: ({ row }) => (
         <div className="font-medium text-left whitespace-normal max-w-[250px] break-words">
@@ -26,6 +27,7 @@ export function buildDoctorColumns({
     {
       id: "specialty",
       header: "Especialidad",
+      meta: { uppercase: true },
       accessorFn: (row) => row.specialty?.name ?? "",
       cell: ({ row }) => <div className="font-medium text-left whitespace-normal max-w-[250px] break-words">{row.original.specialty?.name ?? "-"}</div>,
     },
@@ -49,11 +51,13 @@ export function buildDoctorColumns({
     {
       accessorKey: "secretary_name",
       header: "Secretaria",
+      meta: { uppercase: true },
       cell: ({ row }) => <div>{row.original.secretary_name || "-"}</div>,
     },
     {
       id: "city",
       header: "Ciudad",
+      meta: { uppercase: true },
       accessorFn: (row) => row.city?.name ?? "",
       cell: ({ row }) => <div>{row.original.city?.name ?? "-"}</div>,
     },
@@ -132,6 +136,7 @@ export function buildSpecialtyDoctorColumns(): ColumnDef<ApiDoctor>[] {
     {
       id: "full_name",
       header: "Nombres",
+      meta: { uppercase: true },
       accessorFn: (row) => `${row.name} ${row.lastname}`,
       cell: ({ row }) => (
         <div className="font-medium text-left whitespace-normal max-w-[250px] break-words">
@@ -142,6 +147,7 @@ export function buildSpecialtyDoctorColumns(): ColumnDef<ApiDoctor>[] {
     {
       accessorKey: "secretary_name",
       header: "Secretaria",
+      meta: { uppercase: true },
       cell: ({ row }) => <div>{row.original.secretary_name || "-"}</div>,
     },
     {
@@ -164,6 +170,7 @@ export function buildSpecialtyDoctorColumns(): ColumnDef<ApiDoctor>[] {
     {
       id: "city",
       header: "Ciudad",
+      meta: { uppercase: true },
       accessorFn: (row) => row.city?.name ?? "",
       cell: ({ row }) => <div>{row.original.city?.name ?? "-"}</div>,
     },

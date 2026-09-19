@@ -16,6 +16,7 @@ export function buildCounselorColumns({
     {
       id: "full_name",
       header: "Nombre",
+      meta: { uppercase: true },
       accessorFn: (row) => `${row.name} ${row.lastname}`,
       cell: ({ row }) => (
         <div className="font-medium">
@@ -36,6 +37,7 @@ export function buildCounselorColumns({
     {
       id: "city",
       header: "Ciudad",
+      meta: { uppercase: true },
       accessorFn: (row) => row.city?.name ?? "",
       cell: ({ row }) => row.original.city?.name ?? "-",
     },

@@ -277,7 +277,7 @@ describe("AffiliateForm", () => {
       fireEvent.change(inputs[1], { target: { value: "Nuevo Nombre" } });
 
       // Assert
-      expect(updateBeneficiaryName).toHaveBeenCalledWith(1, "Nuevo Nombre");
+      expect(updateBeneficiaryName).toHaveBeenCalledWith(1, "NUEVO NOMBRE");
     });
   });
 
@@ -380,9 +380,9 @@ describe("AffiliateForm", () => {
       );
 
       // Assert
-      expect(setForm).toHaveBeenCalledWith(expect.objectContaining({ name: "Juan" }));
+      expect(setForm).toHaveBeenCalledWith(expect.objectContaining({ name: "JUAN" }));
       expect(setForm).toHaveBeenCalledWith(
-        expect.objectContaining({ lastname: "Pérez" }),
+        expect.objectContaining({ lastname: "PÉREZ" }),
       );
     });
 
@@ -442,7 +442,7 @@ describe("AffiliateForm", () => {
         expect.objectContaining({ email: "juan@test.com" }),
       );
       expect(setForm).toHaveBeenCalledWith(
-        expect.objectContaining({ address: "Calle 1 # 2-3" }),
+        expect.objectContaining({ address: "CALLE 1 # 2-3" }),
       );
       expect(setForm).toHaveBeenCalledWith(
         expect.objectContaining({ company: "ACME" }),
@@ -450,9 +450,12 @@ describe("AffiliateForm", () => {
     });
 
     it("saldo y comisión: convierten el valor a número", () => {
-      // Arrange
+      // Arrange: the commission amount is only shown when "¿Pago de Comisión?" is "si"
       const setForm = vi.fn();
-      renderForm({ setForm });
+      renderForm({
+        setForm,
+        form: { ...createMockFormState().form, payment_commission: "si" },
+      });
 
       // Act
       fireEvent.change(getFieldContainer(/^saldo/i).querySelector("input")!, {
@@ -467,6 +470,98 @@ describe("AffiliateForm", () => {
       expect(setForm).toHaveBeenCalledWith(expect.objectContaining({ balance: 50000 }));
       expect(setForm).toHaveBeenCalledWith(
         expect.objectContaining({ commission: 7500 }),
+      );
+    });
+
+    it("saldo y comisión: muestran el valor con punto de miles", () => {
+      // Arrange & Act
+      renderForm({
+        form: {
+          ...createMockFormState().form,
+          balance: 52383,
+          commission: 1234567,
+          payment_commission: "si",
+        },
+      });
+
+      // Assert
+      expect(getFieldContainer(/^saldo/i).querySelector("input")).toHaveValue("52.383");
+      expect(getFieldContainer(/^comisión/i).querySelector("input")).toHaveValue("1.234.567");
+    });
+
+    it("saldo: se puede vaciar por completo (queda en 0 sin que reaparezca un '0' imborrable)", () => {
+      // Arrange
+      const setForm = vi.fn();
+      renderForm({ setForm, form: { ...createMockFormState().form, balance: 5 } });
+
+      // Act
+      fireEvent.change(getFieldContainer(/^saldo/i).querySelector("input")!, {
+        target: { value: "" },
+      });
+
+      // Assert
+      expect(setForm).toHaveBeenCalledWith(expect.objectContaining({ balance: 0 }));
+    });
+
+    it("saldo y comisión en 0 se ven como campo vacío con placeholder '0'", () => {
+      // Arrange & Act
+      renderForm({ form: { ...createMockFormState().form, payment_commission: "si" } });
+
+      // Assert
+      for (const label of [/^saldo/i, /^comisión/i]) {
+        const input = getFieldContainer(label).querySelector("input")!;
+        expect(input).toHaveValue("");
+        expect(input).toHaveAttribute("placeholder", "0");
+      }
+    });
+
+    it("la comisión NO se muestra cuando '¿Pago de Comisión?' es 'no'", () => {
+      // Arrange & Act
+      renderForm({
+        form: { ...createMockFormState().form, payment_commission: "no", commission: 5000 },
+      });
+
+      // Assert
+      expect(screen.queryByText(/^comisión/i, { selector: "label" })).not.toBeInTheDocument();
+    });
+
+    it("la comisión SÍ se muestra cuando '¿Pago de Comisión?' es 'si'", () => {
+      // Arrange & Act
+      renderForm({ form: { ...createMockFormState().form, payment_commission: "si" } });
+
+      // Assert
+      expect(screen.getByText(/^comisión/i, { selector: "label" })).toBeInTheDocument();
+    });
+
+    it("orden del bloque: Saldo, luego '¿Pago de Comisión?' y al final el valor de la Comisión", () => {
+      // Arrange & Act
+      renderForm({ form: { ...createMockFormState().form, payment_commission: "si" } });
+      const saldo = screen.getByText(/^saldo/i, { selector: "label" });
+      const pago = screen.getByText(/pago de comisión/i, { selector: "label" });
+      const comision = screen.getByText(/^comisión/i, { selector: "label" });
+
+      // Assert
+      expect(saldo.compareDocumentPosition(pago) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(pago.compareDocumentPosition(comision) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it("cambiar '¿Pago de Comisión?' a 'no' oculta el campo pero conserva el valor ya guardado", () => {
+      // Arrange
+      const setForm = vi.fn();
+      renderForm({
+        setForm,
+        form: { ...createMockFormState().form, payment_commission: "si", commission: 5000 },
+      });
+      const radios = screen
+        .getAllByRole("radio", { name: /^(sí|no)$/i })
+        .filter((r) => (r as HTMLInputElement).name === "payment_commission");
+
+      // Act
+      fireEvent.click(radios[1]);
+
+      // Assert: only the flag changes; the amount is not silently zeroed
+      expect(setForm).toHaveBeenCalledWith(
+        expect.objectContaining({ payment_commission: "no", commission: 5000 }),
       );
     });
 
@@ -863,5 +958,209 @@ describe("AffiliateForm", () => {
         screen.getByText(/debes seleccionar un asesor de la lista/i),
       ).toBeInTheDocument();
     });
+  });
+
+  describe("navegación con teclado en el campo asesor", () => {
+    const counselors = [
+      { id: 1, name: "Ana", lastname: "Ruiz" },
+      { id: 2, name: "Luis", lastname: "Mora" },
+      { id: 3, name: "Eva", lastname: "Paz" },
+    ];
+
+    function renderOpenCounselorList(overrides: Partial<HookReturn> = {}) {
+      const setForm = vi.fn();
+      const setSearchCounselor = vi.fn();
+      const setShowCounselors = vi.fn();
+      renderForm({
+        setForm,
+        setSearchCounselor,
+        setShowCounselors,
+        showCounselors: true,
+        filteredCounselors: counselors,
+        ...overrides,
+      });
+      const input = screen.getByPlaceholderText("Buscar asesor...");
+      return { input, setForm, setSearchCounselor, setShowCounselors };
+    }
+
+    it("ArrowDown resalta la primera opción y cada pulsación baja una; Enter elige la resaltada", () => {
+      // Arrange
+      const { input, setForm, setSearchCounselor, setShowCounselors } =
+        renderOpenCounselorList();
+
+      // Act
+      fireEvent.keyDown(input, { key: "ArrowDown" });
+      expect(screen.getByRole("button", { name: "Ana Ruiz" })).toHaveClass("bg-gray-100");
+      fireEvent.keyDown(input, { key: "ArrowDown" });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      // Assert: dos ArrowDown -> segunda opción
+      expect(setForm).toHaveBeenCalledWith(expect.objectContaining({ counselor_id: "2" }));
+      expect(setSearchCounselor).toHaveBeenCalledWith("Luis Mora");
+      expect(setShowCounselors).toHaveBeenCalledWith(false);
+    });
+
+    it("ArrowUp sin opción resaltada salta a la última", () => {
+      // Arrange
+      const { input, setForm } = renderOpenCounselorList();
+
+      // Act
+      fireEvent.keyDown(input, { key: "ArrowUp" });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      // Assert
+      expect(setForm).toHaveBeenCalledWith(expect.objectContaining({ counselor_id: "3" }));
+    });
+
+    it("la navegación es circular: ArrowDown en la última opción vuelve a la primera", () => {
+      // Arrange
+      const { input, setForm } = renderOpenCounselorList();
+
+      // Act: 3 pulsaciones llegan a la última, la 4ª da la vuelta
+      for (let i = 0; i < 4; i++) fireEvent.keyDown(input, { key: "ArrowDown" });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      // Assert
+      expect(setForm).toHaveBeenCalledWith(expect.objectContaining({ counselor_id: "1" }));
+    });
+
+    it("al escribir queda resaltada la primera coincidencia, así Enter la elige sin usar flechas", () => {
+      // Arrange
+      const { input, setForm } = renderOpenCounselorList();
+
+      // Act
+      fireEvent.change(input, { target: { value: "a" } });
+      setForm.mockClear(); // ignora la llamada de limpieza de counselor_id del onChange
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      // Assert
+      expect(setForm).toHaveBeenCalledWith(expect.objectContaining({ counselor_id: "1" }));
+    });
+
+    it("Enter sin ninguna opción resaltada no selecciona nada (pero no envía el formulario)", () => {
+      // Arrange
+      const { input, setForm } = renderOpenCounselorList();
+
+      // Act
+      const notPrevented = fireEvent.keyDown(input, { key: "Enter" });
+
+      // Assert
+      expect(setForm).not.toHaveBeenCalled();
+      expect(notPrevented).toBe(false); // fireEvent devuelve false si se llamó preventDefault
+    });
+
+    it("Escape cierra la lista", () => {
+      // Arrange
+      const { input, setShowCounselors } = renderOpenCounselorList();
+
+      // Act
+      fireEvent.keyDown(input, { key: "Escape" });
+
+      // Assert
+      expect(setShowCounselors).toHaveBeenCalledWith(false);
+    });
+
+    it("con la lista cerrada, ArrowDown la vuelve a abrir en lugar de mover el resaltado", () => {
+      // Arrange
+      const { input, setShowCounselors, setForm } = renderOpenCounselorList({
+        showCounselors: false,
+      });
+
+      // Act
+      fireEvent.keyDown(input, { key: "ArrowDown" });
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      // Assert
+      expect(setShowCounselors).toHaveBeenCalledWith(true);
+      expect(setForm).not.toHaveBeenCalled();
+    });
+
+    it("mover el mouse sobre una opción la resalta, para que Enter elija la que se ve marcada", () => {
+      // Arrange
+      const { input, setForm } = renderOpenCounselorList();
+
+      // Act
+      fireEvent.mouseMove(screen.getByRole("button", { name: "Eva Paz" }));
+      fireEvent.keyDown(input, { key: "Enter" });
+
+      // Assert
+      expect(setForm).toHaveBeenCalledWith(expect.objectContaining({ counselor_id: "3" }));
+    });
+
+    it("las opciones no son paradas de Tab, para que Tab pase directo al siguiente campo", () => {
+      // Arrange
+      renderOpenCounselorList();
+
+      // Assert
+      screen
+        .getAllByRole("button", { name: /Ana Ruiz|Luis Mora|Eva Paz/ })
+        .forEach((option) => expect(option).toHaveAttribute("tabindex", "-1"));
+    });
+  });
+});
+
+describe("AffiliateForm: texto en mayúsculas", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("nombre, apellido, dirección y empresa guardan en el estado lo escrito en mayúsculas", () => {
+    // Arrange
+    const setForm = vi.fn();
+    renderForm({ setForm });
+    const cases: [RegExp, string, Record<string, string>][] = [
+      [/^nombre\(s\)/i, "juan carlos", { name: "JUAN CARLOS" }],
+      [/^apellido\(s\)/i, "pérez muñoz", { lastname: "PÉREZ MUÑOZ" }],
+      [/^dirección/i, "cra 5 # 1-2", { address: "CRA 5 # 1-2" }],
+      [/^empresa/i, "acme sas", { company: "ACME SAS" }],
+    ];
+
+    // Act & Assert
+    for (const [label, typed, expected] of cases) {
+      fireEvent.change(getFieldContainer(label).querySelector("input")!, {
+        target: { value: typed },
+      });
+      expect(setForm).toHaveBeenLastCalledWith(expect.objectContaining(expected));
+    }
+  });
+
+  it("el email no se convierte: conserva las mayúsculas y minúsculas escritas", () => {
+    // Arrange
+    const setForm = vi.fn();
+    renderForm({ setForm });
+
+    // Act
+    fireEvent.change(getFieldContainer(/^email/i).querySelector("input")!, {
+      target: { value: "Juan@Test.com" },
+    });
+
+    // Assert
+    expect(setForm).toHaveBeenCalledWith(expect.objectContaining({ email: "Juan@Test.com" }));
+  });
+
+  it("el nombre del beneficiario se envía en mayúsculas a updateBeneficiaryName", () => {
+    // Arrange
+    const updateBeneficiaryName = vi.fn();
+    renderForm({ updateBeneficiaryName });
+
+    // Act
+    fireEvent.change(screen.getByPlaceholderText("Nombre completo"), {
+      target: { value: "ana ruiz" },
+    });
+
+    // Assert
+    expect(updateBeneficiaryName).toHaveBeenCalledWith(0, "ANA RUIZ");
+  });
+
+  it("el buscador de asesor y sus sugerencias se muestran en mayúsculas", () => {
+    // Arrange & Act
+    renderForm({
+      showCounselors: true,
+      filteredCounselors: [{ id: 5, name: "Ana", lastname: "Ruiz" }],
+    });
+
+    // Assert
+    expect(screen.getByPlaceholderText("Buscar asesor...")).toHaveClass("uppercase");
+    expect(screen.getByRole("button", { name: "Ana Ruiz" })).toHaveClass("uppercase");
   });
 });

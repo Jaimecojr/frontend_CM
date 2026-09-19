@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Save, Eraser } from "lucide-react";
+import { UppercaseInput } from "@/components/FormElements/UppercaseInput";
+import { MoneyInput } from "@/components/FormElements/MoneyInput";
 import { SearchableSelect } from "@/components/FormElements/SearchableSelect";
 import type { ApiDoctor } from "../fetch";
 import { getDepartments, getCitiesByDepartment } from "@/lib/geo";
@@ -208,7 +210,7 @@ export default function DoctorForm({ mode, initial, onSubmit }: Props) {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
           <Label required={!isView}>Nombres</Label>
-          <input
+          <UppercaseInput
             value={form.name}
             disabled={isView}
             onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
@@ -218,7 +220,7 @@ export default function DoctorForm({ mode, initial, onSubmit }: Props) {
 
         <div>
           <Label required={!isView}>Apellidos</Label>
-          <input
+          <UppercaseInput
             value={form.lastname}
             disabled={isView}
             onChange={(e) => setForm((p) => ({ ...p, lastname: e.target.value }))}
@@ -310,7 +312,7 @@ export default function DoctorForm({ mode, initial, onSubmit }: Props) {
 
         <div>
           <Label required={!isView}>Dirección</Label>
-          <input
+          <UppercaseInput
             value={form.address}
             disabled={isView}
             onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
@@ -320,7 +322,7 @@ export default function DoctorForm({ mode, initial, onSubmit }: Props) {
 
         <div>
           <Label required={!isView}>Nombre Secretaria</Label>
-          <input
+          <UppercaseInput
             value={form.secretary_name}
             disabled={isView}
             onChange={(e) => setForm((p) => ({ ...p, secretary_name: e.target.value }))}
@@ -330,11 +332,10 @@ export default function DoctorForm({ mode, initial, onSubmit }: Props) {
 
         <div>
           <Label required={!isView}>Valor Convenio</Label>
-          <input
+          <MoneyInput
             value={form.value_agreement}
             disabled={isView}
-            onChange={(e) => setForm((p) => ({ ...p, value_agreement: onlyDigits(e.target.value) }))}
-            inputMode="numeric"
+            onChange={(n) => setForm((p) => ({ ...p, value_agreement: n ? String(n) : "" }))}
             placeholder="Ej: 150000"
             className={`mt-1 w-full rounded-lg border px-3 py-2 ${valueAgreementError ? "border-red-500 focus:outline-red-500" : ""}`}
           />

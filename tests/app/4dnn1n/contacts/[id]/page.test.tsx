@@ -144,3 +144,28 @@ describe("ViewContactPage", () => {
     expect(push).toHaveBeenCalledWith("/4dnn1n/contacts");
   });
 });
+
+describe("ViewContactPage: texto en mayúsculas", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("nombre, ciudad, asunto y mensaje se muestran en mayúsculas; correo y teléfono no", async () => {
+    // Arrange
+    mockParams("5");
+    const contact = createMockContact();
+    (getContact as any).mockResolvedValue(contact);
+
+    // Act
+    render(<ViewContactPage />);
+    await screen.findByText("Nombre");
+
+    // Assert
+    expect(screen.getByText("Juan Pérez")).toHaveClass("uppercase");
+    expect(screen.getByText("Bogotá")).toHaveClass("uppercase");
+    expect(screen.getByText("Consulta")).toHaveClass("uppercase");
+    expect(screen.getByText(contact.comment)).toHaveClass("uppercase");
+    expect(screen.getByText("juan@example.com")).not.toHaveClass("uppercase");
+    expect(screen.getByText("3101234567")).not.toHaveClass("uppercase");
+  });
+});

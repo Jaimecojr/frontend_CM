@@ -291,6 +291,18 @@ describe("DoctorForm", () => {
       ).toBeInTheDocument();
     });
 
+    it("value_agreement: muestra punto de miles mientras se escribe", async () => {
+      // Arrange
+      await renderForm();
+      const input = getFieldContainer(/^valor convenio/i).querySelector("input")!;
+
+      // Act
+      fireEvent.change(input, { target: { value: "150000" } });
+
+      // Assert
+      expect(input).toHaveValue("150.000");
+    });
+
     it("movil: '30012' muestra 'El celular debe tener exactamente 10 dígitos'", async () => {
       // Arrange
       await renderForm();
@@ -332,13 +344,13 @@ describe("DoctorForm", () => {
       // Assert
       await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
       expect(onSubmit).toHaveBeenCalledWith({
-        name: "Juan",
-        lastname: "Pérez",
+        name: "JUAN",
+        lastname: "PÉREZ",
         email: null,
         phone: "6014567890",
         movil: "3001234567",
-        address: "Carrera 5 #123",
-        secretary_name: "Patricia",
+        address: "CARRERA 5 #123",
+        secretary_name: "PATRICIA",
         value_agreement: 150000,
         specialty_id: 1,
         city_id: 3,
@@ -456,5 +468,36 @@ describe("DoctorForm", () => {
       expect(screen.getByRole("button", { name: /guardar/i })).toBeDisabled();
       expect(onSubmit).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe("DoctorForm: texto en mayúsculas", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("Nombres, Apellidos, Dirección y Nombre Secretaria se escriben en mayúsculas", async () => {
+    await renderForm();
+    const cases: [RegExp, string, string][] = [
+      [/^nombres/i, "ana maría", "ANA MARÍA"],
+      [/^apellidos/i, "muñoz", "MUÑOZ"],
+      [/^dirección/i, "cra 5 #1-2", "CRA 5 #1-2"],
+      [/^nombre secretaria/i, "lucía", "LUCÍA"],
+    ];
+
+    for (const [label, typed, expected] of cases) {
+      const input = getFieldContainer(label).querySelector("input")!;
+      fireEvent.change(input, { target: { value: typed } });
+      expect(input).toHaveValue(expected);
+    }
+  });
+
+  it("el correo conserva las mayúsculas y minúsculas que se escriben", async () => {
+    await renderForm();
+    const input = getFieldContainer(/^correo/i).querySelector("input")!;
+
+    fireEvent.change(input, { target: { value: "Ana@Example.com" } });
+
+    expect(input).toHaveValue("Ana@Example.com");
   });
 });

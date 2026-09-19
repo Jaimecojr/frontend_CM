@@ -15,10 +15,12 @@ function Field({
   icon,
   label,
   value,
+  uppercase = false,
 }: {
   icon: React.ReactNode;
   label: string;
   value: React.ReactNode;
+  uppercase?: boolean; // free-text data is shown in capitals; email, phone and dates are not
 }) {
   return (
     <div className="flex items-start gap-3 rounded-xl border border-stroke bg-background p-4 dark:border-dark-3">
@@ -27,7 +29,7 @@ function Field({
         <p className="text-xs font-medium uppercase tracking-wide text-dark-5 dark:text-dark-6">
           {label}
         </p>
-        <p className="mt-0.5 text-sm font-medium text-dark dark:text-white break-words">{value}</p>
+        <p className={`mt-0.5 text-sm font-medium text-dark dark:text-white break-words${uppercase ? " uppercase" : ""}`}>{value}</p>
       </div>
     </div>
   );
@@ -130,15 +132,16 @@ export default function ViewContactPage() {
     >
       <div className="mx-auto max-w-3xl space-y-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Field icon={<User className="h-4 w-4" />} label="Nombre" value={data.name} />
+          <Field icon={<User className="h-4 w-4" />} label="Nombre" value={data.name} uppercase />
           <Field icon={<Mail className="h-4 w-4" />} label="Correo" value={data.email} />
           <Field icon={<Phone className="h-4 w-4" />} label="Teléfono" value={data.phone} />
           <Field
             icon={<MapPin className="h-4 w-4" />}
             label="Ciudad"
             value={data.city?.name ?? "-"}
+            uppercase
           />
-          <Field icon={<Tag className="h-4 w-4" />} label="Asunto" value={data.subject} />
+          <Field icon={<Tag className="h-4 w-4" />} label="Asunto" value={data.subject} uppercase />
           <Field
             icon={<Calendar className="h-4 w-4" />}
             label="Fecha de envío"
@@ -154,7 +157,7 @@ export default function ViewContactPage() {
             <p className="text-xs font-medium uppercase tracking-wide text-dark-5 dark:text-dark-6">
               Mensaje
             </p>
-            <p className="mt-1 text-sm text-dark dark:text-white whitespace-pre-wrap leading-relaxed">
+            <p className="mt-1 text-sm uppercase text-dark dark:text-white whitespace-pre-wrap leading-relaxed">
               {data.comment}
             </p>
           </div>

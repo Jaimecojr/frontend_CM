@@ -74,7 +74,7 @@ describe("NoteModal", () => {
 
     // Assert
     await waitFor(() => expect(onClose).toHaveBeenCalledWith(true));
-    expect(createAffiliateNote).toHaveBeenCalledWith(1, "Nueva observación");
+    expect(createAffiliateNote).toHaveBeenCalledWith(1, "NUEVA OBSERVACIÓN");
     expect(alert.success).toHaveBeenCalled();
     const callOrder =
       (createAffiliateNote as any).mock.invocationCallOrder[0] <
@@ -135,5 +135,28 @@ describe("NoteModal", () => {
 
     // Assert
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("NoteModal: texto en mayúsculas", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (createAffiliateNote as any).mockResolvedValue({ id: 1 });
+    (alert.success as any).mockResolvedValue(undefined);
+  });
+
+  it("lo que se escribe queda en mayúsculas en el textarea y así se envía al guardar", async () => {
+    // Arrange
+    const { onClose } = renderModal();
+
+    // Act
+    fireEvent.change(getTextarea(), { target: { value: "cliente pide llamada mañana" } });
+
+    // Assert: what the user sees is what gets sent
+    expect(getTextarea()).toHaveValue("CLIENTE PIDE LLAMADA MAÑANA");
+    expect(getTextarea()).toHaveClass("uppercase");
+    fireEvent.click(getSaveButton());
+    await waitFor(() => expect(onClose).toHaveBeenCalledWith(true));
+    expect(createAffiliateNote).toHaveBeenCalledWith(1, "CLIENTE PIDE LLAMADA MAÑANA");
   });
 });

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Save, Eraser } from "lucide-react";
+import { UppercaseInput } from "@/components/FormElements/UppercaseInput";
 import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
 import { SearchableSelect } from "@/components/FormElements/SearchableSelect";
 import type {
@@ -295,7 +296,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div>
           <Label required={!isView}>Nombres</Label>
-          <input
+          <UppercaseInput
             value={form.name}
             disabled={isView}
             onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
@@ -305,7 +306,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
 
         <div>
           <Label required={!isView}>Apellidos</Label>
-          <input
+          <UppercaseInput
             value={form.lastname}
             disabled={isView}
             onChange={(e) =>
@@ -371,7 +372,7 @@ export default function CounselorForm({ mode, initial, onSubmit }: Props) {
 
         <div>
           <Label>Dirección</Label>
-          <input
+          <UppercaseInput
             value={form.address}
             disabled={isView}
             onChange={(e) =>

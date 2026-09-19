@@ -15,10 +15,12 @@ function Field({
   icon,
   label,
   value,
+  uppercase = false,
 }: {
   icon: React.ReactNode;
   label: string;
   value: React.ReactNode;
+  uppercase?: boolean; // free-text data is shown in capitals; phones, dates and amounts are not
 }) {
   return (
     <div className="flex items-start gap-3 rounded-xl border border-stroke bg-background p-4 dark:border-dark-3">
@@ -27,7 +29,7 @@ function Field({
         <p className="text-xs font-medium uppercase tracking-wide text-dark-5 dark:text-dark-6">
           {label}
         </p>
-        <p className="mt-0.5 text-sm font-medium text-dark dark:text-white">{value}</p>
+        <p className={`mt-0.5 text-sm font-medium text-dark dark:text-white${uppercase ? " uppercase" : ""}`}>{value}</p>
       </div>
     </div>
   );
@@ -128,7 +130,7 @@ export default function ViewAppointmentPage() {
         <div className="flex items-center gap-2">
           {typeBadge}
           {data.city && (
-            <span className="text-sm text-dark-5 dark:text-dark-6">{data.city.name}</span>
+            <span className="text-sm uppercase text-dark-5 dark:text-dark-6">{data.city.name}</span>
           )}
         </div>
 
@@ -137,11 +139,13 @@ export default function ViewAppointmentPage() {
             icon={<User className="h-4 w-4" />}
             label="Paciente"
             value={ownerName}
+            uppercase
           />
           <Field
             icon={<Stethoscope className="h-4 w-4" />}
             label="Médico"
             value={doctorName}
+            uppercase
           />
           <Field
             icon={<Calendar className="h-4 w-4" />}
@@ -157,6 +161,7 @@ export default function ViewAppointmentPage() {
             icon={<MapPin className="h-4 w-4" />}
             label="Dirección"
             value={data.address}
+            uppercase
           />
           <Field
             icon={<DollarSign className="h-4 w-4" />}

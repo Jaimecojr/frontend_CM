@@ -14,6 +14,7 @@ export function buildMembershipFormColumns({
     {
       id: "full_name",
       header: "Nombre",
+      meta: { uppercase: true },
       accessorFn: (row) => `${row.name} ${row.lastname}`,
       cell: ({ row }) => (
         <div className="font-medium text-left whitespace-normal max-w-[200px] break-words">
@@ -29,12 +30,14 @@ export function buildMembershipFormColumns({
     {
       id: "city",
       header: "Ciudad",
+      meta: { uppercase: true },
       accessorFn: (row) => row.city?.name ?? "",
       cell: ({ row }) => <div>{row.original.city?.name ?? "-"}</div>,
     },
     {
       accessorKey: "seller",
       header: "Asesor",
+      meta: { uppercase: true },
       cell: ({ row }) => (
         <div className="whitespace-normal max-w-[150px] break-words">{row.original.seller}</div>
       ),

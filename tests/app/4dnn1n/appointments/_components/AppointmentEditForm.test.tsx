@@ -134,13 +134,27 @@ describe("AppointmentEditForm", () => {
       expect(screen.getByTestId("date-input-stub")).toHaveValue(initial.date);
       expect(screen.getByDisplayValue(initial.hour)).toBeInTheDocument();
       expect(screen.getByDisplayValue(initial.address)).toBeInTheDocument();
-      expect(screen.getByDisplayValue(String(initial.value))).toBeInTheDocument();
+      // initial.value is 50000 and the amount field shows thousands separators
+      expect(screen.getByDisplayValue("50.000")).toBeInTheDocument();
       expect(screen.getByDisplayValue(initial.phone)).toBeInTheDocument();
       // City is read-only and, with no doctor selected yet, falls back to initial.city.name
       expect(screen.getByText(initial.city!.name)).toBeInTheDocument();
       // specialtyId comes from initial.doctor.specialty_id (the field shows the matching label)
       const specialtyInput = getFieldContainer(/especialidad/i).querySelector("input") as HTMLInputElement;
       expect(specialtyInput).toHaveAttribute("placeholder", "Cardiología");
+    });
+
+    it("'Valor de la consulta' muestra punto de miles mientras se escribe", async () => {
+      // Arrange
+      await renderEditForm(makeInitial());
+      await waitForDoctorsLoaded(1);
+      const valueInput = screen.getByPlaceholderText("Ej: 50000");
+
+      // Act
+      fireEvent.change(valueInput, { target: { value: "1234567" } });
+
+      // Assert
+      expect(valueInput).toHaveValue("1.234.567");
     });
 
     it("si initial.doctor es null, specialtyId queda vacío y no se llama a getDoctorsBySpecialty", async () => {
@@ -176,7 +190,7 @@ describe("AppointmentEditForm", () => {
       // handleSelectDoctor's side effects, so address/value still come from
       // `initial`, not from the auto-selected doctor's own fields.
       expect(screen.getByDisplayValue(initial.address)).toBeInTheDocument();
-      expect(screen.getByDisplayValue(String(initial.value))).toBeInTheDocument();
+      expect(screen.getByDisplayValue("50.000")).toBeInTheDocument();
     });
 
     it("cambiar de especialidad después NO vuelve a auto-seleccionar, aunque la nueva lista incluya un médico con el mismo id que initial.doctor_id", async () => {
@@ -286,5 +300,23 @@ describe("AppointmentEditForm", () => {
       expect(nameNode.tagName).toBe("P");
       expect(screen.queryByDisplayValue("Pedro Ramírez")).not.toBeInTheDocument();
     });
+  });
+});
+
+describe("AppointmentEditForm: texto en mayúsculas", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (getActiveSpecialties as any).mockResolvedValue(makeSpecialties());
+    (getDoctorsBySpecialty as any).mockResolvedValue([]);
+  });
+
+  it("Dirección de la consulta se escribe en mayúsculas", async () => {
+    await renderEditForm(makeInitial());
+    await waitForDoctorsLoaded(1);
+    const input = getFieldContainer(/^dirección de la consulta/i).querySelector("input")!;
+
+    fireEvent.change(input, { target: { value: "consultorio 4, piso 2" } });
+
+    expect(input).toHaveValue("CONSULTORIO 4, PISO 2");
   });
 });

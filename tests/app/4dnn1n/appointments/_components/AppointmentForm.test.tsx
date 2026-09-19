@@ -318,7 +318,8 @@ describe("AppointmentForm", () => {
 
       // Assert
       expect(screen.getByPlaceholderText("Dirección del consultorio")).toHaveValue(doctors[0].address);
-      expect(screen.getByPlaceholderText("Ej: 50000")).toHaveValue(String(doctors[0].value_agreement));
+      // value_agreement is 50000 and the amount field shows thousands separators
+      expect(screen.getByPlaceholderText("Ej: 50000")).toHaveValue("50.000");
       expect(screen.getByText(doctors[0].city!.name)).toBeInTheDocument();
     });
   });
@@ -337,6 +338,19 @@ describe("AppointmentForm", () => {
       // Act & Assert: exactly at minimum
       fireEvent.change(valueInput, { target: { value: "10000" } });
       expect(screen.queryByText("El valor debe ser mayor o igual a $10.000")).not.toBeInTheDocument();
+    });
+
+    it("'Valor de la consulta' muestra punto de miles mientras se escribe", async () => {
+      // Arrange
+      await renderForm();
+      await selectPatientAndDoctor();
+      const valueInput = screen.getByPlaceholderText("Ej: 50000");
+
+      // Act
+      fireEvent.change(valueInput, { target: { value: "1234567" } });
+
+      // Assert
+      expect(valueInput).toHaveValue("1.234.567");
     });
 
     it("phone con 5 dígitos muestra el error de longitud; con 10 dígitos no muestra error", async () => {
@@ -534,5 +548,21 @@ describe("AppointmentForm", () => {
       expect(screen.queryByText(/especialidad y médico/i)).not.toBeInTheDocument();
       expect(screen.queryByText(/detalles de la cita/i)).not.toBeInTheDocument();
     });
+  });
+});
+
+describe("AppointmentForm: texto en mayúsculas", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("Dirección de la consulta se escribe en mayúsculas", async () => {
+    await renderForm();
+    await selectPatientAndDoctor();
+    const input = getFieldContainer(/^dirección de la consulta/i).querySelector("input")!;
+
+    fireEvent.change(input, { target: { value: "consultorio 4, piso 2" } });
+
+    expect(input).toHaveValue("CONSULTORIO 4, PISO 2");
   });
 });

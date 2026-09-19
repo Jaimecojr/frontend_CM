@@ -80,6 +80,66 @@ describe("useAffiliateFormState", () => {
     );
   });
 
+  describe("payload de saldo y comisión", () => {
+    async function submitWith(
+      args: Parameters<typeof useAffiliateFormState>[0],
+      extra: Record<string, unknown> = {},
+    ) {
+      const { result } = await renderWithCatalogsLoaded(args);
+      act(() => result.current.setDepartmentId(1));
+      await waitFor(() => expect(result.current.cities).toHaveLength(1));
+      act(() => fillRequiredFields(result.current.setForm));
+      act(() => result.current.setForm((prev: any) => ({ ...prev, ...extra })));
+      await act(async () => {
+        await result.current.submit();
+      });
+    }
+
+    it("envía saldo y comisión como enteros (no como texto con puntos de miles)", async () => {
+      const onSubmit = vi.fn().mockResolvedValue(undefined);
+
+      await submitWith(
+        { mode: "create", onSubmit },
+        { balance: 52383, commission: 4142, payment_commission: "si" },
+      );
+
+      const payload = onSubmit.mock.calls[0][0];
+      expect(payload.balance).toBe(52383);
+      expect(payload.commission).toBe(4142);
+      expect(payload.payment_commission).toBe("si");
+    });
+
+    it("con saldo y comisión en 0 igual los envía (la API exige ambos al crear), aunque el campo de comisión esté oculto", async () => {
+      const onSubmit = vi.fn().mockResolvedValue(undefined);
+
+      await submitWith({ mode: "create", onSubmit }, { payment_commission: "no" });
+
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ balance: 0, commission: 0, payment_commission: "no" }),
+      );
+    });
+
+    it("al editar un afiliado con comisión ya guardada y pago 'no', la comisión oculta no se pierde", async () => {
+      const onSubmit = vi.fn().mockResolvedValue(undefined);
+
+      await submitWith({
+        mode: "edit",
+        initial: {
+          id: 1,
+          id_card: "123456789",
+          validity_end: "2027-01-01",
+          commission: 5000,
+          payment_commission: "no",
+        },
+        onSubmit,
+      });
+
+      expect(onSubmit).toHaveBeenCalledWith(
+        expect.objectContaining({ commission: 5000, payment_commission: "no" }),
+      );
+    });
+  });
+
   it("submit agrega el objeto renovation cuando wantsRenovation es 'si' en modo edición", async () => {
     const onSubmit = vi.fn().mockResolvedValue(undefined);
     const { result } = await renderWithCatalogsLoaded({

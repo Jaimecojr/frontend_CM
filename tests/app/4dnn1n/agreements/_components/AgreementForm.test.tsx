@@ -234,6 +234,18 @@ describe("AgreementForm", () => {
       ).not.toBeInTheDocument();
     });
 
+    it("'Valor ($)' muestra punto de miles mientras se escribe", async () => {
+      // Arrange
+      await renderForm();
+      const amountInput = screen.getByPlaceholderText("Ej: 150000");
+
+      // Act
+      fireEvent.change(amountInput, { target: { value: "150000" } });
+
+      // Assert
+      expect(amountInput).toHaveValue("150.000");
+    });
+
     it("escribir letras en 'Valor ($)' se filtra a solo dígitos", async () => {
       // Arrange
       await renderForm();
@@ -296,7 +308,7 @@ describe("AgreementForm", () => {
       // Assert
       await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
       expect(onSubmit).toHaveBeenCalledWith({
-        name: "Convenio Salud Total",
+        name: "CONVENIO SALUD TOTAL",
         amount: 50000,
         city_id: 3,
         state: 1,
@@ -352,5 +364,20 @@ describe("AgreementForm", () => {
       expect(getFieldContainer(/^ciudad/i).querySelector("input")).toHaveValue("");
       expect(onSubmit).not.toHaveBeenCalled();
     });
+  });
+});
+
+describe("AgreementForm: texto en mayúsculas", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("Nombre del Convenio se escribe en mayúsculas", async () => {
+    await renderForm();
+    const input = getFieldContainer(/^nombre del convenio/i).querySelector("input")!;
+
+    fireEvent.change(input, { target: { value: "convenio salud ñandú" } });
+
+    expect(input).toHaveValue("CONVENIO SALUD ÑANDÚ");
   });
 });

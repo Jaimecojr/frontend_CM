@@ -405,7 +405,7 @@ describe("FranchiseForm", () => {
       await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
       expect(onSubmit).toHaveBeenCalledWith({
         nit: "900123456",
-        name: "Franquicia Medellín",
+        name: "FRANQUICIA MEDELLÍN",
         contact: null,
         phone: null,
         movil: null,
@@ -555,5 +555,35 @@ describe("FranchiseForm", () => {
       expect(screen.getByText(/^contraseña/i, { selector: "label" })).toBeInTheDocument();
       expect(screen.getByText(/^repetir contraseña/i, { selector: "label" })).toBeInTheDocument();
     });
+  });
+});
+
+describe("FranchiseForm: texto en mayúsculas", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("Nombre de franquicia, Nombre del contacto y Dirección se escriben en mayúsculas", async () => {
+    await renderForm();
+    const cases: [RegExp, string, string][] = [
+      [/^nombre de franquicia/i, "franquicia norte", "FRANQUICIA NORTE"],
+      [/^nombre del contacto/i, "rosa díaz", "ROSA DÍAZ"],
+      [/^dirección/i, "cra 1 # 2-3", "CRA 1 # 2-3"],
+    ];
+
+    for (const [label, typed, expected] of cases) {
+      const input = getFieldContainer(label).querySelector("input")!;
+      fireEvent.change(input, { target: { value: typed } });
+      expect(input).toHaveValue(expected);
+    }
+  });
+
+  it("el email conserva las mayúsculas y minúsculas que se escriben", async () => {
+    await renderForm();
+    const input = getFieldContainer(/^email/i).querySelector("input")!;
+
+    fireEvent.change(input, { target: { value: "Norte@Example.com" } });
+
+    expect(input).toHaveValue("Norte@Example.com");
   });
 });

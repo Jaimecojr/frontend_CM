@@ -13,6 +13,8 @@ import {
   getDepartments,
 } from "../fetch";
 import { Button } from "@/components/ui-elements/button";
+import { UppercaseInput } from "@/components/FormElements/UppercaseInput";
+import { MoneyInput } from "@/components/FormElements/MoneyInput";
 import { SearchableSelect } from "@/components/FormElements/SearchableSelect";
 
 type Mode = "create" | "edit" | "view";
@@ -35,10 +37,6 @@ function Label({
       {children} {required ? <span className="text-red-500">*</span> : null}
     </label>
   );
-}
-
-function onlyDigits(value: string) {
-  return value.replace(/\D/g, "");
 }
 
 export default function AgreementForm({ mode, initial, onSubmit }: Props) {
@@ -180,7 +178,7 @@ export default function AgreementForm({ mode, initial, onSubmit }: Props) {
 
         <div>
           <Label required={!isView}>Nombre del Convenio</Label>
-          <input
+          <UppercaseInput
             value={form.name}
             disabled={isView}
             onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
@@ -190,13 +188,10 @@ export default function AgreementForm({ mode, initial, onSubmit }: Props) {
 
         <div>
           <Label required={!isView}>Valor ($)</Label>
-          <input
+          <MoneyInput
             value={form.amount}
             disabled={isView}
-            onChange={(e) =>
-              setForm((p) => ({ ...p, amount: onlyDigits(e.target.value) }))
-            }
-            inputMode="numeric"
+            onChange={(n) => setForm((p) => ({ ...p, amount: n ? String(n) : "" }))}
             className={`mt-1 w-full rounded-lg border px-3 py-2 ${amountError ? "border-red-500 focus:outline-red-500" : ""}`}
             placeholder="Ej: 150000"
           />

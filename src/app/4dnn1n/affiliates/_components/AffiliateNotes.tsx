@@ -106,12 +106,12 @@ export function AffiliateNotes({ affiliateId, affiliateName = "Afiliado" }: Prop
               key={note.id}
               className="rounded-xl border border-stroke bg-white p-4 shadow-sm dark:border-dark-3 dark:bg-gray-dark"
             >
-              <p className="whitespace-pre-wrap text-sm text-dark dark:text-white">
+              <p className="whitespace-pre-wrap text-sm uppercase text-dark dark:text-white">
                 {note.body}
               </p>
               <div className="mt-3 flex items-center justify-between gap-2">
                 <span className="text-xs text-neutral-400 dark:text-neutral-500">
-                  <span className="font-medium text-neutral-600 dark:text-neutral-400">
+                  <span className="font-medium uppercase text-neutral-600 dark:text-neutral-400">
                     {note.user?.name ?? "Sistema"}
                   </span>
                   {" · "}

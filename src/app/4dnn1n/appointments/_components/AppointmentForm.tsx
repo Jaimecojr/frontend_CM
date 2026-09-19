@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { UppercaseInput } from "@/components/FormElements/UppercaseInput";
 import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
 import { Search, Save, Eraser, CheckCircle2, User, Users } from "lucide-react";
+import { MoneyInput } from "@/components/FormElements/MoneyInput";
 import { SearchableSelect } from "@/components/FormElements/SearchableSelect";
 import { Button } from "@/components/ui-elements/button";
 import {
@@ -367,7 +369,7 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
             {/* Address */}
             <div className="md:col-span-2">
               <Label required>Dirección de la consulta</Label>
-              <input
+              <UppercaseInput
                 value={form.address}
                 onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
                 className="mt-1 w-full rounded-lg border border-stroke px-3 py-2 text-sm dark:border-dark-3 dark:bg-dark-2 dark:text-white"
@@ -386,10 +388,9 @@ export default function AppointmentForm({ onSubmit, userId }: Props) {
             {/* Value */}
             <div>
               <Label required>Valor de la consulta</Label>
-              <input
+              <MoneyInput
                 value={form.value}
-                onChange={(e) => setForm((p) => ({ ...p, value: onlyDigits(e.target.value) }))}
-                inputMode="numeric"
+                onChange={(n) => setForm((p) => ({ ...p, value: n ? String(n) : "" }))}
                 placeholder="Ej: 50000"
                 className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm dark:bg-dark-2 dark:text-white ${
                   valueError

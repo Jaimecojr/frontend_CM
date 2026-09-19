@@ -14,6 +14,7 @@ export function buildContactColumns({
     {
       accessorKey: "name",
       header: "Nombre",
+      meta: { uppercase: true },
       cell: ({ row }) => (
         <div className="font-medium text-left whitespace-normal max-w-[180px] break-words">
           {row.original.name}
@@ -30,6 +31,7 @@ export function buildContactColumns({
     {
       id: "city",
       header: "Ciudad",
+      meta: { uppercase: true },
       accessorFn: (row) => row.city?.name ?? "",
       cell: ({ row }) => <div>{row.original.city?.name ?? "-"}</div>,
     },
@@ -41,6 +43,7 @@ export function buildContactColumns({
     {
       accessorKey: "subject",
       header: "Asunto",
+      meta: { uppercase: true },
       cell: ({ row }) => (
         <div className="whitespace-normal max-w-[160px] break-words text-sm">
           {row.original.subject}
@@ -50,6 +53,7 @@ export function buildContactColumns({
     {
       accessorKey: "comment",
       header: "Mensaje",
+      meta: { uppercase: true },
       cell: ({ row }) => {
         const text = row.original.comment;
         const truncated = text.length > 80 ? `${text.slice(0, 80)}…` : text;

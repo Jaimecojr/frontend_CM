@@ -21,6 +21,7 @@ export function buildUserColumns({
     {
       accessorKey: "name",
       header: "Nombre",
+      meta: { uppercase: true },
       cell: ({ row }) => <div className="font-medium">{row.original.name}</div>,
     },
     {
@@ -31,11 +32,13 @@ export function buildUserColumns({
     {
       accessorKey: "address",
       header: "Dirección",
+      meta: { uppercase: true },
       cell: ({ row }) => row.original.address ?? "-",
     },
     {
       id: "city",
       header: "Ciudad",
+      meta: { uppercase: true },
       accessorFn: (row) => row.city?.name ?? "",
       cell: ({ row }) => row.original.city?.name ?? "-",
     },

@@ -211,7 +211,11 @@ Reemplaza todos los `<select>` nativos en los formularios del panel admin. Permi
 />
 ```
 
-**Nota:** El campo **Asesor** en `AffiliateForm` tiene su propio combobox personalizado con lógica adicional (validación de selección forzada) y **no** usa `SearchableSelect`.
+**Teclado:** el desplegable se abre al recibir foco (Tab), no solo con clic — el input es `readOnly` mientras está cerrado, así que abrir solo con clic dejaba la escritura muerta al llegar por Tab. Se escribe para filtrar; `↑`/`↓` mueven la opción resaltada (circular; parte de la opción ya seleccionada), `Enter` elige la resaltada, `Esc` cierra y `Tab` cierra y pasa al siguiente campo (las opciones tienen `tabIndex={-1}`). Con el desplegable cerrado, `↑`/`↓` lo reabren.
+
+**Mayúsculas:** el input y las opciones llevan la clase `uppercase`, porque las etiquetas son datos (ciudades, médicos, franquicias, convenios...). Es solo visual; el `value` que sube por `onChange` no se altera.
+
+**Nota:** El campo **Asesor** en `AffiliateForm` tiene su propio combobox personalizado con lógica adicional (validación de selección forzada) y **no** usa `SearchableSelect`. Reimplementa por su cuenta la misma navegación con teclado (`↑`/`↓`/`Enter`/`Esc`, opciones con `tabIndex={-1}`) y también muestra el texto en mayúsculas por CSS.
 
 ### `DatePickerWithToday` — Selector de fecha con botón "Hoy"
 **Ubicación:** `@/components/FormElements/DatePicker/DatePickerWithToday`
@@ -235,6 +239,9 @@ Reemplaza **todos** los `<input type="date">` editables del sistema. Usa flatpic
 - La visualización al usuario es `dd/mm/YYYY` en español (locale `es`).
 - Cuando `disabled=true`, renderiza un input de solo lectura con la fecha formateada en `dd/mm/YYYY`.
 - Cuando el valor se limpia desde el padre (`value=""`), el calendario se limpia automáticamente.
+- flatpickr se crea **una sola vez** al montar, así que el componente llama siempre al `onChange` más reciente (vía ref). Sin eso, un padre que hace `setForm({ ...form, date })` restauraría el `form` del montaje y borraría lo escrito en los demás campos. Los formularios nuevos pueden usar cualquiera de los dos estilos (`setForm(p => ...)` o `{ ...form }`).
+- El botón "Hoy" selecciona la fecha **y cierra** el calendario (elegir un día ya lo cierra solo; el botón es propio y lo hace explícitamente).
+- El tamaño del calendario (celdas de 32px, ~248px de ancho) y del encabezado mes/año se define en `src/css/style.css` (bloque "Compact calendar"). flatpickr fija el ancho de la grilla a 307,875px en `.flatpickr-days`, `.dayContainer` y `.flatpickr-calendar`; el calendario ya queda en `auto` por una clase del template, y ahí se sobrescriben los dos primeros a 224px (7 × 32px). Si se cambia el tamaño de celda hay que cambiar ese ancho y comprobar que el año sigue cabiendo en la fila del mes (el nombre del mes más largo, "Septiembre", es el peor caso).
 
 **Módulos donde ya está aplicado:**
 - Citas: fecha de la cita (crear y editar)
@@ -243,6 +250,30 @@ Reemplaza **todos** los `<input type="date">` editables del sistema. Usa flatpic
 - Franquicias: fecha de creación
 - Lista de citas: filtro por fecha exacta
 - Registro público (`/web/afiliarse`): fecha de nacimiento
+
+### `MoneyInput` — Monto entero con punto de miles
+**Ubicación:** `@/components/FormElements/MoneyInput`
+
+Input de **texto** (no `type="number"`) que muestra `52.383` mientras se escribe y entrega al padre un entero (`onChange(n: number)`, `0` si está vacío). Usar para todo campo de dinero: Saldo/Comisión de afiliados, Valor Convenio, Valor de la consulta, Valor ($) de convenios.
+
+- **Por qué no `type="number"`:** un input controlado por un estado numérico nunca se puede vaciar (borrar da `0` y se vuelve a pintar `0`). Aquí el `0` se muestra como campo vacío con placeholder `0`; en modo vista (`disabled`) muestra `0` real.
+- Solo dígitos, sin ceros a la izquierda, tope de `maxDigits` (9 por defecto) porque las columnas son `integer` de MySQL (máx. 2.147.483.647) y el backend no valida un máximo.
+- Conserva el cursor al editar en medio del número y hace que `Backspace`/`Delete` junto a un punto borren el dígito vecino.
+- Acepta `value` como `number` o `string` (algunos formularios guardan el monto como string). Si el estado es string: `onChange={(n) => setForm(p => ({ ...p, amount: n ? String(n) : "" }))}`.
+- El formato usa `formatThousands` de `@/lib/format-number` (implementación propia; no depende de los datos de locale del entorno).
+- Comisión de afiliados: el campo solo aparece con "¿Pago de Comisión?" en "Sí", pero ocultarlo **no** borra el valor guardado (se sigue enviando porque la API exige `commission` al crear).
+
+## Texto en mayúsculas (regla de negocio)
+
+Los textos libres de los módulos de afiliados, citas, médicos, convenios, asesores, contactos, solicitudes de afiliación y franquicias se **guardan** en mayúsculas (lo garantiza el backend, ver su `CLAUDE.md`) y se **muestran** en mayúsculas. Los datos que ya existían en minúscula no se reescriben: solo se ven en mayúsculas por CSS hasta que el registro se vuelva a guardar.
+
+**Qué se convierte:** nombres, apellidos, direcciones, empresa, secretaria, contacto, nombre de convenio/franquicia, beneficiarios, asunto y mensaje de contacto, vendedor/asesor de solicitudes y el texto de las notas de afiliado. **Qué no:** email, usuario de acceso, contraseñas, teléfonos, celulares, cédulas, NIT, códigos, URLs, fechas y montos.
+
+- **Inputs de formulario:** usa `UppercaseInput` (`@/components/FormElements/UppercaseInput`) en lugar de `<input>` para campos de texto libre. Convierte a mayúsculas en el propio nodo antes de llamar al `onChange` del padre (el estado ya recibe mayúsculas), conserva el cursor al editar en medio, y lleva la clase `uppercase` para que el texto legado también se vea en mayúsculas. Es un reemplazo directo de `<input>`: mismas props. Para texto de varias líneas (notas de afiliado) existe `UppercaseTextarea` en el mismo archivo, con el mismo comportamiento.
+- **Tablas:** cada columna de texto libre se marca con `meta: { uppercase: true }` en su `columns.tsx`; `DataTable` le pone la clase `uppercase` a la celda. Es opt-in por columna para que emails, badges, fechas y números conserven su formato. `tests/app/4dnn1n/uppercase-columns.test.ts` fija qué columnas de cada módulo van en mayúsculas.
+- **Vistas de detalle a medida** (citas y contactos): el `Field` local recibe `uppercase`. Los formularios en modo vista ya lo heredan de `UppercaseInput`/`SearchableSelect`.
+- **Formularios del sitio público** (`/web/afiliarse`, `/web/contactenos`): no se transforman en pantalla; el backend los guarda en mayúsculas.
+- **Campo nuevo de texto libre en uno de esos módulos:** usa `UppercaseInput`, marca la columna con `meta.uppercase` y agrega el atributo a `$uppercase` del modelo en el backend. Si el campo es email, login, código o configuración, no lo conviertas.
 
 ## LoadingOverlay — Pantalla de carga del panel admin
 
@@ -327,7 +358,7 @@ Al crear o modificar un formulario con los siguientes campos, aplica siempre est
 - Placeholder sugerido: `"Ej: 3001234567"`
 
 ### Valor / Valor Convenio (`amount`, `value_agreement`)
-- Solo dígitos (`onlyDigits`), valor mínimo **10.000**.
+- Usar `MoneyInput` (ver "Componentes de Formulario Reutilizables"): solo dígitos con punto de miles, valor mínimo **10.000**.
 - Mostrar error en rojo debajo del campo si el valor ingresado es menor a 10000.
 - Bloquear el botón Guardar (`canSubmit`) mientras no se cumpla el mínimo.
 - Placeholder sugerido: `"Ej: 150000"`

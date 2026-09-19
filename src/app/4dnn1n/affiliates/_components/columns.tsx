@@ -36,6 +36,7 @@ export function buildAffiliateColumns({
     {
       id: "full_name",
       header: "Nombres",
+      meta: { uppercase: true },
       accessorFn: (row) => `${row.name} ${row.lastname}`,
       cell: ({ row }) => (
         <div className="font-medium text-left">
@@ -52,6 +53,7 @@ export function buildAffiliateColumns({
     {
       id: "city",
       header: "Ciudad",
+      meta: { uppercase: true },
       accessorFn: (row) => row.city?.name ?? "",
       cell: ({ row }) => row.original.city?.name ?? "-",
     },
@@ -106,6 +108,12 @@ export function buildAffiliateColumns({
               <Pencil className="h-4 w-4" />
             </Link>
 
+            {/*
+              Intentionally hidden: notes are added from the affiliate detail page. The grid
+              above is sized for 4 actions (view, edit, toggle, carnet); a fifth icon wraps
+              the cell onto a second row and makes the whole table row taller. Do not
+              re-enable without widening the grid.
+
             <button
               type="button"
               className="hover:bg-muted rounded-md p-2"
@@ -115,6 +123,7 @@ export function buildAffiliateColumns({
             >
               <MessageSquarePlus className="h-4 w-4 text-violet-500" />
             </button>
+            */}
 
             {canToggle && (
               <button

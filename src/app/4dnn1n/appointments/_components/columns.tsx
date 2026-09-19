@@ -35,6 +35,7 @@ export function buildAppointmentColumns({
     {
       accessorKey: "name",
       header: "Nombre del Usuario",
+      meta: { uppercase: true },
       cell: ({ row }) => {
         const o = row.original.owner;
         const fullName = o
@@ -46,6 +47,7 @@ export function buildAppointmentColumns({
     {
       id: "doctor",
       header: "Médico",
+      meta: { uppercase: true },
       accessorFn: (row) =>
         row.doctor ? `${row.doctor.name} ${row.doctor.lastname}` : "-",
       cell: ({ row }) =>
@@ -56,6 +58,7 @@ export function buildAppointmentColumns({
     {
       id: "city",
       header: "Ciudad",
+      meta: { uppercase: true },
       accessorFn: (row) => row.city?.name ?? "-",
       cell: ({ row }) => row.original.city?.name ?? "-",
     },

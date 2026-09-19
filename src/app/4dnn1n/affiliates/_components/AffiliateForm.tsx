@@ -1,11 +1,14 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import { Save, Eraser, Plus, Trash2 } from "lucide-react";
+import { UppercaseInput } from "@/components/FormElements/UppercaseInput";
 import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
+import { MoneyInput } from "@/components/FormElements/MoneyInput";
 import { SearchableSelect } from "@/components/FormElements/SearchableSelect";
 import { Button } from "@/components/ui-elements/button";
 import { addOneYear } from "@/lib/dates";
-import type { ApiAffiliate } from "../fetch";
+import type { ApiAffiliate, CounselorOption } from "../fetch";
 import {
   useAffiliateFormState,
   onlyDigits,
@@ -71,6 +74,56 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
     clear,
   } = useAffiliateFormState({ mode, initial, onSubmit });
 
+  // Highlighted suggestion of the counselor autocomplete (-1 = none). Purely visual/keyboard
+  // state, so it lives here rather than in the form-state hook.
+  const [activeCounselorIndex, setActiveCounselorIndex] = useState(-1);
+  const counselorListRef = useRef<HTMLDivElement>(null);
+
+  // Keeps the highlighted suggestion visible inside the scrollable list
+  useEffect(() => {
+    if (showCounselors && activeCounselorIndex >= 0) {
+      counselorListRef.current?.children[activeCounselorIndex]?.scrollIntoView?.({
+        block: "nearest",
+      });
+    }
+  }, [showCounselors, activeCounselorIndex]);
+
+  const selectCounselor = (c: CounselorOption) => {
+    setForm({ ...form, counselor_id: String(c.id) });
+    setSearchCounselor(`${c.name} ${c.lastname}`);
+    setShowCounselors(false);
+    setActiveCounselorIndex(-1);
+  };
+
+  const handleCounselorKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Escape") {
+      setShowCounselors(false);
+      return;
+    }
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault(); // keeps the caret from jumping to the start/end of the text
+      // A closed list (e.g. after Escape or a selection) reopens instead of moving the highlight
+      if (!showCounselors) {
+        setActiveCounselorIndex(-1);
+        setShowCounselors(true);
+        return;
+      }
+      const count = filteredCounselors.length;
+      if (count === 0) return;
+      const step = e.key === "ArrowDown" ? 1 : -1;
+      setActiveCounselorIndex((i) =>
+        i < 0 ? (step > 0 ? 0 : count - 1) : (i + step + count) % count,
+      );
+      return;
+    }
+    if (e.key === "Enter" && showCounselors) {
+      e.preventDefault(); // avoid submitting a surrounding form while picking a suggestion
+      // Only an explicitly highlighted suggestion is picked, never one chosen by default
+      const target = filteredCounselors[activeCounselorIndex];
+      if (target) selectCounselor(target);
+    }
+  };
+
   return (
     <div className="bg-background rounded-2xl border border-stroke p-5 shadow-sm dark:border-dark-3">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -101,7 +154,7 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
         {/* Nombres y Apellidos */}
         <div>
           <Label required={!isView}>Nombre(s)</Label>
-          <input
+          <UppercaseInput
             value={form.name}
             disabled={isView}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -110,7 +163,7 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
         </div>
         <div>
           <Label required={!isView}>Apellido(s)</Label>
-          <input
+          <UppercaseInput
             value={form.lastname}
             disabled={isView}
             onChange={(e) => setForm({ ...form, lastname: e.target.value })}
@@ -179,7 +232,7 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
 
         <div>
           <Label required={!isView}>Dirección</Label>
-          <input
+          <UppercaseInput
             value={form.address}
             disabled={isView}
             onChange={(e) => setForm({ ...form, address: e.target.value })}
@@ -238,7 +291,7 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
 
         <div>
           <Label required={!isView}>Empresa</Label>
-          <input
+          <UppercaseInput
             value={form.company}
             disabled={isView}
             onChange={(e) => setForm({ ...form, company: e.target.value })}
@@ -254,28 +307,39 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
             onChange={(e) => {
               setSearchCounselor(e.target.value);
               setForm({ ...form, counselor_id: "" }); // reseteamos si cambia el input para forzar que seleccione uno
+              // Highlight the first match so Enter picks it; nothing highlighted for an empty search
+              setActiveCounselorIndex(e.target.value.trim() ? 0 : -1);
               if (!isView) setShowCounselors(true);
             }}
             disabled={isView}
             onFocus={() => {
-              if (!isView) setShowCounselors(true);
+              if (isView) return;
+              setActiveCounselorIndex(-1);
+              setShowCounselors(true);
             }}
+            onKeyDown={handleCounselorKeyDown}
             onBlur={() => setTimeout(() => setShowCounselors(false), 200)}
             placeholder="Buscar asesor..."
-            className="mt-1 w-full rounded-lg border px-3 py-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:dark:bg-dark-2"
+            className="mt-1 w-full rounded-lg border px-3 py-2 uppercase disabled:cursor-not-allowed disabled:bg-gray-100 disabled:dark:bg-dark-2"
           />
           {showCounselors && filteredCounselors.length > 0 && (
-            <div className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-md border bg-white shadow-lg dark:bg-dark-2">
-              {filteredCounselors.map((c) => (
+            <div
+              ref={counselorListRef}
+              className="absolute z-10 mt-1 max-h-48 w-full overflow-y-auto rounded-md border bg-white shadow-lg dark:bg-dark-2"
+            >
+              {filteredCounselors.map((c, i) => (
                 <button
                   key={c.id}
                   type="button"
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-dark-3"
-                  onClick={() => {
-                    setForm({ ...form, counselor_id: String(c.id) });
-                    setSearchCounselor(`${c.name} ${c.lastname}`);
-                    setShowCounselors(false);
-                  }}
+                  // keyboard users pick with Enter from the input; a tabbable option would steal
+                  // focus, blur the input and close the list before it could be used
+                  tabIndex={-1}
+                  // keeps the highlight in sync with the pointer so Enter picks what is visibly marked
+                  onMouseMove={() => setActiveCounselorIndex(i)}
+                  className={`w-full px-3 py-2 text-left text-sm uppercase hover:bg-gray-100 dark:hover:bg-dark-3 ${
+                    i === activeCounselorIndex ? "bg-gray-100 dark:bg-dark-3" : ""
+                  }`}
+                  onClick={() => selectCounselor(c)}
                 >
                   {c.name} {c.lastname}
                 </button>
@@ -432,26 +496,10 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
         {/* Saldos y Comisiones */}
         <div>
           <Label>Saldo</Label>
-          <input
-            type="number"
+          <MoneyInput
             value={form.balance}
             disabled={isView}
-            onChange={(e) =>
-              setForm({ ...form, balance: Number(e.target.value) })
-            }
-            className="mt-1 w-full rounded-lg border px-3 py-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:dark:bg-dark-2"
-          />
-        </div>
-
-        <div>
-          <Label>Comisión</Label>
-          <input
-            type="number"
-            value={form.commission}
-            disabled={isView}
-            onChange={(e) =>
-              setForm({ ...form, commission: Number(e.target.value) })
-            }
+            onChange={(balance) => setForm({ ...form, balance })}
             className="mt-1 w-full rounded-lg border px-3 py-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:dark:bg-dark-2"
           />
         </div>
@@ -483,6 +531,23 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
             </label>
           </div>
         </div>
+
+        {/*
+          The amount only applies once the commission is marked as paid, so it comes after the
+          "¿Pago de Comisión?" choice and is hidden otherwise. Hiding does not clear it: a stored
+          value is kept as-is and is still sent on submit (the API requires `commission` on create).
+        */}
+        {form.payment_commission === "si" && (
+          <div>
+            <Label>Comisión</Label>
+            <MoneyInput
+              value={form.commission}
+              disabled={isView}
+              onChange={(commission) => setForm({ ...form, commission })}
+              className="mt-1 w-full rounded-lg border px-3 py-2 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:dark:bg-dark-2"
+            />
+          </div>
+        )}
 
         {/* Carnet Entregado (Solo Editable/Visible en Modo Edición) */}
         {isEdit && (
@@ -539,7 +604,7 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
             >
               <Label>Nombre Beneficiario {index + 1}</Label>
               <div className="flex items-center gap-2">
-                <input
+                <UppercaseInput
                   value={b.name}
                   disabled={isView}
                   onChange={(e) => updateBeneficiaryName(index, e.target.value)}

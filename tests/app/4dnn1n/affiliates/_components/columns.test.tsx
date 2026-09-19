@@ -313,29 +313,39 @@ describe("buildAffiliateColumns", () => {
       expect(onToggleMock).toHaveBeenCalledTimes(1);
     });
 
-    it("botón 'Agregar nota' invoca onAddNote con el afiliado al hacer click", async () => {
-      const onAddNoteMock = vi.fn();
+    it("NO renderiza el botón 'Agregar nota' en el listado (oculto a propósito)", () => {
       const columns = buildAffiliateColumns({
         onToggleState: vi.fn(),
         onSendCarnet: vi.fn(),
-        onAddNote: onAddNoteMock,
+        onAddNote: vi.fn(),
         hasAccess: true,
-        canToggle: false,
+        canToggle: true,
       });
 
       const actionsColumn = columns.find((col) => col.id === "actions");
-      expect(actionsColumn?.cell).toBeDefined();
-
-      const affiliate = createMockAffiliate({ id: 42 });
-      const mockRow = { original: affiliate };
-      const cellResult = (actionsColumn!.cell as any)({ row: mockRow });
+      const cellResult = (actionsColumn!.cell as any)({ row: { original: createMockAffiliate() } });
 
       render(cellResult);
-      const addNoteButton = screen.getByRole("button", { name: /agregar nota/i });
-      await userEvent.click(addNoteButton);
+      expect(screen.queryByRole("button", { name: /agregar nota/i })).not.toBeInTheDocument();
+    });
 
-      expect(onAddNoteMock).toHaveBeenCalledWith(affiliate);
-      expect(onAddNoteMock).toHaveBeenCalledTimes(1);
+    it("renderiza como máximo 4 acciones (la celda es grid-cols-4; una quinta la parte en dos filas)", () => {
+      const columns = buildAffiliateColumns({
+        onToggleState: vi.fn(),
+        onSendCarnet: vi.fn(),
+        onAddNote: vi.fn(),
+        hasAccess: true,
+        canToggle: true,
+      });
+
+      const actionsColumn = columns.find((col) => col.id === "actions");
+      // Worst case: super admin, active, carnet pending and valid mobile -> every action visible.
+      const affiliate = createMockAffiliate({ stade: 1, carnet: "no", movil: "3001234567" });
+      const cellResult = (actionsColumn!.cell as any)({ row: { original: affiliate } });
+
+      render(cellResult);
+      const actions = [...screen.queryAllByRole("link"), ...screen.queryAllByRole("button")];
+      expect(actions).toHaveLength(4);
     });
 
     it("columna actions renderiza botón carnet cuando carnet='no' y movil tiene 10 dígitos", async () => {

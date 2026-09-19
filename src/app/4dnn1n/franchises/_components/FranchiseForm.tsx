@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Save, Eraser } from "lucide-react";
+import { UppercaseInput } from "@/components/FormElements/UppercaseInput";
 import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
 import type { ApiFranchise, City, Department } from "../fetch";
 import { getCitiesByDepartment, getDepartments } from "../fetch";
@@ -256,7 +257,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
         {/* Franchise name */}
         <div>
           <Label required={!isView}>Nombre de franquicia</Label>
-          <input
+          <UppercaseInput
             value={form.name}
             disabled={isView}
             onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
@@ -268,7 +269,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
         {/* Contact */}
         <div>
           <Label>Nombre del contacto</Label>
-          <input
+          <UppercaseInput
             value={form.contact}
             disabled={isView}
             onChange={(e) =>
@@ -310,7 +311,7 @@ export default function FranchiseForm({ mode, initial, onSubmit }: Props) {
         {/* Address */}
         <div>
           <Label>Dirección</Label>
-          <input
+          <UppercaseInput
             value={form.address}
             disabled={isView}
             onChange={(e) =>

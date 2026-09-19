@@ -391,8 +391,8 @@ describe("CounselorForm", () => {
       );
       await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
       expect(onSubmit).toHaveBeenCalledWith({
-        name: "Juan",
-        lastname: "Pérez",
+        name: "JUAN",
+        lastname: "PÉREZ",
         id_card: "123456789",
         address: null,
         date_admission: null,
@@ -482,5 +482,26 @@ describe("CounselorForm", () => {
       // is queried again for the very same value instead of hitting the cache.
       await waitFor(() => expect(checkCounselorIdCard).toHaveBeenCalledTimes(2));
     });
+  });
+});
+
+describe("CounselorForm: texto en mayúsculas", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("Nombres, Apellidos y Dirección se escriben en mayúsculas", async () => {
+    await renderForm();
+    const cases: [RegExp, string, string][] = [
+      [/^nombres/i, "luis ángel", "LUIS ÁNGEL"],
+      [/^apellidos/i, "mora peña", "MORA PEÑA"],
+      [/^dirección/i, "calle 9 # 4-5", "CALLE 9 # 4-5"],
+    ];
+
+    for (const [label, typed, expected] of cases) {
+      const input = getFieldContainer(label).querySelector("input")!;
+      fireEvent.change(input, { target: { value: typed } });
+      expect(input).toHaveValue(expected);
+    }
   });
 });

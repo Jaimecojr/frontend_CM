@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { MessageSquarePlus, Loader2, X } from "lucide-react";
 import { createAffiliateNote } from "../fetch";
+import { UppercaseTextarea } from "@/components/FormElements/UppercaseInput";
 import { alert } from "@/lib/alert";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
@@ -53,7 +54,7 @@ export function NoteModal({ affiliateId, affiliateName, onClose }: Props) {
             <MessageSquarePlus className="h-5 w-5 text-primary" />
             <div>
               <h2 className="text-sm font-semibold text-dark dark:text-white">Nueva nota</h2>
-              <p className="text-xs text-neutral-400 dark:text-neutral-500">{affiliateName}</p>
+              <p className="text-xs uppercase text-neutral-400 dark:text-neutral-500">{affiliateName}</p>
             </div>
           </div>
           <button
@@ -66,7 +67,7 @@ export function NoteModal({ affiliateId, affiliateName, onClose }: Props) {
 
         {/* Body */}
         <div className="p-5">
-          <textarea
+          <UppercaseTextarea
             ref={textareaRef}
             autoFocus
             value={body}

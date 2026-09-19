@@ -23,6 +23,7 @@ export function buildAgreementColumns({
     {
       accessorKey: "name",
       header: "Nombre del Convenio",
+      meta: { uppercase: true },
       cell: ({ row }) => <div className="font-medium">{row.original.name}</div>,
     },
     {
@@ -37,6 +38,7 @@ export function buildAgreementColumns({
     {
       id: "city",
       header: "Ciudad",
+      meta: { uppercase: true },
       accessorFn: (row) => row.city?.name ?? "",
       cell: ({ row }) => row.original.city?.name ?? "-",
     },
