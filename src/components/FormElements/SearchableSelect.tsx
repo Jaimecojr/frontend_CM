@@ -31,7 +31,9 @@ export function SearchableSelect({
 }: SearchableSelectProps) {
   const [open, setOpen] = useState(false);   // controls whether the dropdown is visible
   const [search, setSearch] = useState("");  // search text typed by the user
+  const [activeIndex, setActiveIndex] = useState(-1); // keyboard/mouse highlighted option within `filtered` (-1 = none)
   const containerRef = useRef<HTMLDivElement>(null); // reference to the container to detect outside clicks
+  const listRef = useRef<HTMLDivElement>(null);      // reference to the options list to keep the active option visible
   const inputRef = useRef<HTMLInputElement>(null);   // reference to the input to focus it on open
 
   // Finds the option that matches the current value (compared as string to avoid "1" !== 1)
@@ -44,6 +46,32 @@ export function SearchableSelect({
           o.label.toLowerCase().includes(search.toLowerCase()),
         )
       : options;
+
+  // Opens the dropdown with the full list, starting the highlight on the current selection.
+  // With an empty search `filtered` is the whole `options` array, so the indexes match.
+  function openDropdown() {
+    setOpen(true);
+    setSearch("");
+    setActiveIndex(
+      options.findIndex((o) => String(o.value) === String(value)),
+    );
+  }
+
+  // Moves the highlight by `step` (+1 / -1), wrapping around at both ends
+  function moveActive(step: 1 | -1) {
+    const count = filtered.length;
+    if (count === 0) return;
+    setActiveIndex((i) =>
+      i < 0 ? (step > 0 ? 0 : count - 1) : (i + step + count) % count,
+    );
+  }
+
+  // Notifies the parent with the chosen value and resets the dropdown
+  function selectOption(o: SelectOption) {
+    onChange(String(o.value));
+    setOpen(false);
+    setSearch("");
+  }
 
   // Closes the dropdown when the user clicks outside the component
   useEffect(() => {
@@ -60,6 +88,13 @@ export function SearchableSelect({
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
+  // Keeps the highlighted option inside the scrollable list while navigating with the arrows
+  useEffect(() => {
+    if (open && activeIndex >= 0) {
+      listRef.current?.children[activeIndex]?.scrollIntoView?.({ block: "nearest" });
+    }
+  }, [open, activeIndex]);
+
   // Read-only mode (isView): renders a disabled input with the current value's label.
   // Resolved in order: label found in options → disabledPlaceholder → empty string.
   // disabledPlaceholder is useful when the label comes from a nested API object (e.g. initial.city.name).
@@ -69,7 +104,7 @@ export function SearchableSelect({
         disabled
         value={selected?.label || disabledPlaceholder || ""}
         className={cn(
-          "w-full rounded-lg border px-3 py-2 cursor-not-allowed bg-gray-100 dark:bg-dark-2",
+          "w-full rounded-lg border px-3 py-2 cursor-not-allowed bg-gray-100 dark:bg-dark-2 uppercase",
           className,
         )}
         readOnly
@@ -89,9 +124,13 @@ export function SearchableSelect({
             : "hover:border-gray-400 dark:hover:border-dark-4",
         )}
         onClick={() => {
-          setOpen((o) => !o);
+          if (open) {
+            setOpen(false);
+            return;
+          }
+          openDropdown();
           // Focuses the input on the next tick so the cursor appears on open
-          if (!open) setTimeout(() => inputRef.current?.focus(), 0);
+          setTimeout(() => inputRef.current?.focus(), 0);
         }}
       >
         {/*
@@ -101,18 +140,45 @@ export function SearchableSelect({
         */}
         <input
           ref={inputRef}
-          className="flex-1 bg-transparent text-sm text-dark dark:text-white outline-none cursor-pointer placeholder:text-dark-5 dark:placeholder:text-dark-6"
+          // uppercase: the options are database labels (cities, doctors, franchises...) that are
+          // shown in capitals; text-transform also applies to the typed search and the placeholder
+          className="flex-1 bg-transparent text-sm text-dark dark:text-white outline-none cursor-pointer uppercase placeholder:text-dark-5 dark:placeholder:text-dark-6"
           placeholder={selected ? selected.label : placeholder}
           value={open ? search : selected?.label ?? ""}
           onChange={(e) => {
             setSearch(e.target.value);
+            // Highlight the first match so Enter picks it; nothing highlighted for an empty search
+            setActiveIndex(e.target.value.trim() ? 0 : -1);
             if (!open) setOpen(true);
           }}
           onClick={(e) => {
             e.stopPropagation(); // prevents the click from reaching the parent div and triggering the toggle
-            if (!open) {
-              setOpen(true);
-              setSearch(""); // clears the filter on open to show all options
+            if (!open) openDropdown(); // also clears the filter so all options are shown
+          }}
+          // Opening on focus (not only on click) matters for keyboard users: reaching the field
+          // with Tab focuses a read-only input, so typing would silently do nothing until they click.
+          onFocus={() => {
+            if (!open) openDropdown();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Tab" || e.key === "Escape") {
+              // Tab lets focus move on to the next field; the options are not tab stops
+              setOpen(false);
+              setSearch("");
+              return;
+            }
+            if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+              e.preventDefault(); // keeps the caret from jumping to the start/end of the text
+              // A closed dropdown (e.g. after Escape) reopens instead of moving the highlight
+              if (!open) openDropdown();
+              else moveActive(e.key === "ArrowDown" ? 1 : -1);
+              return;
+            }
+            if (e.key === "Enter" && open) {
+              e.preventDefault(); // avoid submitting a surrounding form while picking an option
+              // Only an explicitly highlighted option is picked, never one chosen by default
+              const target = filtered[activeIndex];
+              if (target) selectOption(target);
             }
           }}
           readOnly={!open} // only editable while the dropdown is open
@@ -129,31 +195,36 @@ export function SearchableSelect({
 
       {/* Options dropdown — only mounted when open=true */}
       {open && (
-        <div className="absolute z-50 mt-1 w-full max-h-52 overflow-y-auto rounded-lg border border-stroke bg-white shadow-lg dark:border-dark-3 dark:bg-dark-2">
+        <div ref={listRef} className="absolute z-50 mt-1 w-full max-h-52 overflow-y-auto rounded-lg border border-stroke bg-white shadow-lg dark:border-dark-3 dark:bg-dark-2">
           {filtered.length === 0 ? (
             <div className="px-3 py-2 text-sm text-dark-5 dark:text-dark-6">
               Sin resultados
             </div>
           ) : (
-            filtered.map((o) => (
+            filtered.map((o, i) => (
               <button
                 key={o.value}
                 type="button"
                 // preventDefault on mousedown prevents the "onClickOutside" listener from
                 // detecting this click as "outside the component" and closing the dropdown before onClick
                 onMouseDown={(e) => e.preventDefault()}
+                // keeps the highlight in sync with the pointer so Enter picks what is visibly marked
+                onMouseMove={() => setActiveIndex(i)}
+                tabIndex={-1} // keyboard users pick with Enter from the input, not by tabbing through options
                 className={cn(
-                  "w-full px-3 py-2 text-left text-sm transition-colors",
+                  "w-full px-3 py-2 text-left text-sm uppercase transition-colors",
                   "text-dark dark:text-white hover:bg-gray-2 dark:hover:bg-dark-3",
                   // highlights the currently selected option
                   String(o.value) === String(value) &&
                     "bg-primary/10 text-primary font-medium dark:bg-primary/20",
+                  // marks the option Enter would pick; a ring (not a background) when it is also
+                  // the selected one so it does not override the selected-option background
+                  i === activeIndex &&
+                    (String(o.value) === String(value)
+                      ? "ring-1 ring-inset ring-primary"
+                      : "bg-gray-2 dark:bg-dark-3"),
                 )}
-                onClick={() => {
-                  onChange(String(o.value)); // notifies the parent with the chosen value
-                  setOpen(false);
-                  setSearch("");
-                }}
+                onClick={() => selectOption(o)}
               >
                 {o.label}
               </button>

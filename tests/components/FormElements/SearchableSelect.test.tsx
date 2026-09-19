@@ -1,6 +1,7 @@
 import type { ComponentProps } from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import {
   SearchableSelect,
   type SelectOption,
@@ -202,5 +203,198 @@ describe("SearchableSelect", () => {
       // Assert
       expect(screen.getByText("Bogotá")).toBeInTheDocument();
     });
+  });
+
+  describe("Paso 5: navegación con teclado", () => {
+    it("al llegar con Tab se abre el dropdown y se puede escribir para filtrar sin hacer click", async () => {
+      // Arrange
+      renderSelect();
+
+      // Act: Tab real hacia el input y tecleo real (userEvent respeta readOnly)
+      await userEvent.tab();
+      await userEvent.keyboard("med");
+
+      // Assert
+      const input = screen.getByRole("textbox");
+      expect(input).toHaveFocus();
+      expect(input).toHaveValue("med");
+      expect(screen.getByRole("button", { name: "Medellín" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Bogotá" })).not.toBeInTheDocument();
+    });
+
+    it("Enter selecciona la primera coincidencia del filtro, cierra el dropdown y mantiene el foco", async () => {
+      // Arrange
+      const { onChange } = renderSelect();
+      await userEvent.tab();
+      await userEvent.keyboard("med");
+
+      // Act
+      await userEvent.keyboard("{Enter}");
+
+      // Assert
+      expect(onChange).toHaveBeenCalledWith("2");
+      expect(screen.queryByRole("button", { name: "Medellín" })).not.toBeInTheDocument();
+      expect(screen.getByRole("textbox")).toHaveFocus();
+    });
+
+    it("Enter sin texto de búsqueda no selecciona nada (evita elegir la primera opción por accidente)", async () => {
+      // Arrange
+      const { onChange } = renderSelect();
+      await userEvent.tab();
+
+      // Act
+      await userEvent.keyboard("{Enter}");
+
+      // Assert
+      expect(onChange).not.toHaveBeenCalled();
+    });
+
+    it("Escape cierra el dropdown y limpia la búsqueda", async () => {
+      // Arrange
+      renderSelect();
+      await userEvent.tab();
+      await userEvent.keyboard("med");
+
+      // Act
+      await userEvent.keyboard("{Escape}");
+
+      // Assert
+      expect(screen.queryByRole("button", { name: "Medellín" })).not.toBeInTheDocument();
+      expect(screen.getByRole("textbox")).toHaveValue("");
+    });
+
+    it("Tab desde el input cierra el dropdown y el foco pasa al siguiente campo sin recorrer las opciones", async () => {
+      // Arrange
+      render(
+        <div>
+          <SearchableSelect
+            options={options}
+            value=""
+            onChange={vi.fn<(value: string) => void>()}
+          />
+          <input aria-label="Siguiente" />
+        </div>,
+      );
+      await userEvent.tab();
+      expect(screen.getByRole("button", { name: "Bogotá" })).toBeInTheDocument();
+
+      // Act
+      await userEvent.tab();
+
+      // Assert
+      expect(screen.getByLabelText("Siguiente")).toHaveFocus();
+      expect(screen.queryByRole("button", { name: "Bogotá" })).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Paso 6: navegación con flechas", () => {
+    it("ArrowDown resalta la primera opción y cada nueva pulsación baja una; Enter elige la resaltada", async () => {
+      // Arrange
+      const { onChange } = renderSelect();
+      await userEvent.tab();
+
+      // Act
+      await userEvent.keyboard("{ArrowDown}");
+      expect(screen.getByRole("button", { name: "Bogotá" })).toHaveClass("bg-gray-2");
+      await userEvent.keyboard("{ArrowDown}{Enter}");
+
+      // Assert: dos ArrowDown -> segunda opción (Medellín)
+      expect(onChange).toHaveBeenCalledWith("2");
+    });
+
+    it("ArrowUp desde ninguna opción resaltada salta a la última", async () => {
+      // Arrange
+      const { onChange } = renderSelect();
+      await userEvent.tab();
+
+      // Act
+      await userEvent.keyboard("{ArrowUp}{Enter}");
+
+      // Assert
+      expect(onChange).toHaveBeenCalledWith("3");
+    });
+
+    it("la navegación es circular: ArrowDown en la última opción vuelve a la primera", async () => {
+      // Arrange
+      const { onChange } = renderSelect();
+      await userEvent.tab();
+
+      // Act: 3 pulsaciones llegan a Cali (última), la 4ª da la vuelta a Bogotá
+      await userEvent.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}{ArrowDown}{Enter}");
+
+      // Assert
+      expect(onChange).toHaveBeenCalledWith("1");
+    });
+
+    it("al filtrar, las flechas se mueven solo entre los resultados visibles", async () => {
+      // Arrange: "l" coincide con Medellín y Cali; al escribir queda resaltada la primera (Medellín)
+      const { onChange } = renderSelect();
+      await userEvent.tab();
+      await userEvent.keyboard("l");
+      expect(screen.getByRole("button", { name: "Medellín" })).toHaveClass("bg-gray-2");
+
+      // Act
+      await userEvent.keyboard("{ArrowDown}{Enter}");
+
+      // Assert
+      expect(onChange).toHaveBeenCalledWith("3");
+    });
+
+    it("con un valor ya seleccionado, las flechas parten desde esa opción", async () => {
+      // Arrange
+      const { onChange } = renderSelect({ value: 2 });
+      await userEvent.tab();
+
+      // Act: parte de Medellín (índice 1), una flecha abajo -> Cali
+      await userEvent.keyboard("{ArrowDown}{Enter}");
+
+      // Assert
+      expect(onChange).toHaveBeenCalledWith("3");
+    });
+
+    it("con el dropdown cerrado (tras Escape), ArrowDown lo vuelve a abrir", async () => {
+      // Arrange
+      renderSelect();
+      await userEvent.tab();
+      await userEvent.keyboard("{Escape}");
+      expect(screen.queryByRole("button", { name: "Bogotá" })).not.toBeInTheDocument();
+
+      // Act
+      await userEvent.keyboard("{ArrowDown}");
+
+      // Assert
+      expect(screen.getByRole("button", { name: "Bogotá" })).toBeInTheDocument();
+    });
+
+    it("mover el mouse sobre una opción la resalta, para que Enter elija la que se ve marcada", async () => {
+      // Arrange
+      const { onChange } = renderSelect();
+      await userEvent.tab();
+
+      // Act
+      fireEvent.mouseMove(screen.getByRole("button", { name: "Cali" }));
+      await userEvent.keyboard("{Enter}");
+
+      // Assert
+      expect(onChange).toHaveBeenCalledWith("3");
+    });
+  });
+});
+
+describe("SearchableSelect: texto en mayúsculas", () => {
+  it("muestra en mayúsculas (por CSS) la opción seleccionada, el buscador y las opciones del desplegable", () => {
+    renderSelect({ value: 2 });
+    const input = screen.getByRole("textbox");
+
+    expect(input).toHaveClass("uppercase");
+
+    fireEvent.click(input.parentElement as HTMLElement);
+    expect(screen.getByRole("button", { name: "Bogotá" })).toHaveClass("uppercase");
+  });
+
+  it("en modo solo lectura también muestra el valor en mayúsculas", () => {
+    renderSelect({ value: 1, disabled: true });
+
+    expect(screen.getByRole("textbox")).toHaveClass("uppercase");
   });
 });
