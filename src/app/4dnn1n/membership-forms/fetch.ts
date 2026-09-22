@@ -18,7 +18,7 @@ export type ApiMembershipForm = {
   address: string;
   city_id: number;
   date: string;
-  seller: string;
+  seller: string | null;
   state: number;
   city?: { id: number; name: string; department_id?: number } | null;
   membership_form_beneficiaries?: ApiMembershipFormBeneficiary[];

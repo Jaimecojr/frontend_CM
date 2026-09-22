@@ -39,7 +39,7 @@ export function buildMembershipFormColumns({
       header: "Asesor",
       meta: { uppercase: true },
       cell: ({ row }) => (
-        <div className="whitespace-normal max-w-[150px] break-words">{row.original.seller}</div>
+        <div className="whitespace-normal max-w-[150px] break-words">{row.original.seller ?? "-"}</div>
       ),
     },
     {
