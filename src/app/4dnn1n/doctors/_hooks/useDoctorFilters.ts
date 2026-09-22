@@ -14,6 +14,7 @@ import { getSpecialties, type ApiSpecialty } from "../specialties/fetch";
 export function useDoctorFilters() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
   const [specialties, setSpecialties] = useState<ApiSpecialty[]>([]);
 
   const [filterDepartmentId, setFilterDepartmentId] = useState<number | "">("");
@@ -34,7 +35,11 @@ export function useDoctorFilters() {
       setFilterCityId("");
       return;
     }
-    getCitiesByDepartment(Number(filterDepartmentId)).then(setCities).catch(console.error);
+    setCitiesLoading(true);
+    getCitiesByDepartment(Number(filterDepartmentId))
+      .then(setCities)
+      .catch(console.error)
+      .finally(() => setCitiesLoading(false));
   }, [filterDepartmentId]);
 
   const handleSpecialtyChange = (val: string) => {
@@ -51,6 +56,7 @@ export function useDoctorFilters() {
   return {
     departments,
     cities,
+    citiesLoading,
     specialties,
     filterDepartmentId,
     setFilterDepartmentId,

@@ -240,9 +240,11 @@ describe("DoctorsPage", () => {
     });
   });
 
-  // ──── Step 1 (cont.): hasAccess gate for the "Gestionar Especialidades" button ────
-  describe("gate hasAccess para el botón 'Gestionar Especialidades'", () => {
-    it("hasAccess: true (type 1) → botón visible con el href correcto", async () => {
+  // ──── Step 1 (cont.): isSuperAdmin gate for the "Gestionar Especialidades" button ────
+  // Only the super admin (type 1) manages specialties — unlike most other doctor actions,
+  // which type 2 also has access to.
+  describe("gate isSuperAdmin para el botón 'Gestionar Especialidades'", () => {
+    it("isSuperAdmin: true (type 1) → botón visible con el href correcto", async () => {
       // Arrange
       mockAuth(1);
       mockServerTable();
@@ -258,7 +260,7 @@ describe("DoctorsPage", () => {
       await waitFor(() => expect(getSpecialties).toHaveBeenCalled());
     });
 
-    it("hasAccess: true (type 2) → botón también visible", async () => {
+    it("isSuperAdmin: false (type 2) → botón no renderizado", async () => {
       // Arrange
       mockAuth(2);
       mockServerTable();
@@ -267,12 +269,11 @@ describe("DoctorsPage", () => {
       render(<DoctorsPage />);
 
       // Assert
-      const link = screen.getByRole("link", { name: /gestionar especialidades/i });
-      expect(link).toHaveAttribute("href", "/4dnn1n/doctors/specialties");
+      expect(screen.queryByRole("link", { name: /gestionar especialidades/i })).not.toBeInTheDocument();
       await waitFor(() => expect(getSpecialties).toHaveBeenCalled());
     });
 
-    it("hasAccess: false (type 3) → botón no renderizado", async () => {
+    it("isSuperAdmin: false (type 3) → botón no renderizado", async () => {
       // Arrange
       mockAuth(3);
       mockServerTable();

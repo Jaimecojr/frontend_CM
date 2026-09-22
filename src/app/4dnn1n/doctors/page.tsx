@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { Settings } from "lucide-react";
+import { Settings, FilterX } from "lucide-react";
 import { DataTable } from "@/components/data-table/DataTable";
 import { CreateToolbarButton } from "@/components/data-table/CreateToolbarButton";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
@@ -24,10 +24,12 @@ export default function DoctorsPage() {
   usePageTitle("Médicos");
   const { user } = useAuth();
   const hasAccess = user?.type === 1 || user?.type === 2;
+  const isSuperAdmin = user?.type === 1;
 
   const {
     departments,
     cities,
+    citiesLoading,
     specialties,
     filterDepartmentId,
     setFilterDepartmentId,
@@ -70,6 +72,21 @@ export default function DoctorsPage() {
     [hasAccess], // eslint-disable-line
   );
 
+  const hasActiveFilters =
+    !!tableProps.searchValue ||
+    tableProps.stateFilterValue !== "1" ||
+    !!filterDepartmentId ||
+    !!filterCityId ||
+    !!filterSpecialtyId;
+
+  const clearFilters = () => {
+    tableProps.onSearchChange("");
+    tableProps.onStateFilterChange("1");
+    setFilterDepartmentId("");
+    setFilterCityId("");
+    handleSpecialtyChange("");
+  };
+
   const extraFilters = (
     <>
       <select
@@ -88,10 +105,10 @@ export default function DoctorsPage() {
         title="Filtrar por Ciudad"
         value={filterCityId}
         onChange={(e) => setFilterCityId(e.target.value ? Number(e.target.value) : "")}
-        disabled={!filterDepartmentId || cities.length === 0}
+        disabled={!filterDepartmentId || citiesLoading || cities.length === 0}
         className="h-9 w-full sm:w-auto shrink-0 rounded-lg border-[1.5px] border-stroke bg-transparent px-3 text-sm text-dark outline-none transition focus:border-primary disabled:opacity-50 dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
       >
-        <option value="">Ciudad (Todas)</option>
+        <option value="">{citiesLoading ? "Cargando…" : "Ciudad (Todas)"}</option>
         {cities.map((c) => (
           <option key={c.id} value={c.id}>{c.name}</option>
         ))}
@@ -112,6 +129,18 @@ export default function DoctorsPage() {
           ))}
         </datalist>
       </div>
+
+      {hasActiveFilters && (
+        <button
+          type="button"
+          onClick={clearFilters}
+          title="Limpiar filtros"
+          className="h-9 inline-flex shrink-0 items-center gap-1.5 rounded-lg border-[1.5px] border-stroke px-3 text-sm text-dark-5 transition hover:border-red-500 hover:text-red-500 dark:border-dark-3 dark:text-dark-6 dark:hover:border-red-500 dark:hover:text-red-500"
+        >
+          <FilterX className="h-4 w-4" />
+          Limpiar filtros
+        </button>
+      )}
     </>
   );
 
@@ -120,7 +149,7 @@ export default function DoctorsPage() {
       <LoadingOverlay isLoading={tableProps.loading && isInitialLoad} />
 
       <div className="mb-4 flex justify-end">
-        {hasAccess && (
+        {isSuperAdmin && (
           <Link href="/4dnn1n/doctors/specialties">
             <Button
               type="button"
