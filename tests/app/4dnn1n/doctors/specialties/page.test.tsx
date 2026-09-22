@@ -9,8 +9,9 @@ import type { ApiSpecialty } from "@/app/4dnn1n/doctors/specialties/fetch";
 // NOTE (finding, verified against the real page): unlike every other list page
 // in this phase, this page does NOT use `LoadingOverlay` — while `loading` is
 // true it returns a bare "Cargando especialidades..." div with no DataTable at
-// all. The "Volver a Médicos" link is always rendered regardless of
-// `hasAccess`; only the "Crear Especialidad" toolbar button is gated.
+// all. Only the super admin (type 1) can reach this page at all — anyone else
+// gets the permission message before the DataTable (or its "Volver a Médicos"
+// link, or the "Crear Especialidad" button) ever renders.
 
 vi.mock("@/context/AuthContext", () => ({ useAuth: vi.fn() }));
 
@@ -103,51 +104,9 @@ describe("SpecialtiesPage", () => {
     });
   });
 
-  // ──── Step 1 (cont.): "Volver a Médicos" always present regardless of hasAccess ────
-  describe("link 'Volver a Médicos' independiente de hasAccess", () => {
-    it("hasAccess: false (type 3) → el link sigue presente", () => {
-      // Arrange
-      mockAuth(3);
-      mockClientTable([]);
-
-      // Act
-      render(<SpecialtiesPage />);
-
-      // Assert
-      const link = screen.getByRole("link", { name: /volver a médicos/i });
-      expect(link).toHaveAttribute("href", "/4dnn1n/doctors");
-    });
-
-    it("hasAccess: true (type 1) → el link también está presente", () => {
-      // Arrange
-      mockAuth(1);
-      mockClientTable([]);
-
-      // Act
-      render(<SpecialtiesPage />);
-
-      // Assert
-      const link = screen.getByRole("link", { name: /volver a médicos/i });
-      expect(link).toHaveAttribute("href", "/4dnn1n/doctors");
-    });
-  });
-
-  // ──── Step 1 (cont.): gate hasAccess for the "Crear Especialidad" button ────
-  describe("gate hasAccess para el botón 'Crear Especialidad'", () => {
-    it("hasAccess: true (type 1) → botón visible con el href correcto", () => {
-      // Arrange
-      mockAuth(1);
-      mockClientTable([]);
-
-      // Act
-      render(<SpecialtiesPage />);
-
-      // Assert
-      const link = screen.getByRole("link", { name: /crear especialidad/i });
-      expect(link).toHaveAttribute("href", "/4dnn1n/doctors/specialties/new");
-    });
-
-    it("hasAccess: true (type 2) → botón también visible", () => {
+  // ──── Step 1 (cont.): the whole page is gated to the super admin (type 1) ────
+  describe("gate isSuperAdmin para toda la página", () => {
+    it("isSuperAdmin: false (type 2) → muestra el mensaje de permisos, sin DataTable ni links", () => {
       // Arrange
       mockAuth(2);
       mockClientTable([]);
@@ -156,11 +115,13 @@ describe("SpecialtiesPage", () => {
       render(<SpecialtiesPage />);
 
       // Assert
-      const link = screen.getByRole("link", { name: /crear especialidad/i });
-      expect(link).toHaveAttribute("href", "/4dnn1n/doctors/specialties/new");
+      expect(screen.getByText("No tienes permisos para acceder a esta página.")).toBeInTheDocument();
+      expect(screen.queryByTestId("data-table")).not.toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: /volver a médicos/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: /crear especialidad/i })).not.toBeInTheDocument();
     });
 
-    it("hasAccess: false (type 3) → botón no renderizado", () => {
+    it("isSuperAdmin: false (type 3) → muestra el mensaje de permisos", () => {
       // Arrange
       mockAuth(3);
       mockClientTable([]);
@@ -169,7 +130,33 @@ describe("SpecialtiesPage", () => {
       render(<SpecialtiesPage />);
 
       // Assert
-      expect(screen.queryByRole("link", { name: /crear especialidad/i })).not.toBeInTheDocument();
+      expect(screen.getByText("No tienes permisos para acceder a esta página.")).toBeInTheDocument();
+    });
+
+    it("isSuperAdmin: true (type 1) → el link 'Volver a Médicos' está presente", () => {
+      // Arrange
+      mockAuth(1);
+      mockClientTable([]);
+
+      // Act
+      render(<SpecialtiesPage />);
+
+      // Assert
+      const link = screen.getByRole("link", { name: /volver a médicos/i });
+      expect(link).toHaveAttribute("href", "/4dnn1n/doctors");
+    });
+
+    it("isSuperAdmin: true (type 1) → botón 'Crear Especialidad' visible con el href correcto", () => {
+      // Arrange
+      mockAuth(1);
+      mockClientTable([]);
+
+      // Act
+      render(<SpecialtiesPage />);
+
+      // Assert
+      const link = screen.getByRole("link", { name: /crear especialidad/i });
+      expect(link).toHaveAttribute("href", "/4dnn1n/doctors/specialties/new");
     });
   });
 

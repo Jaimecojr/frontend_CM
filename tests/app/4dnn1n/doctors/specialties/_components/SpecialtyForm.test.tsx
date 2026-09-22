@@ -87,8 +87,9 @@ describe("SpecialtyForm", () => {
       expect(onSubmit).not.toHaveBeenCalled();
     });
 
-    it("con name válido (con espacios), el submit del form invoca onSubmit con el payload recortado", async () => {
-      // Arrange
+    it("con name válido (con espacios), el submit del form invoca onSubmit con el payload recortado y en mayúsculas", async () => {
+      // Arrange: the name field is an UppercaseInput, so typed text is uppercased in place
+      // (see UppercasesAttributes in the backend model, mirrored here for immediate feedback).
       const onSubmit = vi.fn().mockResolvedValue(undefined);
       const { container } = render(<SpecialtyForm onSubmit={onSubmit} />);
       fireEvent.change(getNameInput(), { target: { value: "  Cardiología  " } });
@@ -98,7 +99,7 @@ describe("SpecialtyForm", () => {
 
       // Assert
       await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
-      expect(onSubmit).toHaveBeenCalledWith({ name: "Cardiología", state: 1 });
+      expect(onSubmit).toHaveBeenCalledWith({ name: "CARDIOLOGÍA", state: 1 });
       expect(alert.warn).not.toHaveBeenCalled();
     });
   });

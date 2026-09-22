@@ -21,7 +21,7 @@ export default function NewSpecialtyPage() {
   const [loading, setLoading] = useState(false);
 
   if (authLoading) return null;
-  if (user?.type !== 1 && user?.type !== 2) {
+  if (user?.type !== 1) {
     return (
       <div className="flex h-64 items-center justify-center p-6 text-red-500 font-medium">
         No tienes permisos suficientes para acceder a esta vista.

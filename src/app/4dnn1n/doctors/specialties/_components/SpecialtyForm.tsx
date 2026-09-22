@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Loader2, Save } from "lucide-react";
 import type { ApiSpecialty } from "../fetch";
-import { Input } from "@/components/ui-elements/input";
+import { UppercaseInput } from "@/components/FormElements/UppercaseInput";
 import { Button } from "@/components/ui-elements/button";
 import { alert } from "@/lib/alert";
 
@@ -45,11 +45,12 @@ export default function SpecialtyForm({ initial, onSubmit, loading }: Props) {
           <label className="text-sm font-medium text-dark dark:text-white">
             Nombre de Especialidad <span className="text-red-500">*</span>
           </label>
-          <Input
+          <UppercaseInput
             value={form.name}
             onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
             placeholder="Ej: Cardiología"
             disabled={isBusy}
+            className="mt-1 w-full rounded-lg border px-3 py-2"
           />
         </div>
 

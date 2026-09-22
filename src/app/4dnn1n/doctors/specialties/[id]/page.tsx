@@ -17,7 +17,7 @@ import { ArrowLeft } from "lucide-react";
 export default function SpecialtyViewPage() {
   usePageTitle("Ver Especialidad");
   const { user, loading: authLoading } = useAuth();
-  const hasAccess = user?.type === 1 || user?.type === 2;
+  const hasAccess = user?.type === 1;
   const params = useParams();
   const specialtyId = parseInt(params?.id as string, 10);
 

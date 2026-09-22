@@ -149,7 +149,7 @@ describe("EditSpecialtyPage", () => {
       expect(screen.getByText("Editar Especialidad: Cardiología")).toBeInTheDocument();
     });
 
-    it("dato cargado, hasAccess: true (type 2) → también tiene acceso", async () => {
+    it("dato cargado, hasAccess: false (type 2) → ya no tiene acceso (solo super admin)", async () => {
       // Arrange
       mockAuth(2);
       mockParams("5");
@@ -159,7 +159,12 @@ describe("EditSpecialtyPage", () => {
       render(<EditSpecialtyPage />);
 
       // Assert
-      await waitFor(() => expect(screen.getByTestId("specialty-form")).toBeInTheDocument());
+      await waitFor(() =>
+        expect(
+          screen.getByText("No tienes permisos para acceder a esta página."),
+        ).toBeInTheDocument(),
+      );
+      expect(screen.queryByTestId("specialty-form")).not.toBeInTheDocument();
     });
   });
 

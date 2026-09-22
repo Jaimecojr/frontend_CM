@@ -147,7 +147,7 @@ describe("SpecialtyViewPage", () => {
       expect(table).toHaveAttribute("data-search-placeholder", "Buscar médico...");
     });
 
-    it("resuelto, hasAccess: true (type 2) → también tiene acceso", async () => {
+    it("resuelto, hasAccess: false (type 2) → ya no tiene acceso (solo super admin)", async () => {
       // Arrange
       mockAuth(2);
       mockParams("5");
@@ -159,8 +159,11 @@ describe("SpecialtyViewPage", () => {
 
       // Assert
       await waitFor(() =>
-        expect(screen.getByText("DATOS DE LA ESPECIALIZACIÓN")).toBeInTheDocument(),
+        expect(
+          screen.getByText("No tienes permisos para acceder a esta página."),
+        ).toBeInTheDocument(),
       );
+      expect(screen.queryByTestId("data-table")).not.toBeInTheDocument();
     });
   });
 

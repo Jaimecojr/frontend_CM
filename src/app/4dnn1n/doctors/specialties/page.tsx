@@ -20,8 +20,8 @@ const STATE_OPTIONS = [
 
 export default function SpecialtiesPage() {
   usePageTitle("Especialidades");
-  const { user } = useAuth();
-  const hasAccess = user?.type === 1 || user?.type === 2;
+  const { user, loading: authLoading } = useAuth();
+  const isSuperAdmin = user?.type === 1;
 
   const { data, setData, loading } = useClientTable(getSpecialties);
 
@@ -41,9 +41,14 @@ export default function SpecialtiesPage() {
   });
 
   const columns = useMemo(
-    () => buildSpecialtyColumns({ onToggleState, hasAccess }),
-    [hasAccess], // eslint-disable-line
+    () => buildSpecialtyColumns({ onToggleState, hasAccess: isSuperAdmin }),
+    [isSuperAdmin], // eslint-disable-line
   );
+
+  if (authLoading) return null;
+  if (!isSuperAdmin) {
+    return <div className="p-6 text-red-500">No tienes permisos para acceder a esta página.</div>;
+  }
 
   if (loading) return <div className="p-6">Cargando especialidades...</div>;
 
@@ -73,7 +78,7 @@ export default function SpecialtiesPage() {
         getStateValue={(x) => Number(x.state)}
         stateFilterOptions={STATE_OPTIONS}
         toolbarActions={
-          hasAccess ? <CreateToolbarButton href="/4dnn1n/doctors/specialties/new" label="Crear Especialidad" /> : null
+          isSuperAdmin ? <CreateToolbarButton href="/4dnn1n/doctors/specialties/new" label="Crear Especialidad" /> : null
         }
       />
     </>

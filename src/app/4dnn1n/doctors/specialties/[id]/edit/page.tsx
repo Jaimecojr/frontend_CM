@@ -17,7 +17,7 @@ import { FormPageSkeleton } from "@/components/FormPageSkeleton";
 export default function EditSpecialtyPage() {
   usePageTitle("Modificar Especialidad");
   const { user, loading: authLoading } = useAuth();
-  const hasAccess = user?.type === 1 || user?.type === 2;
+  const hasAccess = user?.type === 1;
   const router = useRouter();
   const params = useParams();
   const id = parseInt(params?.id as string, 10);

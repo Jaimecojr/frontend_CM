@@ -65,7 +65,9 @@ describe("NewSpecialtyPage", () => {
   });
 
   // ──── Step 2: inline gate (synchronous check, no redirect) ────
-  describe("gate de permisos (type 1 y type 2 tienen acceso)", () => {
+  // Only type 1 (super admin) may create specialties — stricter than most other
+  // doctor-module gates, which also let type 2 through.
+  describe("gate de permisos (solo type 1 tiene acceso)", () => {
     it("authLoading: true → no renderiza nada (retorna null)", () => {
       // Arrange
       mockAuth(1, true);
@@ -95,23 +97,23 @@ describe("NewSpecialtyPage", () => {
       expect(pushMock).not.toHaveBeenCalled();
     });
 
-    it("user.type: 1 → formulario visible", () => {
+    it("user.type: 2 → muestra el mensaje de permisos insuficientes (ya no tiene acceso)", () => {
       // Arrange
-      mockAuth(1);
+      mockAuth(2);
 
       // Act
       render(<NewSpecialtyPage />);
 
       // Assert
-      expect(screen.getByTestId("specialty-form")).toBeInTheDocument();
       expect(
-        screen.queryByText("No tienes permisos suficientes para acceder a esta vista."),
-      ).not.toBeInTheDocument();
+        screen.getByText("No tienes permisos suficientes para acceder a esta vista."),
+      ).toBeInTheDocument();
+      expect(screen.queryByTestId("specialty-form")).not.toBeInTheDocument();
     });
 
-    it("user.type: 2 → formulario visible", () => {
+    it("user.type: 1 → formulario visible", () => {
       // Arrange
-      mockAuth(2);
+      mockAuth(1);
 
       // Act
       render(<NewSpecialtyPage />);
