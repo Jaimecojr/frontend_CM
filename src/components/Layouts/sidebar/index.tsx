@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import { NAV_DATA } from "./data";
 import { ArrowLeftIcon, ChevronUp } from "./icons";
 import { MenuItem } from "./menu-item";
@@ -12,6 +13,8 @@ import { useSidebarContext } from "./sidebar-context";
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.type === 1;
   const {
     setIsOpen,
     isOpen,
@@ -118,19 +121,20 @@ export function Sidebar() {
             )}
           </div>
 
-          <div className="custom-scrollbar mt-6 flex-1 overflow-y-auto pr-3 min-[850px]:mt-10">
+          <div className="custom-scrollbar mt-2 flex-1 overflow-y-auto pr-3">
+            {/*
+              No visible section heading: with a single "MAIN MENU" section (see NAV_DATA), a
+              label served no purpose — there was nothing else to distinguish it from — and it was
+              the one leftover English string in an otherwise Spanish panel. `section.label` is
+              kept only as the nav's accessible name for screen readers.
+            */}
             {NAV_DATA.map((section) => (
               <div key={section.label} className="mb-6">
-                {/* Hides the label when collapsed on desktop */}
-                {!(!isMobile && isCollapsed) && (
-                  <h2 className="mb-5 text-sm font-medium text-dark-4 dark:text-dark-6">
-                    {section.label}
-                  </h2>
-                )}
-
                 <nav role="navigation" aria-label={section.label}>
                   <ul className="space-y-2">
-                    {section.items.map((item) => (
+                    {section.items
+                      .filter((item) => !item.superAdminOnly || isSuperAdmin)
+                      .map((item) => (
                       <li key={item.title}>
                         {item.items.length ? (
                           <div>
@@ -197,11 +201,7 @@ export function Sidebar() {
                           </div>
                         ) : (
                           (() => {
-                            const href =
-                              "url" in item
-                                ? item.url + ""
-                                : "/" +
-                                  item.title.toLowerCase().split(" ").join("-");
+                            const href = item.url;
 
                             return (
                               <MenuItem

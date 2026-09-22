@@ -1,3 +1,4 @@
+import type { ComponentType, SVGProps } from "react";
 import * as Icons from "../icons";
 import {
   Briefcase, // Asesores
@@ -6,14 +7,25 @@ import {
   Building2, // Franquicias
   CalendarDays, // Citas
   Handshake, // Convenios
-  Images, // Carrusel
   LayoutDashboard, // 4dnn1nistración de contenido
   Phone, // Contactos
   FileText, // Afiliaciones
   Settings, // Configuración
 } from "lucide-react";
 
-export const NAV_DATA = [
+// Explicit shape so `items: []` (no nav item currently has subitems) doesn't
+// collapse to `never[]` and break `subItem.title`/`subItem.url` access in Sidebar.
+type NavSubItem = { title: string; url: string };
+type NavItem = {
+  title: string;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  url: string;
+  items: NavSubItem[];
+  superAdminOnly?: boolean;
+};
+type NavSection = { label: string; items: NavItem[] };
+
+export const NAV_DATA: NavSection[] = [
   {
     label: "MAIN MENU",
     items: [
@@ -72,37 +84,18 @@ export const NAV_DATA = [
         items: [],
       },
       {
-        title: "Carrusel",
-        icon: Images,
-        url: "",
-        items: [],
-      },
-      {
         title: "Administración de contenido",
         icon: LayoutDashboard,
         url: "/4dnn1n/content",
         items: [],
+        superAdminOnly: true,
       },
       {
         title: "Configuración",
         icon: Settings,
         url: "/4dnn1n/settings",
         items: [],
-      },
-    ],
-  },
-  {
-    label: "OTHERS",
-    items: [
-      {
-        title: "Authentication",
-        icon: Icons.Authentication,
-        items: [
-          {
-            title: "Sign In",
-            url: "/auth/sign-in", // esta sí queda fuera de 4dnn1n
-          },
-        ],
+        superAdminOnly: true,
       },
     ],
   },
