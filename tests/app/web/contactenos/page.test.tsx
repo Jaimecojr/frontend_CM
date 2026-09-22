@@ -199,6 +199,7 @@ describe("ContactenosPage (formulario público de contacto)", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   /* ── Paso 1 ── */
@@ -558,6 +559,21 @@ describe("ContactenosPage (formulario público de contacto)", () => {
       // Assert
       await screen.findByText("¡Mensaje Enviado!");
       expect(getPostCall()[1]?.headers).toMatchObject({ "X-XSRF-TOKEN": "" });
+    });
+
+    it("hace scroll al inicio de la página al llegar a la pantalla de éxito (el navegador no lo hace solo tras el cambio de vista)", async () => {
+      // Arrange
+      const scrollToMock = vi.fn();
+      vi.stubGlobal("scrollTo", scrollToMock);
+      await renderPage();
+      await fillValidForm();
+
+      // Act
+      fireEvent.click(getSubmitButton());
+
+      // Assert
+      await screen.findByText("¡Mensaje Enviado!");
+      expect(scrollToMock).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
     });
 
     it("muestra la pantalla de éxito con el mensaje devuelto por el servidor", async () => {

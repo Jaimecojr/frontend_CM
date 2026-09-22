@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import type { ApiDoctor } from "@/app/4dnn1n/doctors/fetch";
 import type { Department, City } from "@/types/geo";
 import type { ApiSpecialty } from "@/app/4dnn1n/doctors/specialties/fetch";
+import { formatCityName } from "@/lib/format-city-name";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
@@ -59,6 +60,7 @@ async function getDoctors(params: {
 export default function GuiaMedicaPage() {
   const [departments, setDepartments] = useState<Department[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
   const [specialties, setSpecialties] = useState<ApiSpecialty[]>([]);
 
   const [search, setSearch] = useState("");
@@ -85,7 +87,11 @@ export default function GuiaMedicaPage() {
       setCityId("");
       return;
     }
-    getCitiesByDepartment(Number(deptId)).then(setCities).catch(console.error);
+    setCitiesLoading(true);
+    getCitiesByDepartment(Number(deptId))
+      .then(setCities)
+      .catch(console.error)
+      .finally(() => setCitiesLoading(false));
   }, [deptId]);
 
   const fetchDoctors = useCallback(async () => {
@@ -206,12 +212,12 @@ export default function GuiaMedicaPage() {
             <select
               value={cityId}
               onChange={(e) => { setCityId(e.target.value ? Number(e.target.value) : ""); handleFilterChange(); }}
-              disabled={!deptId || cities.length === 0}
+              disabled={!deptId || citiesLoading || cities.length === 0}
               className="h-10 px-3 rounded-lg border border-slate-200 text-sm text-[#1A1A2E] outline-none focus:border-[#1DBFCE] bg-white w-[160px] shrink-0 disabled:opacity-40 transition-all"
             >
-              <option value="">Ciudad (Todas)</option>
+              <option value="">{citiesLoading ? "Cargando…" : "Ciudad (Todas)"}</option>
               {cities.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                <option key={c.id} value={c.id}>{formatCityName(c.name)}</option>
               ))}
             </select>
 
@@ -369,7 +375,7 @@ function DoctorCard({ doctor }: { doctor: ApiDoctor }) {
               <span className="material-symbols-outlined text-[#1DBFCE] shrink-0" style={{ fontSize: "16px" }}>
                 apartment
               </span>
-              <span>{doctor.city.name}</span>
+              <span>{formatCityName(doctor.city.name)}</span>
             </li>
           )}
         </ul>

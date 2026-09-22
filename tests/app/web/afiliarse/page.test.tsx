@@ -224,6 +224,7 @@ describe("AfiliacioPage (formulario público de afiliación)", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   /* ── Paso 1 ── */
@@ -656,6 +657,21 @@ describe("AfiliacioPage (formulario público de afiliación)", () => {
       expect(await screen.findByText("¡Solicitud Enviada!")).toBeInTheDocument();
       expect(screen.getByText("Recibimos tu solicitud #123.")).toBeInTheDocument();
       expect(screen.queryByText("Datos del Titular")).not.toBeInTheDocument();
+    });
+
+    it("hace scroll al inicio de la página al llegar a la pantalla de éxito (el navegador no lo hace solo tras el cambio de vista)", async () => {
+      // Arrange
+      const scrollToMock = vi.fn();
+      vi.stubGlobal("scrollTo", scrollToMock);
+      await renderPage();
+      await fillValidForm();
+
+      // Act
+      fireEvent.click(getSubmitButton());
+
+      // Assert
+      await screen.findByText("¡Solicitud Enviada!");
+      expect(scrollToMock).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
     });
 
     it("usa el mensaje por defecto cuando la respuesta no trae message", async () => {

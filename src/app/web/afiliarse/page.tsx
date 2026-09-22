@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import type { Department, City } from "@/types/geo";
 import { csrf, getXsrfToken } from "@/lib/api";
+import { formatCityName } from "@/lib/format-city-name";
 import LegalModal from "@/components/web/LegalModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
@@ -41,6 +42,7 @@ export default function AfiliacioPage() {
   /* ── Catálogos ── */
   const [departments, setDepartments] = useState<Department[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
 
   /* ── Campos del titular ── */
   const [name, setName] = useState("");
@@ -71,6 +73,14 @@ export default function AfiliacioPage() {
 
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
+  /* ── La vista de éxito es mucho más corta que el formulario; sin este scroll, el navegador
+     mantiene la posición previa (cerca del botón de envío) y el usuario termina viendo el footer. ── */
+  useEffect(() => {
+    if (submitState === "success") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [submitState]);
+
   /* ── Carga de catálogos ── */
   useEffect(() => {
     getDepartments().then(setDepartments).catch(console.error);
@@ -82,7 +92,11 @@ export default function AfiliacioPage() {
       setCityId("");
       return;
     }
-    getCitiesByDepartment(Number(deptId)).then(setCities).catch(console.error);
+    setCitiesLoading(true);
+    getCitiesByDepartment(Number(deptId))
+      .then(setCities)
+      .catch(console.error)
+      .finally(() => setCitiesLoading(false));
   }, [deptId]);
 
   /* ── Manejo de beneficiarios ── */
@@ -334,14 +348,18 @@ export default function AfiliacioPage() {
                     id="cityId"
                     value={cityId}
                     onChange={(e) => setCityId(e.target.value ? Number(e.target.value) : "")}
-                    disabled={!deptId || cities.length === 0}
+                    disabled={!deptId || citiesLoading || cities.length === 0}
                     className={`${selectClass(errors.cityId)} disabled:opacity-40`}
                   >
                     <option value="">
-                      {!deptId ? "Primero selecciona un departamento" : "Selecciona una ciudad"}
+                      {!deptId
+                        ? "Primero selecciona un departamento"
+                        : citiesLoading
+                          ? "Cargando ciudades…"
+                          : "Selecciona una ciudad"}
                     </option>
                     {cities.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
+                      <option key={c.id} value={c.id}>{formatCityName(c.name)}</option>
                     ))}
                   </select>
                 </Field>
