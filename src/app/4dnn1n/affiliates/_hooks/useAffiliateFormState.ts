@@ -59,6 +59,7 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
 
   const [departments, setDepartments] = useState<Department[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
   const [departmentId, setDepartmentId] = useState<number | "">("");
 
   const [franchises, setFranchises] = useState<FranchiseOption[]>([]);
@@ -200,6 +201,7 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
         return;
       }
 
+      setCitiesLoading(true);
       try {
         const list = await getCitiesByDepartment(Number(departmentId));
         if (cancelled) return;
@@ -216,6 +218,8 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
         });
       } catch (e) {
         console.error(e);
+      } finally {
+        if (!cancelled) setCitiesLoading(false);
       }
     })();
 
@@ -259,6 +263,17 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
       setCheckingIdCard(false);
     }
   };
+
+  // Auto-check the id_card as soon as it arrives prefilled (e.g. converting a membership-form
+  // request into an affiliate via /affiliates/new?from=ID). In that flow the admin never
+  // necessarily focuses/blurs the field by hand, so the onBlur-triggered check in AffiliateForm
+  // would otherwise stay silent until they reach the final "Crear" click.
+  useEffect(() => {
+    if (isCreate && initial?.id_card) {
+      validateIdCard(String(initial.id_card));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Beneficiaries handler
   const addBeneficiary = () => {
@@ -416,6 +431,7 @@ export function useAffiliateFormState({ mode, initial, onSubmit }: Args) {
     isCreate,
     departments,
     cities,
+    citiesLoading,
     departmentId,
     setDepartmentId,
     franchises,

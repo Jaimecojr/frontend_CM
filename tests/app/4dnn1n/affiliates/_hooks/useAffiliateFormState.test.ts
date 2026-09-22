@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { useAffiliateFormState } from "@/app/4dnn1n/affiliates/_hooks/useAffiliateFormState";
 
@@ -39,6 +39,12 @@ function fillRequiredFields(setForm: (fn: (prev: any) => any) => void) {
 }
 
 describe("useAffiliateFormState", () => {
+  beforeEach(() => {
+    // Call-count assertions below (checkAffiliateIdCard) need a clean slate per test; base
+    // `mockResolvedValue` implementations set in the vi.mock() factory above survive this.
+    vi.clearAllMocks();
+  });
+
   it("carga los catálogos base al montar", async () => {
     const { result } = await renderWithCatalogsLoaded({ mode: "create" });
 
@@ -187,5 +193,38 @@ describe("useAffiliateFormState", () => {
 
     expect(isValid).toBe(false);
     expect(result.current.idCardError).toMatch(/ya existe/);
+  });
+
+  // ──── Auto-check on mount when creating from a prefilled membership-form request ────
+  describe("chequeo automático del id_card precargado (flujo 'convertir solicitud')", () => {
+    it("modo create con initial.id_card ya existente → marca el error sin llamar a validateIdCard manualmente", async () => {
+      (checkAffiliateIdCard as any).mockResolvedValueOnce({ exists: true });
+
+      const { result } = await renderWithCatalogsLoaded({
+        mode: "create",
+        initial: { id_card: "1094947820" },
+      });
+
+      await waitFor(() =>
+        expect(result.current.idCardError).toMatch(/ya existe/),
+      );
+      expect(checkAffiliateIdCard).toHaveBeenCalledWith("1094947820", undefined);
+    });
+
+    it("modo create sin initial (creación manual normal) → no llama a checkAffiliateIdCard al montar", async () => {
+      await renderWithCatalogsLoaded({ mode: "create" });
+
+      expect(checkAffiliateIdCard).not.toHaveBeenCalled();
+    });
+
+    it("modo edit con initial.id_card → no dispara el auto-chequeo (solo aplica a create)", async () => {
+      const { result } = await renderWithCatalogsLoaded({
+        mode: "edit",
+        initial: { id: 1, id_card: "1094947820", validity_end: "2027-01-01" },
+      });
+
+      expect(checkAffiliateIdCard).not.toHaveBeenCalled();
+      expect(result.current.idCardError).toBeNull();
+    });
   });
 });

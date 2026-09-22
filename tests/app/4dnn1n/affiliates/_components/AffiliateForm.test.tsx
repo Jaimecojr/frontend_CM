@@ -55,6 +55,7 @@ function createMockFormState(overrides: Partial<HookReturn> = {}): HookReturn {
     isCreate: true,
     departments: [],
     cities: [],
+    citiesLoading: false,
     departmentId: "",
     setDepartmentId: vi.fn(),
     franchises: [],

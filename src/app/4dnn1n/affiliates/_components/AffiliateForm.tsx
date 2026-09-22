@@ -42,6 +42,7 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
     isEdit,
     departments,
     cities,
+    citiesLoading,
     departmentId,
     setDepartmentId,
     franchises,
@@ -257,6 +258,7 @@ export default function AffiliateForm({ mode, initial, onSubmit }: Props) {
           <SearchableSelect
             className="mt-1"
             disabled={isView || !departmentId}
+            loading={!isView && !!departmentId && citiesLoading}
             options={cities.map((c) => ({ value: c.id, label: c.name }))}
             value={form.city_id}
             onChange={(v) => setForm({ ...form, city_id: v })}
