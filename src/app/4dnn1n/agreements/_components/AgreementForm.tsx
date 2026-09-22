@@ -46,6 +46,7 @@ export default function AgreementForm({ mode, initial, onSubmit }: Props) {
 
   const [departments, setDepartments] = useState<Department[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [citiesLoading, setCitiesLoading] = useState(false);
   const [departmentId, setDepartmentId] = useState<number | "">("");
 
   const [saving, setSaving] = useState(false);
@@ -88,6 +89,7 @@ export default function AgreementForm({ mode, initial, onSubmit }: Props) {
         return;
       }
 
+      setCitiesLoading(true);
       try {
         const list = await getCitiesByDepartment(Number(departmentId));
         if (cancelled) return;
@@ -104,6 +106,8 @@ export default function AgreementForm({ mode, initial, onSubmit }: Props) {
         });
       } catch (e) {
         console.error(e);
+      } finally {
+        if (!cancelled) setCitiesLoading(false);
       }
     })();
 
@@ -217,6 +221,7 @@ export default function AgreementForm({ mode, initial, onSubmit }: Props) {
           <SearchableSelect
             className="mt-1"
             disabled={isView || !departmentId}
+            loading={!isView && !!departmentId && citiesLoading}
             options={cities.map((c) => ({ value: c.id, label: c.name }))}
             value={form.city_id}
             onChange={(v) => setForm((p) => ({ ...p, city_id: v }))}

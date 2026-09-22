@@ -17,6 +17,7 @@ interface SearchableSelectProps {
   placeholder?: string;             // text shown when the dropdown is open and there is no selection
   disabledPlaceholder?: string;     // text to show in disabled mode when there is no match in options
   disabled?: boolean;               // if true, shows a read-only input (view mode)
+  loading?: boolean;                // if true, shows a disabled spinner state (e.g. cities being fetched)
   className?: string;               // extra classes for the container
 }
 
@@ -27,6 +28,7 @@ export function SearchableSelect({
   placeholder = "Seleccionar…",
   disabledPlaceholder,
   disabled = false,
+  loading = false,
   className,
 }: SearchableSelectProps) {
   const [open, setOpen] = useState(false);   // controls whether the dropdown is visible
@@ -109,6 +111,25 @@ export function SearchableSelect({
         )}
         readOnly
       />
+    );
+  }
+
+  // Loading mode (e.g. fetching cities for the chosen department): shows a disabled box with a
+  // spinner instead of the dropdown trigger, so the wait doesn't look like the field is stuck.
+  if (loading) {
+    return (
+      <div
+        className={cn(
+          "flex w-full items-center gap-2 rounded-lg border border-stroke bg-transparent px-3 py-2 text-sm text-dark-5 dark:border-dark-3 dark:text-dark-6",
+          className,
+        )}
+      >
+        <svg className="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Cargando…
+      </div>
     );
   }
 
