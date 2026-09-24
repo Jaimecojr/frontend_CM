@@ -1,0 +1,94 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import AppointmentsReportPage from "@/app/4dnn1n/reports/appointments/page";
+import { useAuth } from "@/context/AuthContext";
+import { getAppointmentsReport } from "@/app/4dnn1n/reports/appointments/fetch";
+
+const mockReplace = vi.fn();
+let mockSearchParams = new URLSearchParams();
+
+vi.mock("@/context/AuthContext", () => ({ useAuth: vi.fn() }));
+vi.mock("@/hooks/usePageTitle", () => ({ usePageTitle: vi.fn() }));
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: mockReplace }),
+  usePathname: () => "/4dnn1n/reports/appointments",
+  useSearchParams: () => mockSearchParams,
+}));
+vi.mock("@/app/4dnn1n/reports/appointments/fetch", () => ({
+  getAppointmentsReport: vi.fn(),
+  getActiveDoctors: vi.fn().mockResolvedValue([]),
+}));
+// The franchise catalog is loaded via the shared useFranchiseOptions hook,
+// which reads from _lib/catalogs directly — not re-exported through fetch.ts
+// anymore, so this is mocked at its real source.
+vi.mock("@/app/4dnn1n/reports/_lib/catalogs", () => ({
+  getActiveFranchises: vi.fn().mockResolvedValue([]),
+}));
+
+describe("AppointmentsReportPage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSearchParams = new URLSearchParams();
+    (useAuth as any).mockReturnValue({ user: { id: 1, type: 1 } });
+    (getAppointmentsReport as any).mockResolvedValue({
+      data: [
+        { id: 1, name: "ANA LOPEZ (Titular)", doctor: "CARLOS PEREZ", city: "BOGOTA", date: "2026-09-20" },
+      ],
+      meta: { current_page: 1, last_page: 1, per_page: 25, total: 1 },
+    });
+  });
+
+  it("should render the report rows with the matching date color", async () => {
+    // Act
+    render(<AppointmentsReportPage />);
+
+    // Assert
+    await waitFor(() => expect(screen.getByText(/ANA LOPEZ \(Titular\)/)).toBeInTheDocument());
+  });
+
+  it("should color the date from only the first 10 characters, even when it includes a time", async () => {
+    // Arrange: a full timestamp, not just yyyy-mm-dd — the color logic must
+    // still work by slicing, not by trying to parse the whole string as a date.
+    (getAppointmentsReport as any).mockResolvedValue({
+      data: [
+        { id: 2, name: "LUIS RIOS (Beneficiario)", doctor: "MARIA DIAZ", city: "CALI", date: "2020-01-01T10:30:00" },
+      ],
+      meta: { current_page: 1, last_page: 1, per_page: 25, total: 1 },
+    });
+
+    // Act
+    render(<AppointmentsReportPage />);
+
+    // Assert: a date far in the past renders with the "past" color class.
+    await waitFor(() => expect(screen.getByText("01/01/2020")).toBeInTheDocument());
+    expect(screen.getByText("01/01/2020").className).toMatch(/text-red-600/);
+  });
+
+  it("should not show the Franquicia filter for a franchise user (type 2)", async () => {
+    // Arrange
+    (useAuth as any).mockReturnValue({ user: { id: 2, type: 2 } });
+
+    // Act
+    render(<AppointmentsReportPage />);
+
+    // Assert
+    await waitFor(() => expect(screen.getByText(/ANA LOPEZ \(Titular\)/)).toBeInTheDocument());
+    expect(screen.queryByTitle("Filtrar por Franquicia")).not.toBeInTheDocument();
+  });
+
+  it("should remove from and to in a single replace when the 'Limpiar fechas' button is clicked", async () => {
+    // Arrange — a bookmarked URL with both dates already set
+    mockSearchParams = new URLSearchParams("from=2026-01-01&to=2026-01-31");
+
+    // Act
+    render(<AppointmentsReportPage />);
+    await waitFor(() => expect(screen.getByText(/ANA LOPEZ \(Titular\)/)).toBeInTheDocument());
+    fireEvent.click(screen.getByTitle("Limpiar fechas"));
+
+    // Assert
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    const [url] = mockReplace.mock.calls[0];
+    expect(url).not.toContain("from=");
+    expect(url).not.toContain("to=");
+  });
+});

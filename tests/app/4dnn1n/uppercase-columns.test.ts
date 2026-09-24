@@ -8,6 +8,11 @@ import { buildCounselorColumns } from "@/app/4dnn1n/counselors/_components/colum
 import { buildUserColumns } from "@/app/4dnn1n/franchises/_components/columns";
 import { buildContactColumns } from "@/app/4dnn1n/contacts/_components/columns";
 import { buildMembershipFormColumns } from "@/app/4dnn1n/membership-forms/_components/columns";
+import { buildSalesColumns } from "@/app/4dnn1n/reports/sales/_components/columns";
+import { buildBalanceColumns } from "@/app/4dnn1n/reports/balance/_components/columns";
+import { buildAppointmentsReportColumns } from "@/app/4dnn1n/reports/appointments/_components/columns";
+import { buildNonRenewedColumns } from "@/app/4dnn1n/reports/non-renewed-affiliates/_components/columns";
+import { buildUnsentCarnetsColumns } from "@/app/4dnn1n/reports/unsent-carnets/_components/columns";
 
 /**
  * Business rule: free-text data (names, addresses, cities, subjects...) is shown in capitals in
@@ -90,6 +95,36 @@ const modules: {
     columns: buildMembershipFormColumns({ onDelete: fn }) as ColumnDef<never>[],
     upper: ["city", "full_name", "seller"],
     natural: ["actions", "date", "phone"],
+  },
+  {
+    name: "reporte de ventas",
+    columns: buildSalesColumns() as ColumnDef<never>[],
+    upper: ["counselor", "franchise", "name"],
+    natural: ["fecha_desde", "payment_date", "tipo_venta", "validity", "validity_end", "valor_venta"],
+  },
+  {
+    name: "reporte de cartera",
+    columns: buildBalanceColumns() as ColumnDef<never>[],
+    upper: ["counselor", "name"],
+    natural: ["balance", "validity"],
+  },
+  {
+    name: "reporte de citas",
+    columns: buildAppointmentsReportColumns() as ColumnDef<never>[],
+    upper: ["city", "doctor", "name"],
+    natural: ["date"],
+  },
+  {
+    name: "reporte sin renovación",
+    columns: buildNonRenewedColumns() as ColumnDef<never>[],
+    upper: ["franchise", "name"],
+    natural: ["movil", "phone", "validity_end"],
+  },
+  {
+    name: "reporte de carnets no enviados",
+    columns: buildUnsentCarnetsColumns() as ColumnDef<never>[],
+    upper: ["franchise", "name"],
+    natural: ["date", "movil", "phone"],
   },
 ];
 
