@@ -207,4 +207,43 @@ describe("useReportsTable", () => {
     await waitFor(() => expect(result.current.error).toBe("Fallo de red"));
     expect(result.current.data).toEqual([{ id: 1 }]);
   });
+
+  it("no llama fetchFn cuando enabled es false, y loading queda en false", async () => {
+    // Arrange
+    const fetchFn = vi.fn().mockResolvedValue({
+      data: [{ id: 1 }],
+      meta: { current_page: 1, last_page: 1, per_page: 25, total: 1 },
+    });
+
+    // Act
+    const { result } = renderHook(() =>
+      useReportsTable(fetchFn, { filterKeys: [], enabled: false }),
+    );
+
+    // Assert
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(fetchFn).not.toHaveBeenCalled();
+    expect(result.current.data).toEqual([]);
+  });
+
+  it("dispara el fetch en cuanto enabled pasa de false a true", async () => {
+    // Arrange
+    const fetchFn = vi.fn().mockResolvedValue({
+      data: [{ id: 1 }],
+      meta: { current_page: 1, last_page: 1, per_page: 25, total: 1 },
+    });
+    const { result, rerender } = renderHook(
+      ({ enabled }: { enabled: boolean }) => useReportsTable(fetchFn, { filterKeys: [], enabled }),
+      { initialProps: { enabled: false } },
+    );
+    await waitFor(() => expect(result.current.loading).toBe(false));
+    expect(fetchFn).not.toHaveBeenCalled();
+
+    // Act
+    rerender({ enabled: true });
+
+    // Assert
+    await waitFor(() => expect(fetchFn).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(result.current.data).toEqual([{ id: 1 }]));
+  });
 });

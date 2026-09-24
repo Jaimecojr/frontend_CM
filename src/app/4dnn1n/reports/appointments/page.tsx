@@ -7,16 +7,11 @@ import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePicker
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAuth } from "@/context/AuthContext";
 import { useReportsTable } from "../_hooks/useReportsTable";
+import { useFranchiseOptions } from "../_hooks/useFranchiseOptions";
 import { ReportPageSizeSelect } from "../_components/ReportPageSizeSelect";
 import { ExportReportButton } from "../_components/ExportReportButton";
 import { FranchiseSelect } from "../_components/FranchiseSelect";
-import {
-  getAppointmentsReport,
-  getActiveDoctors,
-  getActiveFranchises,
-  type DoctorOption,
-  type FranchiseOption,
-} from "./fetch";
+import { getAppointmentsReport, getActiveDoctors, type DoctorOption } from "./fetch";
 import { buildAppointmentsReportColumns } from "./_components/columns";
 
 /**
@@ -40,19 +35,12 @@ export default function AppointmentsReportPage() {
     });
 
   const [doctors, setDoctors] = useState<DoctorOption[]>([]);
-  const [franchises, setFranchises] = useState<FranchiseOption[]>([]);
   useEffect(() => {
     getActiveDoctors()
       .then(setDoctors)
       .catch(() => setDoctors([]));
   }, []);
-  useEffect(() => {
-    if (isSuperAdmin) {
-      getActiveFranchises()
-        .then(setFranchises)
-        .catch(() => setFranchises([]));
-    }
-  }, [isSuperAdmin]);
+  const franchises = useFranchiseOptions(isSuperAdmin);
 
   const columns = useMemo(() => buildAppointmentsReportColumns(), []);
 

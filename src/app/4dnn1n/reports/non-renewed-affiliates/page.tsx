@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { DataTable } from "@/components/data-table/DataTable";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAuth } from "@/context/AuthContext";
 import { useReportsTable } from "../_hooks/useReportsTable";
+import { useFranchiseOptions } from "../_hooks/useFranchiseOptions";
 import { ReportPageSizeSelect } from "../_components/ReportPageSizeSelect";
 import { ExportReportButton } from "../_components/ExportReportButton";
 import { FranchiseSelect } from "../_components/FranchiseSelect";
-import { getNonRenewedAffiliatesReport, getActiveFranchises, type FranchiseOption } from "./fetch";
+import { getNonRenewedAffiliatesReport } from "./fetch";
 import { buildNonRenewedColumns } from "./_components/columns";
 
 /**
@@ -31,14 +32,7 @@ export default function NonRenewedAffiliatesPage() {
       filterKeys: ["from", "franchise_id"],
     });
 
-  const [franchises, setFranchises] = useState<FranchiseOption[]>([]);
-  useEffect(() => {
-    if (isSuperAdmin) {
-      getActiveFranchises()
-        .then(setFranchises)
-        .catch(() => setFranchises([]));
-    }
-  }, [isSuperAdmin]);
+  const franchises = useFranchiseOptions(isSuperAdmin);
 
   const columns = useMemo(() => buildNonRenewedColumns(), []);
 

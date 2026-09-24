@@ -11,8 +11,11 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/4dnn1n/reports/balance",
   useSearchParams: () => new URLSearchParams(),
 }));
-vi.mock("@/app/4dnn1n/reports/balance/fetch", () => ({
-  getBalanceReport: vi.fn(),
+vi.mock("@/app/4dnn1n/reports/balance/fetch", () => ({ getBalanceReport: vi.fn() }));
+// The franchise catalog is loaded via the shared useFranchiseOptions hook,
+// which reads from _lib/catalogs directly — not re-exported through fetch.ts
+// anymore, so this is mocked at its real source.
+vi.mock("@/app/4dnn1n/reports/_lib/catalogs", () => ({
   getActiveFranchises: vi.fn().mockResolvedValue([]),
 }));
 

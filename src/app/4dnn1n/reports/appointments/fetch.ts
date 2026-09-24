@@ -3,9 +3,6 @@ import { toQueryString } from "../_lib/query";
 import type { ApiAppointmentReportRow, AppointmentsReportResponse, DoctorOption } from "./types";
 
 export type { ApiAppointmentReportRow, AppointmentsMeta, AppointmentsReportResponse, DoctorOption } from "./types";
-// Re-exported so the page (and its tests, which mock this module) only need
-// one import source for both the report data and its franchise filter catalog.
-export { getActiveFranchises, type FranchiseOption } from "../_lib/catalogs";
 
 /** Fetches one page of the Citas report for the given filters/page/per_page. */
 export async function getAppointmentsReport(

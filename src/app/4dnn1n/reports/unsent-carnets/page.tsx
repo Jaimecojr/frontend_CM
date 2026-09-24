@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { DataTable } from "@/components/data-table/DataTable";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAuth } from "@/context/AuthContext";
 import { useReportsTable } from "../_hooks/useReportsTable";
+import { useFranchiseOptions } from "../_hooks/useFranchiseOptions";
 import { ReportPageSizeSelect } from "../_components/ReportPageSizeSelect";
 import { ExportReportButton } from "../_components/ExportReportButton";
 import { FranchiseSelect } from "../_components/FranchiseSelect";
-import { getUnsentCarnetsReport, getActiveFranchises, type FranchiseOption } from "./fetch";
+import { getUnsentCarnetsReport } from "./fetch";
 import { buildUnsentCarnetsColumns } from "./_components/columns";
 
 /**
@@ -34,17 +35,14 @@ export default function UnsentCarnetsPage() {
   // No explicit <T> here: see the appointments page for why a lone T would
   // leave E defaulted to Record<string, never>, which breaks assignability
   // for a response with no extra fields beyond data/meta.
+  //
+  // `enabled: isSuperAdmin` keeps this super-admin-only endpoint from ever
+  // being hit by a franchise user, even for the render(s) before the
+  // redirect effect above navigates them away.
   const { data, meta, loading, error, filters, setFilter, setPage, setPerPage, perPage, exportParams } =
-    useReportsTable(getUnsentCarnetsReport, { filterKeys: ["franchise_id"] });
+    useReportsTable(getUnsentCarnetsReport, { filterKeys: ["franchise_id"], enabled: isSuperAdmin });
 
-  const [franchises, setFranchises] = useState<FranchiseOption[]>([]);
-  useEffect(() => {
-    if (isSuperAdmin) {
-      getActiveFranchises()
-        .then(setFranchises)
-        .catch(() => setFranchises([]));
-    }
-  }, [isSuperAdmin]);
+  const franchises = useFranchiseOptions(isSuperAdmin);
 
   const columns = useMemo(() => buildUnsentCarnetsColumns(), []);
 

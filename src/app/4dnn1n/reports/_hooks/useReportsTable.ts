@@ -13,6 +13,14 @@ type FetchFn<T, E extends Record<string, unknown>> = (
 type Options = {
   /** Query-string keys this report reads/writes besides page/per_page (e.g. ["from","to","franchise_id"]). */
   filterKeys: string[];
+  /**
+   * Gates the fetch entirely. Defaults to true. A role-gated page (e.g. a
+   * super-admin-only report) mounts and runs its hooks before its own
+   * redirect-away effect has a chance to navigate a disallowed user off the
+   * page — without this, the disallowed user's browser would still fire the
+   * GET request for data they can't access, if only for one render.
+   */
+  enabled?: boolean;
 };
 
 /**
@@ -37,6 +45,7 @@ export function useReportsTable<T, E extends Record<string, unknown> = Record<st
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const searchParamsStr = searchParams.toString();
+  const enabled = options.enabled ?? true;
 
   const page = Number(searchParams.get("page") || "1");
   const perPage = searchParams.get("per_page") || "25";
@@ -61,6 +70,14 @@ export function useReportsTable<T, E extends Record<string, unknown> = Record<st
   fetchFnRef.current = fetchFn;
 
   useEffect(() => {
+    if (!enabled) {
+      // No fetch while gated off — e.g. a super-admin-only page rendering
+      // for a disallowed user on the render(s) before its own redirect
+      // effect navigates away.
+      setLoading(false);
+      return;
+    }
+
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -92,7 +109,7 @@ export function useReportsTable<T, E extends Record<string, unknown> = Record<st
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, perPage, JSON.stringify(filters)]);
+  }, [page, perPage, JSON.stringify(filters), enabled]);
 
   /** Pushes new query params. Resets to page 1 unless the caller is only changing the page itself. */
   const setParams = useCallback(

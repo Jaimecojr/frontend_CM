@@ -3,9 +3,6 @@ import { toQueryString } from "../_lib/query";
 import type { ApiNonRenewedRow, NonRenewedReportResponse } from "./types";
 
 export type { ApiNonRenewedRow, NonRenewedMeta, NonRenewedReportResponse } from "./types";
-// Re-exported so the page (and its tests, which mock this module) only need
-// one import source for both the report data and its franchise filter catalog.
-export { getActiveFranchises, type FranchiseOption } from "../_lib/catalogs";
 
 /**
  * Fetches one page of the Sin Renovación report. Only `from` exists as a

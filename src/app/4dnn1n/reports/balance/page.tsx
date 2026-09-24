@@ -1,22 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { DataTable } from "@/components/data-table/DataTable";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAuth } from "@/context/AuthContext";
 import { useReportsTable } from "../_hooks/useReportsTable";
+import { useFranchiseOptions } from "../_hooks/useFranchiseOptions";
 import { ReportPageSizeSelect } from "../_components/ReportPageSizeSelect";
 import { ExportReportButton } from "../_components/ExportReportButton";
 import { CounselorSearchSelect } from "../_components/CounselorSearchSelect";
 import { FranchiseSelect } from "../_components/FranchiseSelect";
 import { formatMoney } from "../_lib/format";
-import {
-  getBalanceReport,
-  getActiveFranchises,
-  type ApiBalanceRow,
-  type FranchiseOption,
-} from "./fetch";
+import { getBalanceReport, type ApiBalanceRow } from "./fetch";
 import { buildBalanceColumns } from "./_components/columns";
 
 /**
@@ -36,14 +32,7 @@ export default function BalanceReportPage() {
   // Same response the table already fetched — never a second call just for this number.
   const totalBalance = extra?.total_balance ?? 0;
 
-  const [franchises, setFranchises] = useState<FranchiseOption[]>([]);
-  useEffect(() => {
-    if (isSuperAdmin) {
-      getActiveFranchises()
-        .then(setFranchises)
-        .catch(() => setFranchises([]));
-    }
-  }, [isSuperAdmin]);
+  const franchises = useFranchiseOptions(isSuperAdmin);
 
   const columns = useMemo(() => buildBalanceColumns(), []);
 

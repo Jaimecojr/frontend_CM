@@ -1,24 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { DataTable } from "@/components/data-table/DataTable";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
 import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAuth } from "@/context/AuthContext";
 import { useReportsTable } from "../_hooks/useReportsTable";
+import { useFranchiseOptions } from "../_hooks/useFranchiseOptions";
 import { ReportPageSizeSelect } from "../_components/ReportPageSizeSelect";
 import { ExportReportButton } from "../_components/ExportReportButton";
 import { CounselorSearchSelect } from "../_components/CounselorSearchSelect";
 import { FranchiseSelect } from "../_components/FranchiseSelect";
 import { formatMoney } from "../_lib/format";
-import {
-  getSalesReport,
-  getActiveFranchises,
-  type ApiSaleRow,
-  type SalesTotals,
-  type FranchiseOption,
-} from "./fetch";
+import { getSalesReport, type ApiSaleRow, type SalesTotals } from "./fetch";
 import { buildSalesColumns } from "./_components/columns";
 
 const EMPTY_TOTALS: SalesTotals = { new_count: 0, new_value: 0, renewal_count: 0, renewal_value: 0 };
@@ -41,14 +36,7 @@ export default function SalesReportPage() {
   // Same response the table already fetched — never a second call just for these 4 numbers.
   const totals = extra?.totals ?? EMPTY_TOTALS;
 
-  const [franchises, setFranchises] = useState<FranchiseOption[]>([]);
-  useEffect(() => {
-    if (isSuperAdmin) {
-      getActiveFranchises()
-        .then(setFranchises)
-        .catch(() => setFranchises([]));
-    }
-  }, [isSuperAdmin]);
+  const franchises = useFranchiseOptions(isSuperAdmin);
 
   const columns = useMemo(() => buildSalesColumns(), []);
 

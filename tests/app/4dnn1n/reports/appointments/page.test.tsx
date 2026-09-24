@@ -14,6 +14,11 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/app/4dnn1n/reports/appointments/fetch", () => ({
   getAppointmentsReport: vi.fn(),
   getActiveDoctors: vi.fn().mockResolvedValue([]),
+}));
+// The franchise catalog is loaded via the shared useFranchiseOptions hook,
+// which reads from _lib/catalogs directly — not re-exported through fetch.ts
+// anymore, so this is mocked at its real source.
+vi.mock("@/app/4dnn1n/reports/_lib/catalogs", () => ({
   getActiveFranchises: vi.fn().mockResolvedValue([]),
 }));
 

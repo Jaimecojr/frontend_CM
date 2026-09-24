@@ -11,11 +11,11 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/4dnn1n/reports/sales",
   useSearchParams: () => new URLSearchParams(),
 }));
-// getActiveFranchises is added here (not in the brief's mock) because the
-// page now renders <FranchiseSelect>, which is populated from this call for
-// a super admin — leaving it unmocked would reject with "not a function".
-vi.mock("@/app/4dnn1n/reports/sales/fetch", () => ({
-  getSalesReport: vi.fn(),
+vi.mock("@/app/4dnn1n/reports/sales/fetch", () => ({ getSalesReport: vi.fn() }));
+// The franchise catalog is loaded via the shared useFranchiseOptions hook,
+// which reads from _lib/catalogs directly — not re-exported through fetch.ts
+// anymore, so this is mocked at its real source.
+vi.mock("@/app/4dnn1n/reports/_lib/catalogs", () => ({
   getActiveFranchises: vi.fn().mockResolvedValue([]),
 }));
 

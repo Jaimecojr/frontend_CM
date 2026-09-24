@@ -12,8 +12,11 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/4dnn1n/reports/unsent-carnets",
   useSearchParams: () => new URLSearchParams(),
 }));
-vi.mock("@/app/4dnn1n/reports/unsent-carnets/fetch", () => ({
-  getUnsentCarnetsReport: vi.fn(),
+vi.mock("@/app/4dnn1n/reports/unsent-carnets/fetch", () => ({ getUnsentCarnetsReport: vi.fn() }));
+// The franchise catalog is loaded via the shared useFranchiseOptions hook,
+// which reads from _lib/catalogs directly — not re-exported through fetch.ts
+// anymore, so this is mocked at its real source.
+vi.mock("@/app/4dnn1n/reports/_lib/catalogs", () => ({
   getActiveFranchises: vi.fn().mockResolvedValue([]),
 }));
 
@@ -59,5 +62,17 @@ describe("UnsentCarnetsPage", () => {
     // Assert
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/4dnn1n/home"));
     expect(screen.queryByText("PEDRO RUIZ")).not.toBeInTheDocument();
+  });
+
+  it("no llama getUnsentCarnetsReport para un usuario de franquicia (type 2)", async () => {
+    // Arrange
+    (useAuth as any).mockReturnValue({ user: { id: 2, type: 2 } });
+
+    // Act
+    render(<UnsentCarnetsPage />);
+
+    // Assert
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith("/4dnn1n/home"));
+    expect(getUnsentCarnetsReport).not.toHaveBeenCalled();
   });
 });
