@@ -11,6 +11,7 @@ import {
   Phone, // Contactos
   FileText, // Afiliaciones
   Settings, // Configuración
+  BarChart3, // Reportes
 } from "lucide-react";
 
 // Explicit shape so `items: []` (no nav item currently has subitems) doesn't
@@ -81,6 +82,12 @@ export const NAV_DATA: NavSection[] = [
         title: "Franquicias",
         icon: Building2,
         url: "/4dnn1n/franchises",
+        items: [],
+      },
+      {
+        title: "Reportes",
+        icon: BarChart3,
+        url: "/4dnn1n/reports",
         items: [],
       },
       {
