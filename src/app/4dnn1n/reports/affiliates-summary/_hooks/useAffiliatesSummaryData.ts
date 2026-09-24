@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import { useUrlFilters } from "../../_hooks/useUrlFilters";
 import {
   getAffiliatesSummaryReport,
   getDepartments,
@@ -20,19 +21,25 @@ export const EMPTY_INDICATORS: AffiliatesSummaryIndicators = {
   beneficiarios_inactivos: 0,
 };
 
+const FILTER_KEYS = ["from", "to", "department_id", "city_id", "franchise_id"];
+
 /**
  * Owns every piece of state this report needs — date range, the
  * department→city cascade, and the resulting indicator fetch — kept out of
- * the page component so it stays a short, readable layout. Unlike every
- * other report there's no `useReportsTable`: the backend response has no
- * `{data, meta}` list shape, just the six indicators.
+ * the page component so it stays a short, readable layout. Filters live in
+ * the URL (via the shared `useUrlFilters`, the same core `useReportsTable`
+ * uses) so a filtered view is bookmarkable/shareable like every other
+ * report page, even though this one has no list/pagination to justify
+ * pulling in `useReportsTable` itself.
  */
 export function useAffiliatesSummaryData() {
-  const [from, setFrom] = useState("");
-  const [to, setTo] = useState("");
-  const [departmentId, setDepartmentId] = useState<number | "">("");
-  const [cityId, setCityId] = useState<number | "">("");
-  const [franchiseId, setFranchiseId] = useState("");
+  const { filters, setParams } = useUrlFilters(FILTER_KEYS);
+
+  const from = filters.from || "";
+  const to = filters.to || "";
+  const departmentId: number | "" = filters.department_id ? Number(filters.department_id) : "";
+  const cityId: number | "" = filters.city_id ? Number(filters.city_id) : "";
+  const franchiseId = filters.franchise_id || "";
 
   const [departments, setDepartments] = useState<Department[]>([]);
   const [cities, setCities] = useState<City[]>([]);
@@ -57,10 +64,6 @@ export function useAffiliatesSummaryData() {
   }, []);
 
   useEffect(() => {
-    // Always resets, not only when cleared: a city selected under the
-    // previous department wouldn't exist in the new department's list.
-    setCityId("");
-
     if (!departmentId) {
       setCities([]);
       return;
@@ -83,12 +86,25 @@ export function useAffiliatesSummaryData() {
     };
   }, [departmentId]);
 
+  const setFrom = (value: string) => setParams({ from: value || undefined });
+  const setTo = (value: string) => setParams({ to: value || undefined });
+  const setFranchiseId = (value: string) => setParams({ franchise_id: value || undefined });
+  const setCityId = (value: number | "") => setParams({ city_id: value ? String(value) : undefined });
+  /**
+   * Clears `city_id` in the SAME navigation as the department change — a
+   * city that belonged to the previous department wouldn't exist in the new
+   * department's list, so leaving it in the URL would silently send a
+   * stale/invalid `city_id` to the backend.
+   */
+  const setDepartmentId = (value: number | "") =>
+    setParams({ department_id: value ? String(value) : undefined, city_id: undefined });
+
   const exportParams: Record<string, string | undefined> = {
-    from: from || undefined,
-    to: to || undefined,
-    city_id: cityId ? String(cityId) : undefined,
-    department_id: !cityId && departmentId ? String(departmentId) : undefined,
-    franchise_id: franchiseId || undefined,
+    from: filters.from,
+    to: filters.to,
+    city_id: filters.city_id,
+    department_id: !filters.city_id ? filters.department_id : undefined,
+    franchise_id: filters.franchise_id,
   };
   // A stable string key, so the fetch effect below reacts to a filter value
   // actually changing rather than a fresh object identity every render.

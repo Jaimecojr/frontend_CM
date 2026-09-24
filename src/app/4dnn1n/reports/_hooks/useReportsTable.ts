@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import { useUrlFilters } from "./useUrlFilters";
 
 type ReportMeta = { current_page: number; last_page: number; per_page: number; total: number };
 
@@ -41,24 +41,11 @@ export function useReportsTable<T, E extends Record<string, unknown> = Record<st
   fetchFn: FetchFn<T, E>,
   options: Options,
 ) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const searchParamsStr = searchParams.toString();
   const enabled = options.enabled ?? true;
+  const { filters, setParams, searchParams } = useUrlFilters(options.filterKeys);
 
   const page = Number(searchParams.get("page") || "1");
   const perPage = searchParams.get("per_page") || "25";
-
-  const filters = useMemo(() => {
-    const f: Record<string, string> = {};
-    for (const key of options.filterKeys) {
-      const v = searchParams.get(key);
-      if (v) f[key] = v;
-    }
-    return f;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParamsStr]);
 
   const [data, setData] = useState<T[]>([]);
   const [meta, setMeta] = useState<ReportMeta>({ current_page: 1, last_page: 1, per_page: 25, total: 0 });
@@ -111,27 +98,16 @@ export function useReportsTable<T, E extends Record<string, unknown> = Record<st
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, perPage, JSON.stringify(filters), enabled]);
 
-  /** Pushes new query params. Resets to page 1 unless the caller is only changing the page itself. */
-  const setParams = useCallback(
-    (updates: Record<string, string | undefined>, resetPage = true) => {
-      const next = new URLSearchParams(searchParamsStr);
-      for (const [k, v] of Object.entries(updates)) {
-        if (v === undefined || v === "") next.delete(k);
-        else next.set(k, v);
-      }
-      if (resetPage) next.set("page", "1");
-      const qs = next.toString();
-      router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
-    },
-    [pathname, router, searchParamsStr],
-  );
-
+  // Filters/per_page reset back to page 1; only changing the page itself doesn't.
   const setFilter = useCallback(
-    (key: string, value: string | undefined) => setParams({ [key]: value }),
+    (key: string, value: string | undefined) => setParams({ [key]: value }, { resetPage: true }),
     [setParams],
   );
-  const setPage = useCallback((p: number) => setParams({ page: String(p) }, false), [setParams]);
-  const setPerPage = useCallback((size: string) => setParams({ per_page: size }), [setParams]);
+  const setPage = useCallback((p: number) => setParams({ page: String(p) }), [setParams]);
+  const setPerPage = useCallback(
+    (size: string) => setParams({ per_page: size }, { resetPage: true }),
+    [setParams],
+  );
 
   return {
     data,

@@ -1,8 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import AffiliatesSummaryPage from "@/app/4dnn1n/reports/affiliates-summary/page";
 import { useAuth } from "@/context/AuthContext";
-import { getAffiliatesSummaryReport } from "@/app/4dnn1n/reports/affiliates-summary/fetch";
+import {
+  getAffiliatesSummaryReport,
+  getDepartments,
+  getCitiesByDepartment,
+} from "@/app/4dnn1n/reports/affiliates-summary/fetch";
 
 vi.mock("@/context/AuthContext", () => ({ useAuth: vi.fn() }));
 vi.mock("@/hooks/usePageTitle", () => ({ usePageTitle: vi.fn() }));
@@ -21,9 +25,21 @@ vi.mock("@/app/4dnn1n/reports/_lib/catalogs", () => ({
   getActiveFranchises: vi.fn().mockResolvedValue([]),
 }));
 
+const mockReplace = vi.fn();
+let mockSearchParams = new URLSearchParams();
+
+// Filters live in the URL via the shared useUrlFilters hook (used by
+// useAffiliatesSummaryData), same as every other report page's tests.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ replace: mockReplace }),
+  usePathname: () => "/4dnn1n/reports/affiliates-summary",
+  useSearchParams: () => mockSearchParams,
+}));
+
 describe("AffiliatesSummaryPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSearchParams = new URLSearchParams();
     (useAuth as any).mockReturnValue({ user: { id: 1, type: 1 } });
     (getAffiliatesSummaryReport as any).mockResolvedValue({
       titulares: 100,
@@ -33,6 +49,8 @@ describe("AffiliatesSummaryPage", () => {
       beneficiarios_activos: 30,
       beneficiarios_inactivos: 10,
     });
+    (getDepartments as any).mockResolvedValue([]);
+    (getCitiesByDepartment as any).mockResolvedValue([]);
   });
 
   it("renderiza los 6 indicadores", async () => {
@@ -72,5 +90,42 @@ describe("AffiliatesSummaryPage", () => {
 
     // Assert
     await waitFor(() => expect(screen.getByText("Fallo de red")).toBeInTheDocument());
+  });
+
+  it("lee los filtros iniciales desde la URL", async () => {
+    // Arrange
+    mockSearchParams = new URLSearchParams("city_id=5");
+
+    // Act
+    render(<AffiliatesSummaryPage />);
+
+    // Assert
+    await waitFor(() =>
+      expect(getAffiliatesSummaryReport).toHaveBeenCalledWith(
+        expect.objectContaining({ city_id: "5" }),
+      ),
+    );
+  });
+
+  it("cambiar el departamento quita city_id de la URL en el mismo replace", async () => {
+    // Arrange — a bookmarked URL with both a department and a city selected
+    mockSearchParams = new URLSearchParams("department_id=1&city_id=9");
+    (getDepartments as any).mockResolvedValue([
+      { id: 1, name: "ANTIOQUIA" },
+      { id: 2, name: "CUNDINAMARCA" },
+    ]);
+    (getCitiesByDepartment as any).mockResolvedValue([{ id: 9, name: "MEDELLIN" }]);
+    render(<AffiliatesSummaryPage />);
+    await waitFor(() => expect(screen.getByTitle("Filtrar por Departamento")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("ANTIOQUIA")).toBeInTheDocument());
+
+    // Act — switch to a different department
+    fireEvent.change(screen.getByTitle("Filtrar por Departamento"), { target: { value: "2" } });
+
+    // Assert — a single replace carries the new department AND drops city_id
+    await waitFor(() => expect(mockReplace).toHaveBeenCalled());
+    const [url] = mockReplace.mock.calls[mockReplace.mock.calls.length - 1];
+    expect(url).toContain("department_id=2");
+    expect(url).not.toContain("city_id=");
   });
 });
