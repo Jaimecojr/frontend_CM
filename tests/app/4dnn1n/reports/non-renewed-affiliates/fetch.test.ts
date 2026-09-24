@@ -7,7 +7,7 @@ vi.mock("@/lib/api", () => ({ apiFetch: vi.fn() }));
 describe("non-renewed-affiliates/fetch", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("construye el query string solo con from (nunca to)", async () => {
+  it("should build the query string with only from (never to)", async () => {
     // Arrange
     (apiFetch as any).mockResolvedValue({
       data: [{ id: 1, name: "MARIA TORRES" }],

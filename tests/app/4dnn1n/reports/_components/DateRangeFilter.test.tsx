@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { DateRangeFilter } from "@/app/4dnn1n/reports/_components/DateRangeFilter";
 
 describe("DateRangeFilter", () => {
-  it("renderiza los campos 'Desde' y 'Hasta' por defecto", () => {
+  it("should render the 'Desde' and 'Hasta' fields by default", () => {
     // Act
     render(<DateRangeFilter from="" to="" onChange={vi.fn()} />);
 
@@ -12,7 +12,7 @@ describe("DateRangeFilter", () => {
     expect(screen.getByPlaceholderText("Hasta")).toBeInTheDocument();
   });
 
-  it("con hideTo solo muestra el campo 'Vencidos desde', sin 'Hasta'", () => {
+  it("should only show the 'Vencidos desde' field, without 'Hasta', when hideTo is set", () => {
     // Act
     render(<DateRangeFilter from="" to="" onChange={vi.fn()} hideTo />);
 
@@ -21,7 +21,7 @@ describe("DateRangeFilter", () => {
     expect(screen.queryByPlaceholderText("Hasta")).not.toBeInTheDocument();
   });
 
-  it("no muestra el botón 'Limpiar fechas' cuando no hay ningún valor", () => {
+  it("should not show the 'Limpiar fechas' button when there is no value", () => {
     // Act
     render(<DateRangeFilter from="" to="" onChange={vi.fn()} />);
 
@@ -29,7 +29,7 @@ describe("DateRangeFilter", () => {
     expect(screen.queryByTitle("Limpiar fechas")).not.toBeInTheDocument();
   });
 
-  it("muestra el botón 'Limpiar fechas' cuando solo 'from' tiene valor, y limpia ambas claves en un solo onChange", () => {
+  it("should show the 'Limpiar fechas' button and clear both keys in a single onChange when only 'from' has a value", () => {
     // Arrange
     const onChange = vi.fn();
 
@@ -41,7 +41,7 @@ describe("DateRangeFilter", () => {
     expect(onChange).toHaveBeenCalledWith({ from: undefined, to: undefined });
   });
 
-  it("con hideTo, el botón 'Limpiar fechas' solo limpia 'from'", () => {
+  it("should only clear 'from' via the 'Limpiar fechas' button when hideTo is set", () => {
     // Arrange
     const onChange = vi.fn();
 

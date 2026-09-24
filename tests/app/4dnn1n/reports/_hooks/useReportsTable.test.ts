@@ -18,7 +18,7 @@ describe("useReportsTable", () => {
     mockSearchParams = new URLSearchParams();
   });
 
-  it("llama fetchFn con page=1 y per_page=25 por defecto", async () => {
+  it("should call fetchFn with page=1 and per_page=25 by default", async () => {
     // Arrange
     const fetchFn = vi.fn().mockResolvedValue({
       data: [{ id: 1 }],
@@ -33,7 +33,7 @@ describe("useReportsTable", () => {
     expect(fetchFn).toHaveBeenCalledWith({ page: 1, per_page: "25" });
   });
 
-  it("lee filtros iniciales desde la URL", async () => {
+  it("should read initial filters from the URL", async () => {
     // Arrange
     mockSearchParams = new URLSearchParams("from=2026-01-01&franchise_id=3");
     const fetchFn = vi.fn().mockResolvedValue({
@@ -56,7 +56,7 @@ describe("useReportsTable", () => {
     });
   });
 
-  it("setFilter actualiza la URL y resetea a page=1", async () => {
+  it("should update the URL and reset to page=1 when setFilter is called", async () => {
     // Arrange
     mockSearchParams = new URLSearchParams("page=3");
     const fetchFn = vi.fn().mockResolvedValue({
@@ -78,7 +78,7 @@ describe("useReportsTable", () => {
     );
   });
 
-  it("setFilter con valor vacío elimina la clave de la URL en vez de dejarla vacía", async () => {
+  it("should remove the key from the URL instead of leaving it empty when setFilter gets an empty value", async () => {
     // Arrange
     mockSearchParams = new URLSearchParams("from=2026-01-01&to=2026-01-31");
     const fetchFn = vi.fn().mockResolvedValue({
@@ -99,7 +99,7 @@ describe("useReportsTable", () => {
     expect(url).toContain("to=2026-01-31");
   });
 
-  it("setPage NO resetea la página (a diferencia de setFilter)", async () => {
+  it("should not reset the page when setPage is called (unlike setFilter)", async () => {
     // Arrange
     const fetchFn = vi.fn().mockResolvedValue({
       data: [],
@@ -120,7 +120,7 @@ describe("useReportsTable", () => {
     );
   });
 
-  it("extra captura los campos de la respuesta más allá de data/meta, sin una segunda llamada", async () => {
+  it("should capture response fields beyond data/meta into extra without a second call", async () => {
     // Arrange
     const fetchFn = vi.fn().mockResolvedValue({
       data: [],
@@ -141,7 +141,7 @@ describe("useReportsTable", () => {
     expect(fetchFn).toHaveBeenCalledTimes(1);
   });
 
-  it("exportParams refleja los filtros actuales, sin page ni per_page", async () => {
+  it("should reflect the current filters in exportParams, without page or per_page", async () => {
     // Arrange
     mockSearchParams = new URLSearchParams("from=2026-01-01&page=2&per_page=50");
     const fetchFn = vi.fn().mockResolvedValue({
@@ -159,7 +159,7 @@ describe("useReportsTable", () => {
     expect(result.current.exportParams).toEqual({ from: "2026-01-01" });
   });
 
-  it("exportParams se actualiza cuando la URL cambia, no queda fijo en el primer render", async () => {
+  it("should update exportParams when the URL changes, instead of staying fixed at the first render", async () => {
     // Arrange
     mockSearchParams = new URLSearchParams("from=2026-01-01");
     const fetchFn = vi.fn().mockResolvedValue({
@@ -183,7 +183,7 @@ describe("useReportsTable", () => {
     );
   });
 
-  it("setFilters elimina dos claves en una sola llamada a replace", async () => {
+  it("should remove two keys in a single call to replace when setFilters is called", async () => {
     // Arrange
     mockSearchParams = new URLSearchParams("from=2026-01-01&to=2026-01-31");
     const fetchFn = vi.fn().mockResolvedValue({
@@ -205,7 +205,7 @@ describe("useReportsTable", () => {
     expect(url).not.toContain("to=");
   });
 
-  it("expone error cuando fetchFn rechaza, y lo limpia en el siguiente fetch exitoso", async () => {
+  it("should expose an error when fetchFn rejects, and clear it on the next successful fetch", async () => {
     // Arrange
     const fetchFn = vi
       .fn()
@@ -233,7 +233,7 @@ describe("useReportsTable", () => {
     expect(result.current.data).toEqual([{ id: 1 }]);
   });
 
-  it("mantiene los datos del fetch anterior cuando un fetch posterior falla", async () => {
+  it("should keep the previous fetch's data when a later fetch fails", async () => {
     // Arrange
     const fetchFn = vi
       .fn()
@@ -254,7 +254,7 @@ describe("useReportsTable", () => {
     expect(result.current.data).toEqual([{ id: 1 }]);
   });
 
-  it("no llama fetchFn cuando enabled es false, y loading queda en false", async () => {
+  it("should not call fetchFn and should keep loading false when enabled is false", async () => {
     // Arrange
     const fetchFn = vi.fn().mockResolvedValue({
       data: [{ id: 1 }],
@@ -272,7 +272,7 @@ describe("useReportsTable", () => {
     expect(result.current.data).toEqual([]);
   });
 
-  it("isInitialLoad pasa a false tras el primer fetch y no vuelve a true en cambios de filtro posteriores", async () => {
+  it("should turn isInitialLoad false after the first fetch and keep it false on later filter changes", async () => {
     // Arrange
     const fetchFn = vi
       .fn()
@@ -294,7 +294,7 @@ describe("useReportsTable", () => {
     expect(result.current.isInitialLoad).toBe(false);
   });
 
-  it("dispara el fetch en cuanto enabled pasa de false a true", async () => {
+  it("should fire the fetch as soon as enabled changes from false to true", async () => {
     // Arrange
     const fetchFn = vi.fn().mockResolvedValue({
       data: [{ id: 1 }],

@@ -19,7 +19,7 @@ describe("downloadFile", () => {
     URL.revokeObjectURL = originalRevokeObjectURL;
   });
 
-  it("descarga el archivo usando el filename del header Content-Disposition", async () => {
+  it("should download the file using the filename from the Content-Disposition header", async () => {
     // Arrange
     const headers = new Headers({
       "Content-Disposition": 'attachment; filename="Reporte_Ventas_23-09-2026.xlsx"',
@@ -42,7 +42,7 @@ describe("downloadFile", () => {
     expect(clickSpy).toHaveBeenCalled();
   });
 
-  it("usa fallbackFilename cuando no hay header Content-Disposition", async () => {
+  it("should use fallbackFilename when there is no Content-Disposition header", async () => {
     // Arrange
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -60,7 +60,7 @@ describe("downloadFile", () => {
     expect(anchor.download).toBe("fallback.xlsx");
   });
 
-  it("lanza ApiError con el mensaje del backend cuando la respuesta no es ok", async () => {
+  it("should throw ApiError with the backend message when the response is not ok", async () => {
     // Arrange
     global.fetch = vi.fn().mockResolvedValue({
       ok: false,
@@ -76,7 +76,7 @@ describe("downloadFile", () => {
     await expect(downloadFile("/api/reports/unsent-carnets/export", "f.xlsx")).rejects.toBeInstanceOf(ApiError);
   });
 
-  it("envía credentials: include y Accept: application/json, sin token CSRF (es un GET)", async () => {
+  it("should send credentials: include and Accept: application/json, without a CSRF token (it is a GET)", async () => {
     // Arrange — a GET is never subject to Laravel's CSRF middleware, so this
     // request must carry neither an X-XSRF-TOKEN header nor a CSRF round-trip;
     // Accept: application/json is what makes an expired-session response come
@@ -104,7 +104,7 @@ describe("downloadFile", () => {
     );
   });
 
-  it("difiere URL.revokeObjectURL con setTimeout en vez de revocarlo de inmediato", async () => {
+  it("should defer URL.revokeObjectURL with setTimeout instead of revoking it immediately", async () => {
     // Arrange — Safari can abort an in-flight save if the blob URL is
     // revoked synchronously right after click(), so the revoke must be
     // scheduled for the next macrotask instead of running inline.

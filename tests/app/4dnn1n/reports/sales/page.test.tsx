@@ -47,7 +47,7 @@ describe("SalesReportPage", () => {
     });
   });
 
-  it("renderiza las filas del reporte y los totales", async () => {
+  it("should render the report rows and the totals", async () => {
     // Act
     render(<SalesReportPage />);
 
@@ -59,7 +59,7 @@ describe("SalesReportPage", () => {
     expect(screen.getByText("Nuevo")).toBeInTheDocument();
   });
 
-  it("no muestra el filtro de Franquicia para un usuario de franquicia (type 2)", async () => {
+  it("should not show the Franquicia filter for a franchise user (type 2)", async () => {
     // Arrange
     (useAuth as any).mockReturnValue({ user: { id: 2, type: 2 } });
 
@@ -71,7 +71,7 @@ describe("SalesReportPage", () => {
     expect(screen.queryByTitle("Filtrar por Franquicia")).not.toBeInTheDocument();
   });
 
-  it("el botón 'Limpiar fechas' quita from y to en un solo replace", async () => {
+  it("should remove from and to in a single replace when the 'Limpiar fechas' button is clicked", async () => {
     // Arrange — a bookmarked URL with both dates already set
     mockSearchParams = new URLSearchParams("from=2026-01-01&to=2026-01-31");
 

@@ -37,7 +37,7 @@ describe("NonRenewedAffiliatesPage", () => {
     });
   });
 
-  it("renderiza las filas del reporte", async () => {
+  it("should render the report rows", async () => {
     // Act
     render(<NonRenewedAffiliatesPage />);
 
@@ -45,7 +45,7 @@ describe("NonRenewedAffiliatesPage", () => {
     await waitFor(() => expect(screen.getByText("MARIA TORRES")).toBeInTheDocument());
   });
 
-  it("solo muestra el filtro 'Desde', sin filtro 'Hasta'", async () => {
+  it("should only show the 'Desde' filter, without a 'Hasta' filter", async () => {
     // Act
     render(<NonRenewedAffiliatesPage />);
 
@@ -55,7 +55,7 @@ describe("NonRenewedAffiliatesPage", () => {
     expect(screen.queryByPlaceholderText("Hasta")).not.toBeInTheDocument();
   });
 
-  it("no muestra el filtro de Franquicia para un usuario de franquicia (type 2)", async () => {
+  it("should not show the Franquicia filter for a franchise user (type 2)", async () => {
     // Arrange
     (useAuth as any).mockReturnValue({ user: { id: 2, type: 2 } });
 
@@ -67,7 +67,7 @@ describe("NonRenewedAffiliatesPage", () => {
     expect(screen.queryByTitle("Filtrar por Franquicia")).not.toBeInTheDocument();
   });
 
-  it("el botón 'Limpiar fechas' quita from en un solo replace (solo existe el filtro 'Desde')", async () => {
+  it("should remove from in a single replace when the 'Limpiar fechas' button is clicked (only the 'Desde' filter exists)", async () => {
     // Arrange — a bookmarked URL with the only date filter this report has
     mockSearchParams = new URLSearchParams("from=2026-01-01");
 

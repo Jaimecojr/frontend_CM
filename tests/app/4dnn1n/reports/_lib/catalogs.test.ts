@@ -19,7 +19,7 @@ describe("getActiveFranchises", () => {
     vi.clearAllMocks();
   });
 
-  it("pide /api/users/active y retorna la lista de franquicias", async () => {
+  it("should request /api/users/active and return the list of franchises", async () => {
     // Arrange
     (apiFetch as any).mockResolvedValue({
       message: "ok",
@@ -34,7 +34,7 @@ describe("getActiveFranchises", () => {
     expect(result).toEqual([{ id: 1, name: "FRANQUICIA CENTRO" }]);
   });
 
-  it("retorna un arreglo vacío cuando la respuesta no trae data", async () => {
+  it("should return an empty array when the response has no data", async () => {
     // Arrange
     (apiFetch as any).mockResolvedValue({ message: "ok" });
 
@@ -45,7 +45,7 @@ describe("getActiveFranchises", () => {
     expect(result).toEqual([]);
   });
 
-  it("usa la clave de caché compartida 'franchises:active' con TTL_CATALOG, la misma que affiliates/counselors", async () => {
+  it("should use the shared cache key 'franchises:active' with TTL_CATALOG, the same as affiliates/counselors", async () => {
     // Arrange
     (apiFetch as any).mockResolvedValue({ data: [] });
 

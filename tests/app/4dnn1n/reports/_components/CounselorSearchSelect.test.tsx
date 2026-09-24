@@ -16,7 +16,7 @@ describe("CounselorSearchSelect", () => {
     vi.clearAllMocks();
   });
 
-  it("no llama a la API con menos de 2 caracteres", async () => {
+  it("should not call the API when the query has fewer than 2 characters", async () => {
     // Arrange
     vi.useFakeTimers();
     try {
@@ -35,7 +35,7 @@ describe("CounselorSearchSelect", () => {
     }
   });
 
-  it("busca (debounced) al escribir 2+ caracteres", async () => {
+  it("should search (debounced) when 2+ characters are typed", async () => {
     // Arrange
     (apiFetch as any).mockResolvedValue({
       data: [{ id: 5, name: "ANA", lastname: "GÓMEZ" }],
@@ -59,7 +59,7 @@ describe("CounselorSearchSelect", () => {
     }
   });
 
-  it("selecciona un resultado y llama onChange con el id", async () => {
+  it("should call onChange with the id when a result is selected", async () => {
     // Arrange
     (apiFetch as any).mockResolvedValue({
       data: [{ id: 5, name: "ANA", lastname: "GÓMEZ" }],
@@ -83,7 +83,7 @@ describe("CounselorSearchSelect", () => {
     }
   });
 
-  it("escribir rápido 'an' y luego 'ana' antes de que venza el debounce dispara UNA sola llamada con 'ana'", async () => {
+  it("should fire a single call with 'ana' when typing 'an' then 'ana' before the debounce expires", async () => {
     // Arrange
     (apiFetch as any).mockResolvedValue({ data: [] });
     vi.useFakeTimers();
@@ -111,7 +111,7 @@ describe("CounselorSearchSelect", () => {
     }
   });
 
-  it("si apiFetch rechaza, no muestra resultados y no propaga un rechazo sin manejar", async () => {
+  it("should show no results and not propagate an unhandled rejection when apiFetch rejects", async () => {
     // Arrange
     (apiFetch as any).mockRejectedValue(new Error("network error"));
     const unhandled = vi.fn();
@@ -136,7 +136,7 @@ describe("CounselorSearchSelect", () => {
     }
   });
 
-  it("ignora una respuesta obsoleta de una búsqueda anterior", async () => {
+  it("should ignore a stale response from a previous search", async () => {
     // Arrange
     let resolveFirst: (v: unknown) => void = () => {};
     (apiFetch as any)
@@ -178,7 +178,7 @@ describe("CounselorSearchSelect", () => {
     }
   });
 
-  it("limpia el temporizador de debounce al desmontar", () => {
+  it("should clear the debounce timer when unmounted", () => {
     // Arrange
     const clearSpy = vi.spyOn(global, "clearTimeout");
     (apiFetch as any).mockResolvedValue({ data: [] });
@@ -193,7 +193,7 @@ describe("CounselorSearchSelect", () => {
     clearSpy.mockRestore();
   });
 
-  it("muestra 'Asesor seleccionado' cuando value llega preseteado desde la URL (bookmark/reload)", () => {
+  it("should show 'Asesor seleccionado' when value arrives preset from the URL (bookmark/reload)", () => {
     // Arrange & Act — no select() ever ran, so there's no label for this id
     render(<CounselorSearchSelect value="5" onChange={vi.fn()} />);
 
@@ -202,7 +202,7 @@ describe("CounselorSearchSelect", () => {
     expect(screen.getByTitle("Limpiar asesor")).toBeInTheDocument();
   });
 
-  it("permite limpiar el asesor aunque el input tenga el foco (dropdown abierto)", () => {
+  it("should allow clearing the counselor when the input is focused (dropdown open)", () => {
     // Arrange — focusing the input opens the dropdown; the "×" must stay
     // visible and usable while it's open, not just once it closes.
     const onChange = vi.fn();
@@ -216,7 +216,7 @@ describe("CounselorSearchSelect", () => {
     expect(onChange).toHaveBeenCalledWith("");
   });
 
-  it("limpia el label seleccionado cuando el value se vacía externamente, sin arrastrarlo a un preset posterior", async () => {
+  it("should clear the selected label when value is cleared externally, without carrying it into a later preset", async () => {
     // Arrange
     (apiFetch as any).mockResolvedValue({
       data: [{ id: 5, name: "ANA", lastname: "GÓMEZ" }],

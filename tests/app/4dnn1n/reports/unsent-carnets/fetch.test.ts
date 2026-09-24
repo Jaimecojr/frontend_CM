@@ -7,7 +7,7 @@ vi.mock("@/lib/api", () => ({ apiFetch: vi.fn() }));
 describe("unsent-carnets/fetch", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("construye el query string solo con franchise_id y per_page (sin fechas)", async () => {
+  it("should build the query string with only franchise_id and per_page (no dates)", async () => {
     // Arrange
     (apiFetch as any).mockResolvedValue({
       data: [{ date: "2026-09-01", name: "PEDRO RUIZ" }],

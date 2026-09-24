@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { toQueryString } from "@/app/4dnn1n/reports/_lib/query";
 
 describe("toQueryString", () => {
-  it("retorna cadena vacía cuando no hay params", () => {
+  it("should return an empty string when there are no params", () => {
     // Arrange
     const params = {};
 
@@ -13,7 +13,7 @@ describe("toQueryString", () => {
     expect(result).toBe("");
   });
 
-  it("omite valores undefined y cadenas vacías", () => {
+  it("should omit undefined values and empty strings", () => {
     // Arrange
     const params = { from: "2026-01-01", to: undefined, search: "" };
 
@@ -24,7 +24,7 @@ describe("toQueryString", () => {
     expect(result).toBe("?from=2026-01-01");
   });
 
-  it("serializa números como texto", () => {
+  it("should serialize numbers as text", () => {
     // Arrange
     const params = { page: 2, per_page: 25 };
 
@@ -35,7 +35,7 @@ describe("toQueryString", () => {
     expect(result).toBe("?page=2&per_page=25");
   });
 
-  it("preserva el orden de inserción de las claves", () => {
+  it("should preserve the insertion order of the keys", () => {
     // Arrange
     const params = { c: "3", a: "1", b: "2" };
 
@@ -46,7 +46,7 @@ describe("toQueryString", () => {
     expect(result).toBe("?c=3&a=1&b=2");
   });
 
-  it("retorna cadena vacía cuando todos los valores están vacíos", () => {
+  it("should return an empty string when all values are empty", () => {
     // Arrange
     const params = { from: undefined, to: "" };
 

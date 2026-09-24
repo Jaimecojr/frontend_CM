@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { formatDate, formatMoney } from "@/app/4dnn1n/reports/_lib/format";
 
 describe("formatDate", () => {
-  it("convierte yyyy-mm-dd a dd/mm/yyyy", () => {
+  it("should convert yyyy-mm-dd to dd/mm/yyyy", () => {
     // Arrange
     const ymd = "2026-09-23";
 
@@ -13,7 +13,7 @@ describe("formatDate", () => {
     expect(result).toBe("23/09/2026");
   });
 
-  it("usa solo los primeros 10 caracteres cuando viene un timestamp completo", () => {
+  it("should use only the first 10 characters when a full timestamp is given", () => {
     // Arrange
     const timestamp = "2026-09-23T14:30:00.000Z";
 
@@ -24,7 +24,7 @@ describe("formatDate", () => {
     expect(result).toBe("23/09/2026");
   });
 
-  it("retorna guion para null", () => {
+  it("should return a dash when the value is null", () => {
     // Act
     const result = formatDate(null);
 
@@ -32,7 +32,7 @@ describe("formatDate", () => {
     expect(result).toBe("-");
   });
 
-  it("retorna guion para undefined", () => {
+  it("should return a dash when the value is undefined", () => {
     // Act
     const result = formatDate(undefined);
 
@@ -40,7 +40,7 @@ describe("formatDate", () => {
     expect(result).toBe("-");
   });
 
-  it("retorna guion para cadena vacía", () => {
+  it("should return a dash when the value is an empty string", () => {
     // Act
     const result = formatDate("");
 
@@ -50,7 +50,7 @@ describe("formatDate", () => {
 });
 
 describe("formatMoney", () => {
-  it("formatea un número con separador de miles es-CO", () => {
+  it("should format a number with the es-CO thousands separator", () => {
     // Arrange
     const value = 1500000;
 
@@ -61,7 +61,7 @@ describe("formatMoney", () => {
     expect(result).toBe(`$ ${(1500000).toLocaleString("es-CO")}`);
   });
 
-  it("formatea un valor que llega como string", () => {
+  it("should format a value that arrives as a string", () => {
     // Arrange
     const value = "90000";
 
@@ -72,7 +72,7 @@ describe("formatMoney", () => {
     expect(result).toBe(`$ ${(90000).toLocaleString("es-CO")}`);
   });
 
-  it("trata null como cero", () => {
+  it("should treat null as zero", () => {
     // Act
     const result = formatMoney(null);
 
@@ -80,7 +80,7 @@ describe("formatMoney", () => {
     expect(result).toBe(`$ ${(0).toLocaleString("es-CO")}`);
   });
 
-  it("trata undefined como cero", () => {
+  it("should treat undefined as zero", () => {
     // Act
     const result = formatMoney(undefined);
 

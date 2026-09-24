@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { FranchiseSelect } from "@/app/4dnn1n/reports/_components/FranchiseSelect";
 
 describe("FranchiseSelect", () => {
-  it("renderiza la opción 'Franquicia (Todas)' y una opción por cada franquicia", () => {
+  it("should render the 'Franquicia (Todas)' option and one option per franchise", () => {
     // Arrange
     const options = [
       { id: 1, name: "FRANQUICIA CENTRO" },
@@ -19,7 +19,7 @@ describe("FranchiseSelect", () => {
     expect(screen.getByText("FRANQUICIA NORTE")).toBeInTheDocument();
   });
 
-  it("llama onChange con el id seleccionado", () => {
+  it("should call onChange with the selected id", () => {
     // Arrange
     const onChange = vi.fn();
     const options = [{ id: 3, name: "FRANQUICIA SUR" }];
@@ -32,7 +32,7 @@ describe("FranchiseSelect", () => {
     expect(onChange).toHaveBeenCalledWith("3");
   });
 
-  it("refleja el value seleccionado", () => {
+  it("should reflect the selected value", () => {
     // Arrange
     const options = [{ id: 4, name: "FRANQUICIA SUR" }];
 

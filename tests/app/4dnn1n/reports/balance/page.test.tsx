@@ -30,7 +30,7 @@ describe("BalanceReportPage", () => {
     });
   });
 
-  it("renderiza las filas y el total de saldo", async () => {
+  it("should render the rows and the balance total", async () => {
     // Act
     render(<BalanceReportPage />);
 
@@ -42,7 +42,7 @@ describe("BalanceReportPage", () => {
     expect(matches.length).toBeGreaterThanOrEqual(2);
   });
 
-  it("no muestra el filtro de Franquicia para un usuario de franquicia (type 2)", async () => {
+  it("should not show the Franquicia filter for a franchise user (type 2)", async () => {
     // Arrange
     (useAuth as any).mockReturnValue({ user: { id: 2, type: 2 } });
 

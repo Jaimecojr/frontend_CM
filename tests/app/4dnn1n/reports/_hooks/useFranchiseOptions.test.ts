@@ -8,7 +8,7 @@ vi.mock("@/app/4dnn1n/reports/_lib/catalogs", () => ({ getActiveFranchises: vi.f
 describe("useFranchiseOptions", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("no llama getActiveFranchises cuando isSuperAdmin es false", () => {
+  it("should not call getActiveFranchises when isSuperAdmin is false", () => {
     // Act
     const { result } = renderHook(() => useFranchiseOptions(false));
 
@@ -17,7 +17,7 @@ describe("useFranchiseOptions", () => {
     expect(result.current).toEqual([]);
   });
 
-  it("carga las franquicias activas cuando isSuperAdmin es true", async () => {
+  it("should load the active franchises when isSuperAdmin is true", async () => {
     // Arrange
     const options = [{ id: 1, name: "FRANQUICIA NORTE" }];
     (getActiveFranchises as any).mockResolvedValue(options);
@@ -29,7 +29,7 @@ describe("useFranchiseOptions", () => {
     await waitFor(() => expect(result.current).toEqual(options));
   });
 
-  it("retorna [] si getActiveFranchises rechaza", async () => {
+  it("should return [] when getActiveFranchises rejects", async () => {
     // Arrange
     (getActiveFranchises as any).mockRejectedValue(new Error("network"));
 
@@ -40,7 +40,7 @@ describe("useFranchiseOptions", () => {
     await waitFor(() => expect(result.current).toEqual([]));
   });
 
-  it("recarga cuando isSuperAdmin pasa de false a true", async () => {
+  it("should reload when isSuperAdmin changes from false to true", async () => {
     // Arrange
     const options = [{ id: 2, name: "FRANQUICIA SUR" }];
     (getActiveFranchises as any).mockResolvedValue(options);
@@ -57,7 +57,7 @@ describe("useFranchiseOptions", () => {
     await waitFor(() => expect(result.current).toEqual(options));
   });
 
-  it("ignora la respuesta si el componente ya se desmontó", async () => {
+  it("should ignore the response when the component already unmounted", async () => {
     // Arrange: a promise resolved only after unmount — must not warn/throw
     // from a state update on an unmounted component.
     let resolvePromise: (v: { id: number; name: string }[]) => void;

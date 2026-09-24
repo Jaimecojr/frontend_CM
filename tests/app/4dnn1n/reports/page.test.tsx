@@ -7,7 +7,7 @@ vi.mock("@/context/AuthContext", () => ({ useAuth: vi.fn() }));
 vi.mock("@/hooks/usePageTitle", () => ({ usePageTitle: vi.fn() }));
 
 describe("ReportsPage", () => {
-  it("muestra las 6 tarjetas para super admin, incluida Carnets No Enviados", () => {
+  it("should show the 6 cards for a super admin, including Carnets No Enviados", () => {
     // Arrange
     (useAuth as any).mockReturnValue({ user: { id: 1, type: 1 } });
 
@@ -26,7 +26,7 @@ describe("ReportsPage", () => {
     expect(screen.getByRole("heading", { name: "Carnets No Enviados" })).toBeInTheDocument();
   });
 
-  it("oculta la tarjeta de Carnets No Enviados para franquicia", () => {
+  it("should hide the Carnets No Enviados card for a franchise user", () => {
     // Arrange
     (useAuth as any).mockReturnValue({ user: { id: 2, type: 2 } });
 

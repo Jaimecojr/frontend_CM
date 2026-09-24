@@ -17,7 +17,7 @@ describe("useUrlFilters", () => {
     mockSearchParams = new URLSearchParams();
   });
 
-  it("lee los filtros iniciales desde la URL", () => {
+  it("should read the initial filters from the URL", () => {
     // Arrange
     mockSearchParams = new URLSearchParams("city_id=5&franchise_id=2&unrelated=x");
 
@@ -28,7 +28,7 @@ describe("useUrlFilters", () => {
     expect(result.current.filters).toEqual({ city_id: "5", franchise_id: "2" });
   });
 
-  it("setParams agrega una clave nueva a la URL", () => {
+  it("should add a new key to the URL when setParams is called", () => {
     // Arrange
     const { result } = renderHook(() => useUrlFilters(["from"]));
 
@@ -42,7 +42,7 @@ describe("useUrlFilters", () => {
     );
   });
 
-  it("setParams con valor vacio o undefined elimina la clave en vez de dejarla vacia", () => {
+  it("should remove the key instead of leaving it empty when setParams gets an empty or undefined value", () => {
     // Arrange
     mockSearchParams = new URLSearchParams("from=2026-01-01&to=2026-01-31");
     const { result } = renderHook(() => useUrlFilters(["from", "to"]));
@@ -56,7 +56,7 @@ describe("useUrlFilters", () => {
     expect(url).toContain("to=2026-01-31");
   });
 
-  it("aplica varias claves en un solo replace (ej. limpiar city_id al cambiar department_id)", () => {
+  it("should apply several keys in a single replace (e.g. clearing city_id when department_id changes)", () => {
     // Arrange
     mockSearchParams = new URLSearchParams("department_id=1&city_id=9");
     const { result } = renderHook(() => useUrlFilters(["department_id", "city_id"]));
@@ -71,7 +71,7 @@ describe("useUrlFilters", () => {
     expect(url).not.toContain("city_id=");
   });
 
-  it("setParams con resetPage fuerza page=1", () => {
+  it("should force page=1 when setParams is called with resetPage", () => {
     // Arrange
     mockSearchParams = new URLSearchParams("page=3&from=2026-01-01");
     const { result } = renderHook(() => useUrlFilters(["from"]));
@@ -84,7 +84,7 @@ describe("useUrlFilters", () => {
     expect(url).toContain("page=1");
   });
 
-  it("no resetea page cuando resetPage no se pide", () => {
+  it("should not reset page when resetPage is not requested", () => {
     // Arrange
     mockSearchParams = new URLSearchParams("page=3");
     const { result } = renderHook(() => useUrlFilters([]));

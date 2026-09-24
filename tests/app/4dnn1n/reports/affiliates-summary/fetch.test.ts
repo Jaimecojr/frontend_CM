@@ -7,7 +7,7 @@ vi.mock("@/lib/api", () => ({ apiFetch: vi.fn() }));
 describe("affiliates-summary/fetch", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("construye el query string y retorna los 6 indicadores", async () => {
+  it("should build the query string and return the 6 indicators", async () => {
     // Arrange
     const mockData = {
       titulares: 100,
@@ -27,7 +27,7 @@ describe("affiliates-summary/fetch", () => {
     expect(result).toEqual(mockData);
   });
 
-  it("omite parametros undefined o vacios del query string", async () => {
+  it("should omit undefined or empty parameters from the query string", async () => {
     // Arrange
     const mockData = {
       titulares: 0,

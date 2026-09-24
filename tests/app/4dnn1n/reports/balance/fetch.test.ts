@@ -7,7 +7,7 @@ vi.mock("@/lib/api", () => ({ apiFetch: vi.fn() }));
 describe("balance/fetch", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("construye el query string y retorna data, meta y total_balance", async () => {
+  it("should build the query string and return data, meta and total_balance", async () => {
     // Arrange
     (apiFetch as any).mockResolvedValue({
       data: [{ id: 1, name: "JUAN PEREZ", balance: 50000 }],
@@ -24,7 +24,7 @@ describe("balance/fetch", () => {
     expect(result.data).toHaveLength(1);
   });
 
-  it("retorna total_balance como string sin convertirlo (el backend puede enviarlo sin cast)", async () => {
+  it("should return total_balance as a string without converting it (the backend may send it uncast)", async () => {
     // Arrange
     (apiFetch as any).mockResolvedValue({
       data: [],

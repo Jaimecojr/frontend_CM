@@ -38,7 +38,7 @@ describe("AppointmentsReportPage", () => {
     });
   });
 
-  it("renderiza las filas del reporte con el color de fecha correspondiente", async () => {
+  it("should render the report rows with the matching date color", async () => {
     // Act
     render(<AppointmentsReportPage />);
 
@@ -46,7 +46,7 @@ describe("AppointmentsReportPage", () => {
     await waitFor(() => expect(screen.getByText(/ANA LOPEZ \(Titular\)/)).toBeInTheDocument());
   });
 
-  it("colorea la fecha a partir de solo los primeros 10 caracteres, aunque venga con hora", async () => {
+  it("should color the date from only the first 10 characters, even when it includes a time", async () => {
     // Arrange: a full timestamp, not just yyyy-mm-dd — the color logic must
     // still work by slicing, not by trying to parse the whole string as a date.
     (getAppointmentsReport as any).mockResolvedValue({
@@ -64,7 +64,7 @@ describe("AppointmentsReportPage", () => {
     expect(screen.getByText("01/01/2020").className).toMatch(/text-red-600/);
   });
 
-  it("no muestra el filtro de Franquicia para un usuario de franquicia (type 2)", async () => {
+  it("should not show the Franquicia filter for a franchise user (type 2)", async () => {
     // Arrange
     (useAuth as any).mockReturnValue({ user: { id: 2, type: 2 } });
 
@@ -76,7 +76,7 @@ describe("AppointmentsReportPage", () => {
     expect(screen.queryByTitle("Filtrar por Franquicia")).not.toBeInTheDocument();
   });
 
-  it("el botón 'Limpiar fechas' quita from y to en un solo replace", async () => {
+  it("should remove from and to in a single replace when the 'Limpiar fechas' button is clicked", async () => {
     // Arrange — a bookmarked URL with both dates already set
     mockSearchParams = new URLSearchParams("from=2026-01-01&to=2026-01-31");
 

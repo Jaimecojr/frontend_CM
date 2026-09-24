@@ -10,7 +10,7 @@ vi.mock("@/lib/alert", () => ({ alert: { error: vi.fn() } }));
 describe("ExportReportButton", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("llama downloadFile con la ruta y los params serializados en el query string", async () => {
+  it("should call downloadFile with the path and params serialized in the query string", async () => {
     // Arrange
     (downloadFile as any).mockResolvedValue(undefined);
 
@@ -33,7 +33,7 @@ describe("ExportReportButton", () => {
     );
   });
 
-  it("muestra una alerta de error si downloadFile falla", async () => {
+  it("should show an error alert when downloadFile fails", async () => {
     // Arrange
     (downloadFile as any).mockRejectedValue(new Error("Error 500"));
 
@@ -45,7 +45,7 @@ describe("ExportReportButton", () => {
     await waitFor(() => expect(alert.error).toHaveBeenCalled());
   });
 
-  it("deshabilita el botón mientras exporta", async () => {
+  it("should disable the button while exporting", async () => {
     // Arrange
     let resolveDownload: () => void = () => {};
     (downloadFile as any).mockReturnValue(new Promise<void>((res) => { resolveDownload = res; }));

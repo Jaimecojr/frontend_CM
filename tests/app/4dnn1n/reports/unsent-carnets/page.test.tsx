@@ -29,7 +29,7 @@ describe("UnsentCarnetsPage", () => {
     });
   });
 
-  it("renderiza las filas para super admin", async () => {
+  it("should render the rows for a super admin", async () => {
     // Arrange
     (useAuth as any).mockReturnValue({ user: { id: 1, type: 1 } });
 
@@ -40,7 +40,7 @@ describe("UnsentCarnetsPage", () => {
     await waitFor(() => expect(screen.getByText("PEDRO RUIZ")).toBeInTheDocument());
   });
 
-  it("muestra el filtro de Franquicia para super admin", async () => {
+  it("should show the Franquicia filter for a super admin", async () => {
     // Arrange
     (useAuth as any).mockReturnValue({ user: { id: 1, type: 1 } });
 
@@ -52,7 +52,7 @@ describe("UnsentCarnetsPage", () => {
     expect(screen.getByTitle("Filtrar por Franquicia")).toBeInTheDocument();
   });
 
-  it("redirige a /4dnn1n/home si el usuario es franquicia", async () => {
+  it("should redirect to /4dnn1n/home when the user is a franchise", async () => {
     // Arrange
     (useAuth as any).mockReturnValue({ user: { id: 2, type: 2 } });
 
@@ -64,7 +64,7 @@ describe("UnsentCarnetsPage", () => {
     expect(screen.queryByText("PEDRO RUIZ")).not.toBeInTheDocument();
   });
 
-  it("no llama getUnsentCarnetsReport para un usuario de franquicia (type 2)", async () => {
+  it("should not call getUnsentCarnetsReport for a franchise user (type 2)", async () => {
     // Arrange
     (useAuth as any).mockReturnValue({ user: { id: 2, type: 2 } });
 

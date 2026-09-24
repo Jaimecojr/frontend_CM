@@ -7,7 +7,7 @@ vi.mock("@/lib/api", () => ({ apiFetch: vi.fn() }));
 describe("appointments (reports)/fetch", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("getAppointmentsReport construye el query string y retorna data/meta", async () => {
+  it("should build the query string and return data/meta from getAppointmentsReport", async () => {
     // Arrange
     (apiFetch as any).mockResolvedValue({
       data: [{ id: 1, name: "ANA LOPEZ (Titular)" }],
@@ -22,7 +22,7 @@ describe("appointments (reports)/fetch", () => {
     expect(result.data).toHaveLength(1);
   });
 
-  it("getActiveDoctors llama /api/doctors?state=1&per_page=100", async () => {
+  it("should call /api/doctors?state=1&per_page=100 from getActiveDoctors", async () => {
     // Arrange
     (apiFetch as any).mockResolvedValue({ data: [{ id: 1, name: "CARLOS", lastname: "PEREZ" }] });
 

@@ -8,7 +8,7 @@ describe("sales/fetch", () => {
   beforeEach(() => vi.clearAllMocks());
 
   describe("getSalesReport", () => {
-    it("construye el query string con los params presentes", async () => {
+    it("should build the query string with the given params", async () => {
       // Arrange
       (apiFetch as any).mockResolvedValue({
         data: [],
@@ -25,7 +25,7 @@ describe("sales/fetch", () => {
       );
     });
 
-    it("retorna data, meta y totals de la respuesta", async () => {
+    it("should return data, meta and totals from the response", async () => {
       // Arrange
       const mockTotals = { new_count: 3, new_value: 300000, renewal_count: 1, renewal_value: 90000 };
       (apiFetch as any).mockResolvedValue({

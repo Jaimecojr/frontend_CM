@@ -53,7 +53,7 @@ describe("AffiliatesSummaryPage", () => {
     (getCitiesByDepartment as any).mockResolvedValue([]);
   });
 
-  it("renderiza los 6 indicadores", async () => {
+  it("should render the 6 indicators", async () => {
     // Act
     render(<AffiliatesSummaryPage />);
 
@@ -69,7 +69,7 @@ describe("AffiliatesSummaryPage", () => {
     expect(screen.getByTestId("indicator-beneficiarios_inactivos")).toHaveTextContent("10");
   });
 
-  it("no muestra el filtro de Franquicia para un usuario de franquicia (type 2)", async () => {
+  it("should not show the Franquicia filter for a franchise user (type 2)", async () => {
     // Arrange
     (useAuth as any).mockReturnValue({ user: { id: 2, type: 2 } });
 
@@ -81,7 +81,7 @@ describe("AffiliatesSummaryPage", () => {
     expect(screen.queryByTitle("Filtrar por Franquicia")).not.toBeInTheDocument();
   });
 
-  it("muestra un mensaje de error cuando la peticion de indicadores falla", async () => {
+  it("should show an error message when the indicators request fails", async () => {
     // Arrange
     (getAffiliatesSummaryReport as any).mockRejectedValue(new Error("Fallo de red"));
 
@@ -92,7 +92,7 @@ describe("AffiliatesSummaryPage", () => {
     await waitFor(() => expect(screen.getByText("Fallo de red")).toBeInTheDocument());
   });
 
-  it("lee los filtros iniciales desde la URL", async () => {
+  it("should read the initial filters from the URL", async () => {
     // Arrange
     mockSearchParams = new URLSearchParams("city_id=5");
 
@@ -107,7 +107,7 @@ describe("AffiliatesSummaryPage", () => {
     );
   });
 
-  it("cambiar el departamento quita city_id de la URL en el mismo replace", async () => {
+  it("should drop city_id from the URL in the same replace when the department changes", async () => {
     // Arrange — a bookmarked URL with both a department and a city selected
     mockSearchParams = new URLSearchParams("department_id=1&city_id=9");
     (getDepartments as any).mockResolvedValue([
@@ -129,7 +129,7 @@ describe("AffiliatesSummaryPage", () => {
     expect(url).not.toContain("city_id=");
   });
 
-  it("el botón 'Limpiar fechas' quita from y to en un solo replace", async () => {
+  it("should remove from and to in a single replace when the 'Limpiar fechas' button is clicked", async () => {
     // Arrange — a bookmarked URL with both dates already set
     mockSearchParams = new URLSearchParams("from=2026-01-01&to=2026-01-31");
 
