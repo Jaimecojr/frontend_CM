@@ -103,13 +103,13 @@ export function CounselorSearchSelect({
       <input
         type="text"
         role="textbox"
-        className="h-9 w-full sm:w-56 rounded-lg border-[1.5px] border-stroke bg-transparent px-3 text-sm text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
+        className="h-9 w-full sm:w-56 rounded-lg border-[1.5px] border-stroke bg-transparent px-3 pr-7 text-sm text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
         placeholder={value ? selectedLabel || "Asesor seleccionado" : placeholder}
         value={query}
         onChange={(e) => handleQueryChange(e.target.value)}
         onFocus={() => setOpen(true)}
       />
-      {value && !open && (
+      {value && (
         <button
           type="button"
           onClick={clear}

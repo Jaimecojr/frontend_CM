@@ -202,6 +202,20 @@ describe("CounselorSearchSelect", () => {
     expect(screen.getByTitle("Limpiar asesor")).toBeInTheDocument();
   });
 
+  it("permite limpiar el asesor aunque el input tenga el foco (dropdown abierto)", () => {
+    // Arrange — focusing the input opens the dropdown; the "×" must stay
+    // visible and usable while it's open, not just once it closes.
+    const onChange = vi.fn();
+    render(<CounselorSearchSelect value="5" onChange={onChange} />);
+    fireEvent.focus(screen.getByRole("textbox"));
+
+    // Act
+    fireEvent.click(screen.getByTitle("Limpiar asesor"));
+
+    // Assert
+    expect(onChange).toHaveBeenCalledWith("");
+  });
+
   it("limpia el label seleccionado cuando el value se vacía externamente, sin arrastrarlo a un preset posterior", async () => {
     // Arrange
     (apiFetch as any).mockResolvedValue({
