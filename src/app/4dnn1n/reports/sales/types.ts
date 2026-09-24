@@ -1,3 +1,5 @@
+import type { ReportMeta } from "../_hooks/useReportsTable";
+
 /** Row shape for the Ventas ("Sales") report, as returned by GET /api/reports/sales. */
 export type ApiSaleRow = {
   id: number;
@@ -21,6 +23,6 @@ export type SalesTotals = {
   renewal_value: number | string;
 };
 
-export type SalesMeta = { current_page: number; last_page: number; per_page: number; total: number };
+export type SalesMeta = ReportMeta;
 
 export type SalesReportResponse = { data: ApiSaleRow[]; meta: SalesMeta; totals: SalesTotals };

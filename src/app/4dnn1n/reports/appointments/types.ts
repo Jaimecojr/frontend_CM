@@ -1,3 +1,5 @@
+import type { ReportMeta } from "../_hooks/useReportsTable";
+
 /**
  * Row shape for the Citas report, as returned by GET /api/reports/appointments.
  * `name` already carries the "(Titular)"/"(Beneficiario)" suffix from the
@@ -11,7 +13,7 @@ export type ApiAppointmentReportRow = {
   date: string;
 };
 
-export type AppointmentsMeta = { current_page: number; last_page: number; per_page: number; total: number };
+export type AppointmentsMeta = ReportMeta;
 export type AppointmentsReportResponse = { data: ApiAppointmentReportRow[]; meta: AppointmentsMeta };
 
 /** A doctor as offered by the "Médico" filter — reuses the general active-doctors catalog. */

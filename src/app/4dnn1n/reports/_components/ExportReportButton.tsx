@@ -6,6 +6,7 @@ import { Button } from "@/components/ui-elements/button";
 import { downloadFile } from "@/lib/download";
 import { alert } from "@/lib/alert";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import { toQueryString } from "../_lib/query";
 
 /**
  * Export trigger shared by every report page. Builds the query string from
@@ -29,12 +30,7 @@ export function ExportReportButton({
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const qs = new URLSearchParams();
-      for (const [k, v] of Object.entries(params)) {
-        if (v !== undefined && v !== "") qs.set(k, v);
-      }
-      const query = qs.toString();
-      await downloadFile(`${path}${query ? `?${query}` : ""}`, fallbackFilename);
+      await downloadFile(`${path}${toQueryString(params)}`, fallbackFilename);
     } catch (err) {
       await alert.error("No se pudo exportar", getApiErrorMessage(err));
     } finally {

@@ -1,3 +1,5 @@
+import type { ReportMeta } from "../_hooks/useReportsTable";
+
 /** Row shape for the Cartera ("Balance") report, as returned by GET /api/reports/balance. */
 export type ApiBalanceRow = {
   id: number;
@@ -8,7 +10,7 @@ export type ApiBalanceRow = {
   validity: string;
 };
 
-export type BalanceMeta = { current_page: number; last_page: number; per_page: number; total: number };
+export type BalanceMeta = ReportMeta;
 
 /** `total_balance` is the sum computed server-side over the whole filtered set, never client-summed. */
 export type BalanceReportResponse = { data: ApiBalanceRow[]; meta: BalanceMeta; total_balance: number | string };

@@ -45,10 +45,10 @@ export function csrf(): Promise<void> {
 
 // Invalidates the cached CSRF cookie — used when the backend responds 419
 // (expired or invalid CSRF token), to force requesting it again once.
-// Exported so other fetch-based helpers that can't go through apiFetch
-// (e.g. `downloadFile`, which needs a raw binary response) can mirror this
-// exact self-heal instead of duplicating the retry logic themselves.
-export function resetCsrf() {
+// Not exported: apiFetch is currently the only caller that needs this
+// self-heal. A GET-only helper like `downloadFile` never mutates, so
+// Laravel's CSRF middleware never applies to it and it has no use for this.
+function resetCsrf() {
   csrfPromise = null;
 }
 

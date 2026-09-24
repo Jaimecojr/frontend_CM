@@ -1,3 +1,5 @@
+import type { ReportMeta } from "../_hooks/useReportsTable";
+
 /** Row shape for the Sin Renovación report, as returned by GET /api/reports/non-renewed-affiliates. */
 export type ApiNonRenewedRow = {
   id: number;
@@ -8,5 +10,5 @@ export type ApiNonRenewedRow = {
   franchise: string | null;
 };
 
-export type NonRenewedMeta = { current_page: number; last_page: number; per_page: number; total: number };
+export type NonRenewedMeta = ReportMeta;
 export type NonRenewedReportResponse = { data: ApiNonRenewedRow[]; meta: NonRenewedMeta };

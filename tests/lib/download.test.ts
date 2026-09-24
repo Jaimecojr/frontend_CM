@@ -2,16 +2,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { downloadFile } from "@/lib/download";
 import { ApiError } from "@/lib/api";
 
-vi.mock("@/lib/api", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
-  return {
-    ...actual,
-    csrf: vi.fn().mockResolvedValue(undefined),
-    getXsrfToken: vi.fn(() => "test-token"),
-    resetCsrf: vi.fn(),
-  };
-});
-
 describe("downloadFile", () => {
   const originalFetch = global.fetch;
   const originalCreateObjectURL = URL.createObjectURL;
@@ -86,16 +76,15 @@ describe("downloadFile", () => {
     await expect(downloadFile("/api/reports/unsent-carnets/export", "f.xlsx")).rejects.toBeInstanceOf(ApiError);
   });
 
-  it("llama csrf antes de hacer fetch", async () => {
-    // Arrange
-    const { csrf } = await import("@/lib/api");
-    const callOrder: string[] = [];
-    (csrf as any).mockImplementation(async () => {
-      callOrder.push("csrf");
-    });
-    global.fetch = vi.fn().mockImplementation(async () => {
-      callOrder.push("fetch");
-      return { ok: true, headers: new Headers(), blob: vi.fn().mockResolvedValue(new Blob()) };
+  it("envía credentials: include y Accept: application/json, sin token CSRF (es un GET)", async () => {
+    // Arrange — a GET is never subject to Laravel's CSRF middleware, so this
+    // request must carry neither an X-XSRF-TOKEN header nor a CSRF round-trip;
+    // Accept: application/json is what makes an expired-session response come
+    // back as a parseable JSON 401 instead of an HTML error page.
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      headers: new Headers(),
+      blob: vi.fn().mockResolvedValue(new Blob(["data"])),
     });
     const anchor = { click: vi.fn(), href: "", download: "", remove: vi.fn() } as unknown as HTMLAnchorElement;
     vi.spyOn(document, "createElement").mockReturnValue(anchor);
@@ -105,37 +94,40 @@ describe("downloadFile", () => {
     await downloadFile("/api/reports/sales/export", "f.xlsx");
 
     // Assert
-    expect(callOrder).toEqual(["csrf", "fetch"]);
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/api/reports/sales/export"),
+      expect.objectContaining({
+        method: "GET",
+        credentials: "include",
+        headers: { Accept: "application/json" },
+      }),
+    );
   });
 
-  it("en un 419 reinicia el CSRF cacheado, lo vuelve a pedir y reintenta la descarga una vez", async () => {
-    // Arrange — mirrors apiFetch's own 419 retry: original request (419),
-    // CSRF refresh, retried request (now successful).
-    const { csrf, resetCsrf } = await import("@/lib/api");
-    const callOrder: string[] = [];
-    (csrf as any).mockImplementation(async () => {
-      callOrder.push("csrf");
-    });
-    (resetCsrf as any).mockImplementation(() => {
-      callOrder.push("resetCsrf");
-    });
-    global.fetch = vi
-      .fn()
-      .mockResolvedValueOnce({ ok: false, status: 419, headers: new Headers(), json: vi.fn().mockResolvedValue({}) })
-      .mockResolvedValueOnce({
+  it("difiere URL.revokeObjectURL con setTimeout en vez de revocarlo de inmediato", async () => {
+    // Arrange — Safari can abort an in-flight save if the blob URL is
+    // revoked synchronously right after click(), so the revoke must be
+    // scheduled for the next macrotask instead of running inline.
+    vi.useFakeTimers();
+    try {
+      global.fetch = vi.fn().mockResolvedValue({
         ok: true,
         headers: new Headers(),
         blob: vi.fn().mockResolvedValue(new Blob(["data"])),
       });
-    const anchor = { click: vi.fn(), href: "", download: "", remove: vi.fn() } as unknown as HTMLAnchorElement;
-    vi.spyOn(document, "createElement").mockReturnValue(anchor);
-    vi.spyOn(document.body, "appendChild").mockImplementation((n) => n);
+      const anchor = { click: vi.fn(), href: "", download: "", remove: vi.fn() } as unknown as HTMLAnchorElement;
+      vi.spyOn(document, "createElement").mockReturnValue(anchor);
+      vi.spyOn(document.body, "appendChild").mockImplementation((n) => n);
 
-    // Act
-    await downloadFile("/api/reports/sales/export", "f.xlsx");
+      // Act
+      await downloadFile("/api/reports/sales/export", "f.xlsx");
 
-    // Assert
-    expect(callOrder).toEqual(["csrf", "resetCsrf", "csrf"]);
-    expect(global.fetch).toHaveBeenCalledTimes(2);
+      // Assert — not revoked yet, only after the deferred timer fires
+      expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+      await vi.advanceTimersByTimeAsync(0);
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:mock-url");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

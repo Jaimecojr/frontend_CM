@@ -1,3 +1,5 @@
+import type { ReportMeta } from "../_hooks/useReportsTable";
+
 /**
  * Row shape for the Carnets No Enviados report, as returned by
  * GET /api/reports/unsent-carnets. Rows come from a `whatsapp_messages` join
@@ -11,5 +13,5 @@ export type ApiUnsentCarnetRow = {
   franchise: string | null;
 };
 
-export type UnsentCarnetsMeta = { current_page: number; last_page: number; per_page: number; total: number };
+export type UnsentCarnetsMeta = ReportMeta;
 export type UnsentCarnetsReportResponse = { data: ApiUnsentCarnetRow[]; meta: UnsentCarnetsMeta };
