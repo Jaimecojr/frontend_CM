@@ -158,4 +158,53 @@ describe("useReportsTable", () => {
     // Assert
     expect(result.current.exportParams).toEqual({ from: "2026-01-01" });
   });
+
+  it("expone error cuando fetchFn rechaza, y lo limpia en el siguiente fetch exitoso", async () => {
+    // Arrange
+    const fetchFn = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("Fallo de red"))
+      .mockResolvedValueOnce({
+        data: [{ id: 1 }],
+        meta: { current_page: 1, last_page: 1, per_page: 25, total: 1 },
+      });
+    const { result, rerender } = renderHook(() => useReportsTable(fetchFn, { filterKeys: [] }));
+
+    // Act & Assert — the failure surfaces, data stays empty
+    await waitFor(() => expect(result.current.error).toBe("Fallo de red"));
+    expect(result.current.data).toEqual([]);
+
+    // Act — a new fetch (the URL changing, e.g. via paging) must clear the
+    // previous error. `mockSearchParams` is mutated directly (rather than
+    // through `setPage`) because the mocked `useSearchParams()` isn't wired
+    // to `router.replace` — it only reflects whatever this test assigns.
+    mockSearchParams = new URLSearchParams("page=2");
+    rerender();
+    await waitFor(() => expect(fetchFn).toHaveBeenCalledTimes(2));
+
+    // Assert
+    await waitFor(() => expect(result.current.error).toBeNull());
+    expect(result.current.data).toEqual([{ id: 1 }]);
+  });
+
+  it("mantiene los datos del fetch anterior cuando un fetch posterior falla", async () => {
+    // Arrange
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce({
+        data: [{ id: 1 }],
+        meta: { current_page: 1, last_page: 2, per_page: 25, total: 2 },
+      })
+      .mockRejectedValueOnce(new Error("Fallo de red"));
+    const { result, rerender } = renderHook(() => useReportsTable(fetchFn, { filterKeys: [] }));
+    await waitFor(() => expect(result.current.data).toEqual([{ id: 1 }]));
+
+    // Act
+    mockSearchParams = new URLSearchParams("page=2");
+    rerender();
+
+    // Assert
+    await waitFor(() => expect(result.current.error).toBe("Fallo de red"));
+    expect(result.current.data).toEqual([{ id: 1 }]);
+  });
 });

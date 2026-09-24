@@ -45,7 +45,10 @@ export function csrf(): Promise<void> {
 
 // Invalidates the cached CSRF cookie — used when the backend responds 419
 // (expired or invalid CSRF token), to force requesting it again once.
-function resetCsrf() {
+// Exported so other fetch-based helpers that can't go through apiFetch
+// (e.g. `downloadFile`, which needs a raw binary response) can mirror this
+// exact self-heal instead of duplicating the retry logic themselves.
+export function resetCsrf() {
   csrfPromise = null;
 }
 

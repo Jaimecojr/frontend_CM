@@ -30,6 +30,14 @@ export function CounselorSearchSelect({
   const latestQueryRef = useRef<string>("");
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // A preset `value` (bookmark, page reload, "Limpiar filtros" elsewhere)
+  // never went through `select()`, so there's no label to show for it — and
+  // if `value` is cleared externally, any label from a previous selection
+  // must not linger and get shown for whatever gets preset next.
+  useEffect(() => {
+    if (!value) setSelectedLabel("");
+  }, [value]);
+
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -96,7 +104,7 @@ export function CounselorSearchSelect({
         type="text"
         role="textbox"
         className="h-9 w-full sm:w-56 rounded-lg border-[1.5px] border-stroke bg-transparent px-3 text-sm text-dark outline-none transition focus:border-primary dark:border-dark-3 dark:bg-dark-2 dark:text-white dark:focus:border-primary"
-        placeholder={value ? selectedLabel || placeholder : placeholder}
+        placeholder={value ? selectedLabel || "Asesor seleccionado" : placeholder}
         value={query}
         onChange={(e) => handleQueryChange(e.target.value)}
         onFocus={() => setOpen(true)}

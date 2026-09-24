@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 type ReportMeta = { current_page: number; last_page: number; per_page: number; total: number };
 
@@ -54,6 +55,7 @@ export function useReportsTable<T, E extends Record<string, unknown> = Record<st
   const [meta, setMeta] = useState<ReportMeta>({ current_page: 1, last_page: 1, per_page: 25, total: 0 });
   const [extra, setExtra] = useState<E | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchFnRef = useRef(fetchFn);
   fetchFnRef.current = fetchFn;
@@ -61,6 +63,7 @@ export function useReportsTable<T, E extends Record<string, unknown> = Record<st
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
+    setError(null);
 
     fetchFnRef
       .current({ page, per_page: perPage, ...filters })
@@ -74,7 +77,13 @@ export function useReportsTable<T, E extends Record<string, unknown> = Record<st
           setExtra(rest as E);
         }
       })
-      .catch(() => {}) // the page can surface its own error UI if it wants
+      .catch((err) => {
+        // Surfaced via `error` (rather than swallowed) so the page can render
+        // its own failure UI; `data`/`meta` from the last successful fetch
+        // are left untouched, so a transient failure while paging doesn't
+        // blank out what's already on screen.
+        if (!cancelled) setError(getApiErrorMessage(err));
+      })
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
@@ -112,6 +121,7 @@ export function useReportsTable<T, E extends Record<string, unknown> = Record<st
     meta,
     extra,
     loading,
+    error,
     page,
     perPage,
     filters,

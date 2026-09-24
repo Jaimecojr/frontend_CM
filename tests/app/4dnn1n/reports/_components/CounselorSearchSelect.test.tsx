@@ -192,4 +192,47 @@ describe("CounselorSearchSelect", () => {
     expect(clearSpy).toHaveBeenCalled();
     clearSpy.mockRestore();
   });
+
+  it("muestra 'Asesor seleccionado' cuando value llega preseteado desde la URL (bookmark/reload)", () => {
+    // Arrange & Act — no select() ever ran, so there's no label for this id
+    render(<CounselorSearchSelect value="5" onChange={vi.fn()} />);
+
+    // Assert
+    expect(screen.getByRole("textbox")).toHaveAttribute("placeholder", "Asesor seleccionado");
+    expect(screen.getByTitle("Limpiar asesor")).toBeInTheDocument();
+  });
+
+  it("limpia el label seleccionado cuando el value se vacía externamente, sin arrastrarlo a un preset posterior", async () => {
+    // Arrange
+    (apiFetch as any).mockResolvedValue({
+      data: [{ id: 5, name: "ANA", lastname: "GÓMEZ" }],
+    });
+    const onChange = vi.fn();
+    vi.useFakeTimers();
+    try {
+      const { rerender } = render(<CounselorSearchSelect value="" onChange={onChange} />);
+      fireEvent.change(screen.getByRole("textbox"), { target: { value: "an" } });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(300);
+      });
+      fireEvent.click(screen.getByText(/ANA GÓMEZ/i));
+      expect(onChange).toHaveBeenCalledWith("5");
+
+      // The parent applies the selection: value now reflects the chosen id
+      rerender(<CounselorSearchSelect value="5" onChange={onChange} />);
+      expect(screen.getByRole("textbox")).toHaveAttribute("placeholder", "ANA GÓMEZ");
+
+      // Act — the parent clears the filter externally (e.g. "Limpiar filtros")
+      rerender(<CounselorSearchSelect value="" onChange={onChange} />);
+
+      // A later external preset that never went through select() must not
+      // show the stale label from the previous, unrelated selection.
+      rerender(<CounselorSearchSelect value="9" onChange={onChange} />);
+
+      // Assert
+      expect(screen.getByRole("textbox")).toHaveAttribute("placeholder", "Asesor seleccionado");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

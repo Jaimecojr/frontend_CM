@@ -8,6 +8,7 @@ vi.mock("@/lib/api", async () => {
     ...actual,
     csrf: vi.fn().mockResolvedValue(undefined),
     getXsrfToken: vi.fn(() => "test-token"),
+    resetCsrf: vi.fn(),
   };
 });
 
@@ -105,5 +106,36 @@ describe("downloadFile", () => {
 
     // Assert
     expect(callOrder).toEqual(["csrf", "fetch"]);
+  });
+
+  it("en un 419 reinicia el CSRF cacheado, lo vuelve a pedir y reintenta la descarga una vez", async () => {
+    // Arrange — mirrors apiFetch's own 419 retry: original request (419),
+    // CSRF refresh, retried request (now successful).
+    const { csrf, resetCsrf } = await import("@/lib/api");
+    const callOrder: string[] = [];
+    (csrf as any).mockImplementation(async () => {
+      callOrder.push("csrf");
+    });
+    (resetCsrf as any).mockImplementation(() => {
+      callOrder.push("resetCsrf");
+    });
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 419, headers: new Headers(), json: vi.fn().mockResolvedValue({}) })
+      .mockResolvedValueOnce({
+        ok: true,
+        headers: new Headers(),
+        blob: vi.fn().mockResolvedValue(new Blob(["data"])),
+      });
+    const anchor = { click: vi.fn(), href: "", download: "", remove: vi.fn() } as unknown as HTMLAnchorElement;
+    vi.spyOn(document, "createElement").mockReturnValue(anchor);
+    vi.spyOn(document.body, "appendChild").mockImplementation((n) => n);
+
+    // Act
+    await downloadFile("/api/reports/sales/export", "f.xlsx");
+
+    // Assert
+    expect(callOrder).toEqual(["csrf", "resetCsrf", "csrf"]);
+    expect(global.fetch).toHaveBeenCalledTimes(2);
   });
 });
