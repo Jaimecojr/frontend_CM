@@ -12,6 +12,7 @@ import { buildSalesColumns } from "@/app/4dnn1n/reports/sales/_components/column
 import { buildBalanceColumns } from "@/app/4dnn1n/reports/balance/_components/columns";
 import { buildAppointmentsReportColumns } from "@/app/4dnn1n/reports/appointments/_components/columns";
 import { buildNonRenewedColumns } from "@/app/4dnn1n/reports/non-renewed-affiliates/_components/columns";
+import { buildUnsentCarnetsColumns } from "@/app/4dnn1n/reports/unsent-carnets/_components/columns";
 
 /**
  * Business rule: free-text data (names, addresses, cities, subjects...) is shown in capitals in
@@ -118,6 +119,12 @@ const modules: {
     columns: buildNonRenewedColumns() as ColumnDef<never>[],
     upper: ["franchise", "name"],
     natural: ["movil", "phone", "validity_end"],
+  },
+  {
+    name: "reporte de carnets no enviados",
+    columns: buildUnsentCarnetsColumns() as ColumnDef<never>[],
+    upper: ["franchise", "name"],
+    natural: ["date", "movil", "phone"],
   },
 ];
 
