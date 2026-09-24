@@ -671,7 +671,11 @@ describe("AfiliacioPage (formulario público de afiliación)", () => {
 
       // Assert
       await screen.findByText("¡Solicitud Enviada!");
-      expect(scrollToMock).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+      // The scroll runs in a passive effect that React schedules after the success view is
+      // committed; findByText can resolve before that task flushes under load, so wait for it.
+      await waitFor(() =>
+        expect(scrollToMock).toHaveBeenCalledWith({ top: 0, behavior: "smooth" }),
+      );
     });
 
     it("usa el mensaje por defecto cuando la respuesta no trae message", async () => {
