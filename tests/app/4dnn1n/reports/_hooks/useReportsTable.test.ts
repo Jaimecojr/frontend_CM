@@ -159,6 +159,52 @@ describe("useReportsTable", () => {
     expect(result.current.exportParams).toEqual({ from: "2026-01-01" });
   });
 
+  it("exportParams se actualiza cuando la URL cambia, no queda fijo en el primer render", async () => {
+    // Arrange
+    mockSearchParams = new URLSearchParams("from=2026-01-01");
+    const fetchFn = vi.fn().mockResolvedValue({
+      data: [],
+      meta: { current_page: 1, last_page: 1, per_page: 25, total: 0 },
+    });
+    const { result, rerender } = renderHook(() =>
+      useReportsTable(fetchFn, { filterKeys: ["from", "to"] }),
+    );
+    await waitFor(() => expect(fetchFn).toHaveBeenCalled());
+    expect(result.current.exportParams).toEqual({ from: "2026-01-01" });
+
+    // Act — the URL changes externally (e.g. the router.replace this hook
+    // itself triggered elsewhere), not through this hook's own setters
+    mockSearchParams = new URLSearchParams("from=2026-01-01&to=2026-01-31");
+    rerender();
+
+    // Assert
+    await waitFor(() =>
+      expect(result.current.exportParams).toEqual({ from: "2026-01-01", to: "2026-01-31" }),
+    );
+  });
+
+  it("setFilters elimina dos claves en una sola llamada a replace", async () => {
+    // Arrange
+    mockSearchParams = new URLSearchParams("from=2026-01-01&to=2026-01-31");
+    const fetchFn = vi.fn().mockResolvedValue({
+      data: [],
+      meta: { current_page: 1, last_page: 1, per_page: 25, total: 0 },
+    });
+    const { result } = renderHook(() =>
+      useReportsTable(fetchFn, { filterKeys: ["from", "to"] }),
+    );
+    await waitFor(() => expect(fetchFn).toHaveBeenCalled());
+
+    // Act
+    act(() => result.current.setFilters({ from: undefined, to: undefined }));
+
+    // Assert — a single navigation drops both keys, never two separate ones
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    const [url] = mockReplace.mock.calls[0];
+    expect(url).not.toContain("from=");
+    expect(url).not.toContain("to=");
+  });
+
   it("expone error cuando fetchFn rechaza, y lo limpia en el siguiente fetch exitoso", async () => {
     // Arrange
     const fetchFn = vi
@@ -224,6 +270,28 @@ describe("useReportsTable", () => {
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(fetchFn).not.toHaveBeenCalled();
     expect(result.current.data).toEqual([]);
+  });
+
+  it("isInitialLoad pasa a false tras el primer fetch y no vuelve a true en cambios de filtro posteriores", async () => {
+    // Arrange
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce({ data: [], meta: { current_page: 1, last_page: 1, per_page: 25, total: 0 } })
+      .mockResolvedValueOnce({ data: [], meta: { current_page: 1, last_page: 1, per_page: 25, total: 0 } });
+    const { result, rerender } = renderHook(() => useReportsTable(fetchFn, { filterKeys: ["from"] }));
+
+    // Assert — true only until the first fetch settles
+    expect(result.current.isInitialLoad).toBe(true);
+    await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+    // Act — a second fetch (e.g. a filter change) that also resolves to an
+    // empty page-1 result must not flip it back to true
+    mockSearchParams = new URLSearchParams("from=2026-02-01");
+    rerender();
+    await waitFor(() => expect(fetchFn).toHaveBeenCalledTimes(2));
+
+    // Assert
+    expect(result.current.isInitialLoad).toBe(false);
   });
 
   it("dispara el fetch en cuanto enabled pasa de false a true", async () => {

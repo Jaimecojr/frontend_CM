@@ -1,15 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import AppointmentsReportPage from "@/app/4dnn1n/reports/appointments/page";
 import { useAuth } from "@/context/AuthContext";
 import { getAppointmentsReport } from "@/app/4dnn1n/reports/appointments/fetch";
 
+const mockReplace = vi.fn();
+let mockSearchParams = new URLSearchParams();
+
 vi.mock("@/context/AuthContext", () => ({ useAuth: vi.fn() }));
 vi.mock("@/hooks/usePageTitle", () => ({ usePageTitle: vi.fn() }));
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ replace: vi.fn() }),
+  useRouter: () => ({ replace: mockReplace }),
   usePathname: () => "/4dnn1n/reports/appointments",
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams,
 }));
 vi.mock("@/app/4dnn1n/reports/appointments/fetch", () => ({
   getAppointmentsReport: vi.fn(),
@@ -25,6 +28,7 @@ vi.mock("@/app/4dnn1n/reports/_lib/catalogs", () => ({
 describe("AppointmentsReportPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockSearchParams = new URLSearchParams();
     (useAuth as any).mockReturnValue({ user: { id: 1, type: 1 } });
     (getAppointmentsReport as any).mockResolvedValue({
       data: [
@@ -70,5 +74,21 @@ describe("AppointmentsReportPage", () => {
     // Assert
     await waitFor(() => expect(screen.getByText(/ANA LOPEZ \(Titular\)/)).toBeInTheDocument());
     expect(screen.queryByTitle("Filtrar por Franquicia")).not.toBeInTheDocument();
+  });
+
+  it("el botón 'Limpiar fechas' quita from y to en un solo replace", async () => {
+    // Arrange — a bookmarked URL with both dates already set
+    mockSearchParams = new URLSearchParams("from=2026-01-01&to=2026-01-31");
+
+    // Act
+    render(<AppointmentsReportPage />);
+    await waitFor(() => expect(screen.getByText(/ANA LOPEZ \(Titular\)/)).toBeInTheDocument());
+    fireEvent.click(screen.getByTitle("Limpiar fechas"));
+
+    // Assert
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    const [url] = mockReplace.mock.calls[0];
+    expect(url).not.toContain("from=");
+    expect(url).not.toContain("to=");
   });
 });

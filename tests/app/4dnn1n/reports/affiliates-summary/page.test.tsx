@@ -128,4 +128,20 @@ describe("AffiliatesSummaryPage", () => {
     expect(url).toContain("department_id=2");
     expect(url).not.toContain("city_id=");
   });
+
+  it("el botón 'Limpiar fechas' quita from y to en un solo replace", async () => {
+    // Arrange — a bookmarked URL with both dates already set
+    mockSearchParams = new URLSearchParams("from=2026-01-01&to=2026-01-31");
+
+    // Act
+    render(<AffiliatesSummaryPage />);
+    await waitFor(() => expect(screen.getByTestId("indicator-titulares")).toHaveTextContent("100"));
+    fireEvent.click(screen.getByTitle("Limpiar fechas"));
+
+    // Assert
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    const [url] = mockReplace.mock.calls[0];
+    expect(url).not.toContain("from=");
+    expect(url).not.toContain("to=");
+  });
 });

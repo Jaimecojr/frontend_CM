@@ -25,10 +25,22 @@ export default function BalanceReportPage() {
   const { user } = useAuth();
   const isSuperAdmin = user?.type === 1;
 
-  const { data, meta, extra, loading, error, filters, setFilter, setPage, setPerPage, perPage, exportParams } =
-    useReportsTable<ApiBalanceRow, { total_balance: number | string }>(getBalanceReport, {
-      filterKeys: ["franchise_id", "counselor_id"],
-    });
+  const {
+    data,
+    meta,
+    extra,
+    loading,
+    error,
+    filters,
+    setFilter,
+    setPage,
+    setPerPage,
+    perPage,
+    exportParams,
+    isInitialLoad,
+  } = useReportsTable<ApiBalanceRow, { total_balance: number | string }>(getBalanceReport, {
+    filterKeys: ["franchise_id", "counselor_id"],
+  });
   // Same response the table already fetched — never a second call just for this number.
   const totalBalance = extra?.total_balance ?? 0;
 
@@ -58,7 +70,7 @@ export default function BalanceReportPage() {
 
   return (
     <>
-      <LoadingOverlay isLoading={loading && meta.current_page === 1 && data.length === 0} />
+      <LoadingOverlay isLoading={loading && isInitialLoad} />
 
       {error && (
         <p className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">

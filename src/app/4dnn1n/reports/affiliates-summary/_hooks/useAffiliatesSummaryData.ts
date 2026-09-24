@@ -86,8 +86,13 @@ export function useAffiliatesSummaryData() {
     };
   }, [departmentId]);
 
-  const setFrom = (value: string) => setParams({ from: value || undefined });
-  const setTo = (value: string) => setParams({ to: value || undefined });
+  /**
+   * Batched date-range setter for `DateRangeFilter` — its "clear both dates"
+   * control needs `from` and `to` dropped in the SAME navigation, or two
+   * separate `setParams` calls would each build their patch from the same
+   * render-time URL and the second would clobber the first.
+   */
+  const setDateRange = (updates: Record<string, string | undefined>) => setParams(updates);
   const setFranchiseId = (value: string) => setParams({ franchise_id: value || undefined });
   const setCityId = (value: number | "") => setParams({ city_id: value ? String(value) : undefined });
   /**
@@ -136,9 +141,8 @@ export function useAffiliatesSummaryData() {
 
   return {
     from,
-    setFrom,
     to,
-    setTo,
+    setDateRange,
     departmentId,
     setDepartmentId,
     cityId,

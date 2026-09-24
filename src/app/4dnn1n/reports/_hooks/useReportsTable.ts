@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import { useUrlFilters } from "./useUrlFilters";
 
-type ReportMeta = { current_page: number; last_page: number; per_page: number; total: number };
+/** Pagination metadata shape shared by every paginated report response. */
+export type ReportMeta = { current_page: number; last_page: number; per_page: number; total: number };
 
 type FetchFn<T, E extends Record<string, unknown>> = (
   params: Record<string, string | number | undefined>,
@@ -37,7 +38,7 @@ type Options = {
  * one of those must read it from `extra`, never issue a second fetch call
  * for numbers the first call already returned.
  */
-export function useReportsTable<T, E extends Record<string, unknown> = Record<string, never>>(
+export function useReportsTable<T, E extends Record<string, unknown> = Record<never, never>>(
   fetchFn: FetchFn<T, E>,
   options: Options,
 ) {
@@ -55,6 +56,14 @@ export function useReportsTable<T, E extends Record<string, unknown> = Record<st
 
   const fetchFnRef = useRef(fetchFn);
   fetchFnRef.current = fetchFn;
+
+  // Starts true and flips to false once, after the first fetch settles
+  // (success or failure) — never reset afterward. A ref (not state) because
+  // flipping it must not itself trigger an extra render; it's read at the
+  // same render where `loading` already causes one. Lets pages show the
+  // full-screen LoadingOverlay only when entering the module, not on every
+  // filter change that happens to land on an empty page-1 result.
+  const isInitialLoadRef = useRef(true);
 
   useEffect(() => {
     if (!enabled) {
@@ -89,7 +98,10 @@ export function useReportsTable<T, E extends Record<string, unknown> = Record<st
         if (!cancelled) setError(getApiErrorMessage(err));
       })
       .finally(() => {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          isInitialLoadRef.current = false;
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -101,6 +113,16 @@ export function useReportsTable<T, E extends Record<string, unknown> = Record<st
   // Filters/per_page reset back to page 1; only changing the page itself doesn't.
   const setFilter = useCallback(
     (key: string, value: string | undefined) => setParams({ [key]: value }, { resetPage: true }),
+    [setParams],
+  );
+  /**
+   * Same as `setFilter`, but applies several key changes in one navigation —
+   * required for e.g. a "clear dates" control that must drop `from` and `to`
+   * together: two consecutive `setFilter` calls would each build their patch
+   * from the same render-time URL and the second would clobber the first.
+   */
+  const setFilters = useCallback(
+    (updates: Record<string, string | undefined>) => setParams(updates, { resetPage: true }),
     [setParams],
   );
   const setPage = useCallback((p: number) => setParams({ page: String(p) }), [setParams]);
@@ -119,8 +141,10 @@ export function useReportsTable<T, E extends Record<string, unknown> = Record<st
     perPage,
     filters,
     setFilter,
+    setFilters,
     setPage,
     setPerPage,
+    isInitialLoad: isInitialLoadRef.current,
     /** Same filter object the fetch used — pass straight into ExportReportButton's `params`. */
     exportParams: filters,
   };

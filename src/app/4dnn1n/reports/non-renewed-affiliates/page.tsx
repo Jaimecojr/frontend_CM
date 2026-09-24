@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { DataTable } from "@/components/data-table/DataTable";
 import { LoadingOverlay } from "@/components/LoadingOverlay";
-import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useAuth } from "@/context/AuthContext";
 import { useReportsTable } from "../_hooks/useReportsTable";
@@ -11,7 +10,8 @@ import { useFranchiseOptions } from "../_hooks/useFranchiseOptions";
 import { ReportPageSizeSelect } from "../_components/ReportPageSizeSelect";
 import { ExportReportButton } from "../_components/ExportReportButton";
 import { FranchiseSelect } from "../_components/FranchiseSelect";
-import { getNonRenewedAffiliatesReport } from "./fetch";
+import { DateRangeFilter } from "../_components/DateRangeFilter";
+import { getNonRenewedAffiliatesReport, type ApiNonRenewedRow } from "./fetch";
 import { buildNonRenewedColumns } from "./_components/columns";
 
 /**
@@ -24,13 +24,22 @@ export default function NonRenewedAffiliatesPage() {
   const { user } = useAuth();
   const isSuperAdmin = user?.type === 1;
 
-  // No explicit <T> here: see the appointments page for why a lone T would
-  // leave E defaulted to Record<string, never>, which breaks assignability
-  // for a response with no extra fields beyond data/meta.
-  const { data, meta, loading, error, filters, setFilter, setPage, setPerPage, perPage, exportParams } =
-    useReportsTable(getNonRenewedAffiliatesReport, {
-      filterKeys: ["from", "franchise_id"],
-    });
+  const {
+    data,
+    meta,
+    loading,
+    error,
+    filters,
+    setFilter,
+    setFilters,
+    setPage,
+    setPerPage,
+    perPage,
+    exportParams,
+    isInitialLoad,
+  } = useReportsTable<ApiNonRenewedRow>(getNonRenewedAffiliatesReport, {
+    filterKeys: ["from", "franchise_id"],
+  });
 
   const franchises = useFranchiseOptions(isSuperAdmin);
 
@@ -38,12 +47,7 @@ export default function NonRenewedAffiliatesPage() {
 
   const extraFilters = (
     <>
-      <DatePickerWithToday
-        value={filters.from || ""}
-        onChange={(v) => setFilter("from", v)}
-        placeholder="Vencidos desde"
-        className="h-9 w-full sm:w-auto"
-      />
+      <DateRangeFilter from={filters.from || ""} to="" onChange={setFilters} hideTo />
 
       {isSuperAdmin && (
         <FranchiseSelect
@@ -59,7 +63,7 @@ export default function NonRenewedAffiliatesPage() {
 
   return (
     <>
-      <LoadingOverlay isLoading={loading && meta.current_page === 1 && data.length === 0} />
+      <LoadingOverlay isLoading={loading && isInitialLoad} />
 
       {error && (
         <p className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">

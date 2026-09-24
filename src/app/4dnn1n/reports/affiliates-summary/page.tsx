@@ -23,9 +23,8 @@ export default function AffiliatesSummaryPage() {
 
   const {
     from,
-    setFrom,
     to,
-    setTo,
+    setDateRange,
     departmentId,
     setDepartmentId,
     cityId,
@@ -54,8 +53,7 @@ export default function AffiliatesSummaryPage() {
           <AffiliatesSummaryFilters
             from={from}
             to={to}
-            onFromChange={setFrom}
-            onToChange={setTo}
+            onDateRangeChange={setDateRange}
             departments={departments}
             departmentId={departmentId}
             onDepartmentChange={setDepartmentId}

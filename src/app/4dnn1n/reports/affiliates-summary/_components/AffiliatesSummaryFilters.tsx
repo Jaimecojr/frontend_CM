@@ -1,8 +1,8 @@
 "use client";
 
-import DatePickerWithToday from "@/components/FormElements/DatePicker/DatePickerWithToday";
 import { ExportReportButton } from "../../_components/ExportReportButton";
 import { FranchiseSelect } from "../../_components/FranchiseSelect";
+import { DateRangeFilter } from "../../_components/DateRangeFilter";
 import type { FranchiseOption } from "../../_lib/catalogs";
 import type { Department, City } from "@/types/geo";
 
@@ -15,8 +15,7 @@ import type { Department, City } from "@/types/geo";
 export function AffiliatesSummaryFilters({
   from,
   to,
-  onFromChange,
-  onToChange,
+  onDateRangeChange,
   departments,
   departmentId,
   onDepartmentChange,
@@ -32,8 +31,7 @@ export function AffiliatesSummaryFilters({
 }: {
   from: string;
   to: string;
-  onFromChange: (value: string) => void;
-  onToChange: (value: string) => void;
+  onDateRangeChange: (updates: Record<string, string | undefined>) => void;
   departments: Department[];
   departmentId: number | "";
   onDepartmentChange: (value: number | "") => void;
@@ -49,18 +47,7 @@ export function AffiliatesSummaryFilters({
 }) {
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-      <DatePickerWithToday
-        value={from}
-        onChange={onFromChange}
-        placeholder="Desde"
-        className="h-9 w-full sm:w-auto"
-      />
-      <DatePickerWithToday
-        value={to}
-        onChange={onToChange}
-        placeholder="Hasta"
-        className="h-9 w-full sm:w-auto"
-      />
+      <DateRangeFilter from={from} to={to} onChange={onDateRangeChange} />
 
       <select
         title="Filtrar por Departamento"
