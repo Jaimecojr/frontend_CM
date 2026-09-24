@@ -10,6 +10,7 @@ import { buildContactColumns } from "@/app/4dnn1n/contacts/_components/columns";
 import { buildMembershipFormColumns } from "@/app/4dnn1n/membership-forms/_components/columns";
 import { buildSalesColumns } from "@/app/4dnn1n/reports/sales/_components/columns";
 import { buildBalanceColumns } from "@/app/4dnn1n/reports/balance/_components/columns";
+import { buildAppointmentsReportColumns } from "@/app/4dnn1n/reports/appointments/_components/columns";
 
 /**
  * Business rule: free-text data (names, addresses, cities, subjects...) is shown in capitals in
@@ -104,6 +105,12 @@ const modules: {
     columns: buildBalanceColumns() as ColumnDef<never>[],
     upper: ["counselor", "name"],
     natural: ["balance", "validity"],
+  },
+  {
+    name: "reporte de citas",
+    columns: buildAppointmentsReportColumns() as ColumnDef<never>[],
+    upper: ["city", "doctor", "name"],
+    natural: ["date"],
   },
 ];
 
